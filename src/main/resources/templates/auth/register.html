@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Đăng ký — Pháp Luật Việt Nam</title>
+    <link rel="icon" type="image/svg+xml" th:href="@{/images/favicon.svg}">
+    <link rel="stylesheet" th:href="@{/css/ui.css}">
+    <script th:src="@{/js/app.js}" defer></script>
+</head>
+<body>
+<a class="skip-link" href="#main">Bỏ qua điều hướng</a>
+
+<div th:replace="~{fragments/layout :: topbar('register')}"></div>
+
+<main id="main" class="page auth-page">
+    <section class="card auth-card" aria-labelledby="register-heading">
+        <p class="eyebrow">Tham gia cộng đồng</p>
+        <h1 id="register-heading">Đăng ký tài khoản</h1>
+        <p class="lead">
+            Tạo tài khoản miễn phí để đặt câu hỏi, trao đổi trên diễn đàn và quản lý phiên tra cứu.
+        </p>
+
+        <div class="alert alert-error" th:if="${error != null}" role="alert">
+            <p th:text="${error}">Thông tin chưa hợp lệ.</p>
+        </div>
+
+        <form class="form-stack" th:action="@{/register}" method="post">
+            <label class="form-field">
+                <span>Tên đăng nhập</span>
+                <input type="text"
+                       name="username"
+                       th:value="${username}"
+                       required
+                       autocomplete="username"
+                       minlength="3"
+                       maxlength="32"
+                       pattern="[a-zA-Z0-9_.-]{3,32}"
+                       placeholder="chỉ gồm chữ không dấu, số, _ . -">
+                <small class="hint">Từ 3 đến 32 ký tự (không dấu, không khoảng trắng).</small>
+            </label>
+
+            <label class="form-field">
+                <span>Tên hiển thị</span>
+                <input type="text"
+                       name="displayName"
+                       th:value="${displayName}"
+                       required
+                       autocomplete="name"
+                       minlength="2"
+                       maxlength="100"
+                       placeholder="ví dụ: Nguyễn Văn A">
+            </label>
+
+            <label class="form-field">
+                <span>Mật khẩu</span>
+                <input type="password"
+                       name="password"
+                       required
+                       autocomplete="new-password"
+                       minlength="6"
+                       maxlength="100"
+                       placeholder="Tối thiểu 6 ký tự">
+            </label>
+
+            <label class="form-field">
+                <span>Xác nhận mật khẩu</span>
+                <input type="password"
+                       name="confirmPassword"
+                       required
+                       autocomplete="new-password"
+                       minlength="6"
+                       maxlength="100"
+                       placeholder="Nhập lại mật khẩu">
+            </label>
+
+            <button type="submit" class="btn auth-submit">Tạo tài khoản</button>
+        </form>
+
+        <p class="auth-switch">
+            Đã có tài khoản?
+            <a th:href="@{/login}">Quay lại đăng nhập</a>
+        </p>
+    </section>
+</main>
+
+<div th:replace="~{fragments/layout :: footer}"></div>
+</body>
+</html>
+

@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>LawRAG — Trợ lý pháp luật giao thông</title>
+    <meta name="_csrf" th:content="${_csrf != null ? _csrf.token : ''}">
+    <meta name="_csrf_header" th:content="${_csrf != null ? _csrf.headerName : ''}">
+    <meta name="htmx-config"
+        content='{"includeIndicatorStyles": false, "responseHandling": [{"code": "204", "swap": false}, {"code": "[23]..", "swap": true}, {"code": "[45]..", "swap": true, "error": true}]}'>
+    <link rel="icon" type="image/svg+xml" th:href="@{/images/favicon.svg}">
+    <link rel="stylesheet" th:href="@{/css/ui.css}">
+    <script th:src="@{/js/htmx.min.js}" defer></script>
+    <script th:src="@{/js/app.js}" defer></script>
+</head>
+
+<body>
+    <a class="skip-link" href="#main">Bỏ qua điều hướng</a>
+
+    <div th:replace="~{fragments/layout :: topbar('chat')}"></div>
+
+    <main id="main" class="page page-chat">
+        <div class="chat-workspace">
+
+            <aside class="chat-sidebar" aria-label="Thông tin phiên và hướng dẫn">
+                <section class="side-card session-card" role="status" aria-label="Trạng thái phiên làm việc">
+                    <div class="side-card-head">
+                        <span class="side-card-title">Phiên làm việc</span>
+                        <span class="badge status-pill" th:classappend="${healthUp} ? ' badge-ok' : ' badge-danger'"
+                            role="status">
+                            <span class="status-dot" aria-hidden="true"></span>
+                            Hệ thống: <strong th:text="${healthStatus}">UNKNOWN</strong>
+                        </span>
+                    </div>
+
+                    <div class="identity-row">
+                        <span class="identity-avatar" aria-hidden="true">
+                            <svg viewBox="0 0 20 20" fill="none" width="16" height="16">
+                                <circle cx="10" cy="7" r="3" stroke="currentColor" stroke-width="1.6" />
+                                <path d="M4.5 16.5C5.2 13.7 7.3 12.2 10 12.2C12.7 12.2 14.8 13.7 15.5 16.5"
+                                    stroke="currentColor" stroke-width="1.6" stroke-linecap="round" />
+                            </svg>
+                        </span>
+                        <div class="identity-meta">
+                            <span class="badge badge-identity"
+                                th:text="${currentUser != null} ? ${currentUser.displayName} : ('Khách ẩn danh · #' + ${anonIdShort})">Khách
+                                ẩn danh</span>
+                            <span class="badge"
+                                th:if="${currentUser != null}"
+                                th:classappend="${currentUser.admin} ? ' badge-violet' : ' badge-info'"
+                                th:text="${currentUser.admin} ? 'Quản trị viên (ADMIN)' : 'Thành viên (USER)'">Thành viên</span>
+                            <span class="hint"
+                                th:text="${currentUser != null} ? ('Tài khoản @' + ${currentUser.username}) : 'Tự động lưu phiên trong trình duyệt'">Tự
+                                động lưu phiên trong trình duyệt</span>
+                        </div>
+                    </div>
+
+                    <div class="quota-box" id="quota-badge">
+                        <div class="quota-row">
+                            <span class="quota-label">Lượt hôm nay:</span>
+                            <strong class="quota-value" th:text="${quotaUsed} + ' / ' + ${quotaLimit}">0 / 5</strong>
+                        </div>
+                        <progress class="quota-meter" th:value="${quotaUsed}"
+                            th:max="${quotaLimit > 0 ? quotaLimit : 1}">
+                        </progress>
+                        <p class="hint quota-note">Đặt lại lúc 00:00 (GMT+7). Chỉ trừ lượt khi có câu trả lời đủ căn cứ.
+                        </p>
+                    </div>
+                </section>
+
+                <div class="alert alert-warn side-alert" th:unless="${webSearchAllowed}">
+                    <strong>Tìm kiếm Web đang tắt</strong>
+                    <p>Khách ẩn danh hiện chỉ tra cứu trong kho văn bản nội bộ đã kiểm tra.</p>
+                </div>
+
+                <section class="side-card sessions-card" aria-label="Lịch sử hội thoại">
+                    <div class="side-card-head">
+                        <h2 class="side-card-title">Lịch sử hội thoại</h2>
+                        <form th:action="@{/chat/new}" method="post" class="new-chat-form">
+                            <button type="submit" class="btn btn-secondary btn-sm">+ Mới</button>
+                        </form>
+                    </div>
+                    <ul class="session-list" th:if="${recentSessions != null and !#lists.isEmpty(recentSessions)}">
+                        <li class="session-item" th:each="item : ${recentSessions}"
+                            th:classappend="${item.active} ? ' is-active'">
+                            <a class="session-link" th:href="@{/chat(sessionId=${item.id})}"
+                               th:attr="aria-current=${item.active} ? 'page'">
+                                <span class="session-title" th:text="${item.title}">Hội thoại mới</span>
+                                <span class="session-meta" th:text="${item.updatedAtDisplay}">--:--</span>
+                            </a>
+                            <form th:action="@{/chat/sessions/{id}/delete(id=${item.id})}"
+                                  method="post"
+                                  class="session-delete-form">
+                                <input type="hidden" name="activeSessionId" th:value="${sessionId}">
+                                <button type="submit"
+                                        class="session-delete-btn"
+                                        title="Đóng hội thoại"
+                                        aria-label="Đóng hội thoại">×</button>
+                            </form>
+                        </li>
+                    </ul>
+                </section>
+
+                <section class="side-card prompts-card" aria-label="Câu hỏi gợi ý">
+                    <h2 class="side-card-title">Câu hỏi mẫu</h2>
+                    <div class="prompt-list">
+                        <button type="button" class="prompt-chip"
+                            data-prompt="Người điều khiển xe mô tô, xe gắn máy có bắt buộc đội mũ bảo hiểm không?">
+                            Người đi xe máy có phải đội mũ bảo hiểm không?
+                        </button>
+                        <button type="button" class="prompt-chip"
+                            data-prompt="Mức xử phạt khi điều khiển xe máy vượt đèn đỏ theo quy định hiện hành là bao nhiêu?">
+                            Vượt đèn đỏ xe máy bị phạt bao nhiêu?
+                        </button>
+                        <button type="button" class="prompt-chip"
+                            data-prompt="Quy định về nồng độ cồn đối với người điều khiển phương tiện giao thông đường bộ như thế nào?">
+                            Quy định nồng độ cồn khi lái xe
+                        </button>
+                        <button type="button" class="prompt-chip"
+                            data-prompt="Người đủ bao nhiêu tuổi được điều khiển xe gắn máy dưới 50cm3?">
+                            Độ tuổi lái xe gắn máy dưới 50cc
+                        </button>
+                    </div>
+                </section>
+            </aside>
+
+            <div class="chat-main">
+                <section class="chat-intro" aria-labelledby="page-title">
+                    <div class="intro-head">
+                        <div>
+                            <h1 id="page-title">Hỏi đáp pháp luật Việt Nam</h1>
+                        </div>
+                        <form th:action="@{/chat/new}" method="post" class="new-chat-form">
+                            <button type="submit" class="btn btn-secondary btn-sm">
+                                <svg class="nav-icon" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+                                    <path d="M10 4.5V15.5M4.5 10H15.5"
+                                          stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+                                </svg>
+                                <span>Hội thoại mới</span>
+                            </button>
+                        </form>
+                    </div>
+                </section>
+
+                <section class="chat-panel" aria-labelledby="chat-heading">
+                    <div id="messages" class="messages" aria-live="polite" th:attr="data-session-id=${sessionId}">
+
+                        <div class="chat-empty" id="chat-empty" th:if="${#lists.isEmpty(messages)}">
+                            <div class="chat-empty-icon" aria-hidden="true">
+                                <svg viewBox="0 0 40 40" fill="none" width="40" height="40">
+                                    <rect x="5" y="7" width="30" height="26" rx="7" stroke="currentColor"
+                                        stroke-width="1.8" />
+                                    <path d="M13 16H27M13 21.5H23" stroke="currentColor" stroke-width="1.8"
+                                        stroke-linecap="round" />
+                                    <circle cx="29" cy="24" r="4" fill="currentColor" fill-opacity="0.18"
+                                        stroke="currentColor" stroke-width="1.6" />
+                                </svg>
+                            </div>
+                            <h2>Bắt đầu phiên tra cứu pháp luật</h2>
+                            <p class="muted">
+                                Chưa có câu hỏi nào. Gửi câu hỏi đầu tiên bên dưới hoặc chọn nhanh một tình huống gợi ý
+                                để kiểm tra căn cứ điều khoản.
+                            </p>
+                            <div class="empty-suggestions">
+                                <button type="button" class="prompt-card"
+                                    data-prompt="Người đi xe máy có phải đội mũ bảo hiểm không?">
+                                    <span class="prompt-card-tag">Quy tắc giao thông</span>
+                                    <span class="prompt-card-text">Người đi xe máy có phải đội mũ bảo hiểm không?</span>
+                                </button>
+                                <button type="button" class="prompt-card"
+                                    data-prompt="Mức phạt không có giấy phép lái xe đối với xe máy là bao nhiêu?">
+                                    <span class="prompt-card-tag">Xử phạt vi phạm</span>
+                                    <span class="prompt-card-text">Mức phạt không có bằng lái xe máy là bao
+                                        nhiêu?</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <th:block th:each="view : ${messages}">
+                            <th:block th:if="${view.user}">
+                                <div th:replace="~{fragments/chat-message :: userMessage(${view})}"></div>
+                            </th:block>
+                            <th:block th:unless="${view.user}">
+                                <div th:replace="~{fragments/chat-message :: aiMessage(${view})}"></div>
+                            </th:block>
+                        </th:block>
+                    </div>
+
+                    <div class="composer">
+                        <h2 id="chat-heading" class="sr-only">Khung chat</h2>
+                        <form id="question-form" method="post"
+                            th:action="@{/api/chat/sessions/{id}/messages(id=${sessionId})}"
+                            th:attr="hx-post=@{/api/chat/sessions/{id}/messages(id=${sessionId})}" hx-target="#messages"
+                            hx-swap="beforeend" hx-disabled-elt="find button" hx-indicator="#send-hint">
+                            <div class="composer-box">
+                                <label class="sr-only" for="message">Câu hỏi của bạn</label>
+                                <textarea id="message" name="message" rows="2" maxlength="4000" required
+                                    placeholder="Ví dụ: Người đi xe máy có phải đội mũ bảo hiểm không?"></textarea>
+                                <div class="composer-actions">
+                                    <button type="submit" class="btn btn-send">
+                                        <svg class="send-icon" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+                                            <path d="M3.5 9.8L16.5 3.8L12.5 16.5L9.7 11.4L3.5 9.8Z"
+                                                stroke="currentColor" stroke-width="1.7" stroke-linejoin="round" />
+                                        </svg>
+                                        <span>Gửi câu hỏi</span>
+                                        <span id="send-hint" class="spinner htmx-indicator" aria-hidden="true"></span>
+                                    </button>
+                                </div>
+                            </div>
+                            <input type="hidden" id="idempotency-key" name="idempotencyKey"
+                                th:value="${idempotencyKey}">
+                            <div class="composer-foot">
+                                <span class="hint" th:if="${sessionId != null}">
+                                    Phiên hiện tại được lưu tự động — tải lại trang không làm mất tiến trình ·
+                                    <kbd>Ctrl</kbd>+<kbd>Enter</kbd> để gửi.
+                                </span>
+                                <span class="hint composer-count" id="composer-count">0 / 4000</span>
+                            </div>
+                        </form>
+                    </div>
+                </section>
+            </div>
+
+        </div>
+    </main>
+
+    <div th:replace="~{fragments/layout :: footer}"></div>
+    <div th:replace="~{fragments/layout :: toast}"></div>
+</body>
+
+</html>

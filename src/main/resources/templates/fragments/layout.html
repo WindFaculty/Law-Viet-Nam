@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<body>
+
+<!-- Shell fragments: top bar, footer, toast, page-head extras. -->
+
+<header th:fragment="topbar(activeNav)" class="topbar">
+    <div class="topbar-inner">
+        <a class="brand" th:href="@{/chat}" aria-label="Pháp Luật Việt Nam — về trang chat">
+            <span class="brand-mark" aria-hidden="true">
+                <svg viewBox="0 0 36 36" fill="none" width="28" height="28">
+                    <path d="M18 5.5L28 9.8V17.6C28 23.8 23.8 29 18 30.8C12.2 29 8 23.8 8 17.6V9.8L18 5.5Z"
+                          stroke="currentColor" stroke-opacity="0.4" stroke-width="1.6"/>
+                    <path d="M14 12V23.5H22.4" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
+                    <circle cx="22.6" cy="13.8" r="1.8" class="brand-dot"/>
+                </svg>
+            </span>
+            <span class="brand-text">
+                <span class="brand-name">Pháp Luật Việt Nam</span>
+            </span>
+        </a>
+
+        <div class="topbar-right">
+            <nav class="topnav" aria-label="Điều hướng chính">
+                <a class="topnav-link"
+                   th:href="@{/chat}"
+                   th:classappend="${activeNav == 'chat'} ? ' is-active'"
+                   th:attr="aria-current=${activeNav == 'chat'} ? 'page'">
+                    <svg class="nav-icon" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+                        <path d="M4 5.5C4 4.67 4.67 4 5.5 4H14.5C15.33 4 16 4.67 16 5.5V11.5C16 12.33 15.33 13 14.5 13H8.5L5 16V13H5.5C4.67 13 4 12.33 4 11.5V5.5Z"
+                              stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>
+                    </svg>
+                    <span>Hỏi đáp</span>
+                </a>
+                <a class="topnav-link"
+                   th:href="@{/forum}"
+                   th:classappend="${activeNav == 'forum'} ? ' is-active'"
+                   th:attr="aria-current=${activeNav == 'forum'} ? 'page'">
+                    <svg class="nav-icon" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+                        <path d="M4 5.5H16M4 10H13M4 14.5H10.5"
+                              stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+                    </svg>
+                    <span>Diễn đàn</span>
+                </a>
+                <a class="topnav-link"
+                   th:if="${currentUser != null and currentUser.admin}"
+                   th:href="@{/admin}"
+                   th:classappend="${activeNav == 'admin'} ? ' is-active'"
+                   th:attr="aria-current=${activeNav == 'admin'} ? 'page'">
+                    <svg class="nav-icon" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+                        <path d="M10 3.5L15.5 6V10.5C15.5 14 13.1 16.9 10 17.8C6.9 16.9 4.5 14 4.5 10.5V6L10 3.5Z"
+                              stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>
+                    </svg>
+                    <span>Quản trị</span>
+                </a>
+                <a class="topnav-link"
+                   th:if="${currentUser == null}"
+                   th:href="@{/login}"
+                   th:classappend="${activeNav == 'login' or activeNav == 'register'} ? ' is-active'"
+                   th:attr="aria-current=${activeNav == 'login' or activeNav == 'register'} ? 'page'">
+                    <svg class="nav-icon" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+                        <path d="M11.5 4.5H15C15.83 4.5 16.5 5.17 16.5 6V14C16.5 14.83 15.83 15.5 15 15.5H11.5M8.5 13L11.5 10M11.5 10L8.5 7M11.5 10H3.5"
+                              stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                    <span>Đăng nhập</span>
+                </a>
+                <form class="topnav-form" th:if="${currentUser != null}" th:action="@{/logout}" method="post">
+                    <button type="submit" class="topnav-link topnav-logout"
+                            th:title="'Đang đăng nhập: ' + ${currentUser.displayName} + (${currentUser.admin} ? ' (ADMIN)' : ' (USER)')">
+                        <svg class="nav-icon" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+                            <path d="M8.5 4.5H5C4.17 4.5 3.5 5.17 3.5 6V14C3.5 14.83 4.17 15.5 5 15.5H8.5M13 13L16 10M16 10L13 7M16 10H8"
+                                  stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                        <span class="badge"
+                              th:classappend="${currentUser.admin} ? ' badge-violet' : ' badge-info'"
+                              th:text="${currentUser.admin} ? 'Admin' : 'User'">User</span>
+                        <span th:text="${currentUser.displayName} + ' · Đăng xuất'">Đăng xuất</span>
+                    </button>
+                </form>
+            </nav>
+
+            <button type="button"
+                    id="theme-toggle"
+                    class="theme-toggle"
+                    aria-label="Chuyển giao diện sáng / tối"
+                    title="Chuyển giao diện sáng / tối">
+                <svg class="icon-sun" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+                    <circle cx="10" cy="10" r="3.4" stroke="currentColor" stroke-width="1.6"/>
+                    <path d="M10 2.5V4.2M10 15.8V17.5M2.5 10H4.2M15.8 10H17.5M4.7 4.7L5.9 5.9M14.1 14.1L15.3 15.3M15.3 4.7L14.1 5.9M5.9 14.1L4.7 15.3"
+                          stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+                </svg>
+                <svg class="icon-moon" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+                    <path d="M15.8 12.6A6.3 6.3 0 0 1 7.4 4.2A6.5 6.5 0 1 0 15.8 12.6Z"
+                          stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>
+                </svg>
+            </button>
+        </div>
+    </div>
+</header>
+
+<footer th:fragment="footer" class="footer">
+    <div class="footer-inner">
+        <p class="footer-line">
+            Câu trả lời chỉ hiển thị khi có căn cứ nguyên văn đã kiểm tra.
+            CSRF bảo vệ mọi thao tác POST · cookie phiên <code>HttpOnly</code>, <code>SameSite=Lax</code>.
+        </p>
+        <p class="footer-line footer-meta">
+            <span>Mã yêu cầu: <code th:text="${requestId ?: 'n/a'}">n/a</code></span>
+            <a class="footer-health" th:href="@{/actuator/health}">Health check</a>
+        </p>
+    </div>
+</footer>
+
+<div th:fragment="toast" id="toast-stack" class="toast-stack" role="status" aria-live="polite"></div>
+
+<th:block th:fragment="headScripts(scripts)">
+    <th:block th:each="src : ${scripts}">
+        <script th:src="@{${src}}" defer></script>
+    </th:block>
+</th:block>
+
+</body>
+</html>

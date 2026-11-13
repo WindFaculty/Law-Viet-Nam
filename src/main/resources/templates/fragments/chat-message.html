@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<body>
+
+<!-- One USER question plus its AI answer, appended after POST /messages.
+     Status blocks are mutually exclusive; every branch preserves exact
+     status attributes and Vietnamese copy required by the acceptance suite. -->
+
+<div th:fragment="pair(pairView)" class="message-pair">
+    <div th:replace="~{fragments/chat-message :: userMessage(${pairView.user})}"></div>
+    <div th:replace="~{fragments/chat-message :: aiMessage(${pairView.assistant})}"></div>
+</div>
+
+<article th:fragment="userMessage(view)" class="message message-user">
+    <div class="message-head">
+        <p class="message-role">Bạn</p>
+    </div>
+    <p class="message-content" th:text="${view.content}">Câu hỏi</p>
+</article>
+
+<article th:fragment="aiMessage(view)"
+         class="message message-ai"
+         th:id="|message-${view.id}|"
+         th:attr="data-status=${view.status},data-polling=${view.polling}">
+    <div class="message-head">
+        <p class="message-role">Trợ lý LawRAG</p>
+        <span class="badge message-state-badge"
+              th:classappend="${view.status.name() == 'COMPLETED'} ? ' badge-ok'
+                              : (${view.status.name() == 'AWAITING_WEB_CONFIRM'} ? ' badge-warn'
+                              : (${view.status.name() == 'WEB_FAILED' or view.status.name() == 'FAILED'} ? ' badge-danger'
+                              : (${view.polling} ? ' badge-info' : '')))"
+              th:switch="${view.status.name()}">
+            <span th:case="'PROCESSING_LOCAL'">Đang tra cứu</span>
+            <span th:case="'AWAITING_WEB_CONFIRM'">Chờ xác nhận</span>
+            <span th:case="'WEB_QUEUED'">Đang xếp hàng</span>
+            <span th:case="'WEB_SEARCHING'">Đang tìm nguồn</span>
+            <span th:case="'COMPLETED'">Đã xác minh căn cứ</span>
+            <span th:case="'NEEDS_CLARIFICATION'">Cần làm rõ</span>
+            <span th:case="'CANCELLED'">Đã hủy tìm Web</span>
+            <span th:case="'EXPIRED'">Hết hạn</span>
+            <span th:case="'NO_EVIDENCE'">Chưa đủ căn cứ</span>
+            <span th:case="'WEB_FAILED'">Lỗi tìm Web</span>
+            <span th:case="'FAILED'">Lỗi xử lý</span>
+            <span th:case="*">Không xác định</span>
+        </span>
+    </div>
+
+    <!-- Polling hook: only rendered for non-terminal states. The response replaces
+         the whole article, so the terminal fragment naturally stops polling. -->
+    <div th:if="${view.polling}"
+         class="poll-hook"
+         hx-trigger="every 2s"
+         th:attr="hx-get=@{/api/chat/messages/{id}/fragment(id=${view.id})},
+                  hx-target=|#message-${view.id}|,
+                  hx-swap='outerHTML'"
+         aria-hidden="true"></div>
+
+    <div th:switch="${view.status.name()}">
+
+        <div th:case="'PROCESSING_LOCAL'" class="state-box state-loading">
+            <p class="message-loading" role="status">
+                <span class="spinner" aria-hidden="true"></span>
+                <span>Đang tìm trong kho nội bộ…</span>
+            </p>
+            <div class="shimmer-lines" aria-hidden="true">
+                <span class="shimmer-line"></span>
+                <span class="shimmer-line shimmer-line-short"></span>
+            </div>
+            <p class="muted">Trang tự cập nhật mỗi 2 giây. Bạn có thể tải lại trang mà không mất tiến trình.</p>
+        </div>
+
+        <div th:case="'AWAITING_WEB_CONFIRM'" class="state-box state-confirm">
+            <div class="confirm-prompt">
+                <svg class="state-icon" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+                    <circle cx="10" cy="10" r="7.5" stroke="currentColor" stroke-width="1.6"/>
+                    <path d="M10 6.2V10.4M10 13.4H10.01" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+                </svg>
+                <p>
+                    Kho nội bộ chưa có đủ căn cứ để trả lời câu hỏi này. Bạn có muốn tìm trên Web và bổ sung dữ liệu đã kiểm tra vào kho không?
+                </p>
+            </div>
+            <p class="hint query-preview" th:if="${view.suggestedQuery != null}">
+                <span>Từ khóa do máy chủ lưu:</span>
+                <code th:text="${view.suggestedQuery}">…</code>
+            </p>
+
+            <div class="confirm-actions" th:if="${view.canConfirm or view.canCancel}">
+                <form th:if="${view.canConfirm}"
+                      method="post"
+                      th:action="@{/api/chat/messages/{id}/confirm-web-search(id=${view.id})}"
+                      th:attr="hx-post=@{/api/chat/messages/{id}/confirm-web-search(id=${view.id})}"
+                      hx-target="closest article"
+                      hx-swap="outerHTML"
+                      hx-disabled-elt="find button">
+                    <input type="hidden" name="questionHash" th:value="${view.questionHash}">
+                    <button type="submit" class="btn">Đồng ý tìm trên Web</button>
+                </form>
+                <form th:if="${view.canCancel}"
+                      method="post"
+                      th:action="@{/api/chat/messages/{id}/cancel-web-search(id=${view.id})}"
+                      th:attr="hx-post=@{/api/chat/messages/{id}/cancel-web-search(id=${view.id})}"
+                      hx-target="closest article"
+                      hx-swap="outerHTML"
+                      hx-disabled-elt="find button">
+                    <input type="hidden" name="questionHash" th:value="${view.questionHash}">
+                    <button type="submit" class="btn button-secondary">Không cần</button>
+                </form>
+            </div>
+
+            <p class="hint" th:unless="${view.canConfirm}">
+                <span th:unless="${view.webSearchAllowed}">
+                    Tính năng tìm Web hiện không khả dụng cho khách ẩn danh.
+                </span>
+                <span th:unless="${view.hasQuota}">
+                    Bạn đã dùng hết lượt hôm nay; quota đặt lại lúc 00:00 giờ Việt Nam.
+                </span>
+            </p>
+        </div>
+
+        <div th:case="'WEB_QUEUED'" class="state-box state-progress">
+            <p class="message-status">
+                <span class="spinner" aria-hidden="true"></span>
+                <span>Đã xếp hàng tìm trên cổng văn bản Chính phủ.</span>
+            </p>
+            <p class="hint">
+                Trạng thái job: <strong th:text="${view.jobStatus != null ? view.jobStatus : 'QUEUED'}">QUEUED</strong>
+                <span th:if="${view.jobStage != null}"> · Giai đoạn: <span class="stage-chip is-current" th:text="${view.jobStage}">QUEUED</span></span>
+            </p>
+            <p class="hint">Trang tự cập nhật mỗi 2 giây. Bạn có thể tải lại trang mà không mất tiến trình.</p>
+        </div>
+
+        <div th:case="'WEB_SEARCHING'" class="state-box state-progress">
+            <p class="message-status">
+                <span class="spinner" aria-hidden="true"></span>
+                <span>Đang tìm, tải và kiểm tra nguồn bổ sung…</span>
+            </p>
+            <p class="hint">
+                Trạng thái job: <strong th:text="${view.jobStatus != null ? view.jobStatus : 'RUNNING'}">RUNNING</strong>
+                <span th:if="${view.jobStage != null}"> · Giai đoạn: <span class="stage-chip is-current" th:text="${view.jobStage}">SEARCH</span></span>
+            </p>
+            <p class="hint">Trang tự cập nhật mỗi 2 giây. Bạn có thể tải lại trang mà không mất tiến trình.</p>
+        </div>
+
+        <div th:case="'COMPLETED'">
+            <p class="message-content" th:text="${view.content}">Câu trả lời có căn cứ.</p>
+            <section class="citations" th:if="${!#lists.isEmpty(view.citations)}" aria-label="Trích dẫn nguyên văn">
+                <div class="citations-head">
+                    <h3>Trích dẫn nguyên văn</h3>
+                    <span class="count-pill" th:text="${#lists.size(view.citations)}">1</span>
+                </div>
+                <ol>
+                    <li th:each="citation : ${view.citations}">
+                        <p class="citation-locator">
+                            <strong th:text="${citation.locator}">Điều 1</strong>
+                            <span class="citation-doc" th:if="${citation.documentTitle != null}"> — <span th:text="${citation.documentTitle}">Văn bản</span></span>
+                            <span class="citation-num" th:if="${citation.documentNumber != null}"> (<span th:text="${citation.documentNumber}">số hiệu</span>)</span>
+                        </p>
+                        <blockquote class="verbatim" th:text="${citation.verbatimText}">Nguyên văn</blockquote>
+                        <a class="citation-link" th:href="${citation.href}">
+                            <span>Mở nguyên văn và nguồn</span>
+                            <svg viewBox="0 0 16 16" fill="none" width="14" height="14" aria-hidden="true">
+                                <path d="M4.5 11.5L11.5 4.5M11.5 4.5H6M11.5 4.5V10"
+                                      stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                        </a>
+                    </li>
+                </ol>
+            </section>
+        </div>
+
+        <div th:case="'NEEDS_CLARIFICATION'" class="state-box state-info">
+            <p class="message-content" th:text="${view.content}">Cần bổ sung dữ kiện.</p>
+            <p class="hint">Hãy bổ sung dữ kiện rồi gửi câu hỏi mới. Không trừ lượt.</p>
+        </div>
+
+        <div th:case="'CANCELLED'" class="state-box state-muted">
+            <p class="message-status">Bạn đã chọn <strong>Không cần</strong>.</p>
+            <p class="hint">Không có job tìm Web nào được tạo và bạn không bị trừ lượt.</p>
+        </div>
+
+        <div th:case="'EXPIRED'" class="state-box state-warn">
+            <p class="message-status">Yêu cầu đã hết hạn sau 15 phút (xác nhận tìm Web hoặc giữ chỗ xử lý).</p>
+            <p class="hint">Không có job mới nào được tạo và bạn không bị trừ lượt. Vui lòng gửi lại câu hỏi nếu vẫn cần tìm nguồn bổ sung.</p>
+        </div>
+
+        <div th:case="'NO_EVIDENCE'" class="state-box state-warn">
+            <p class="message-status">Đã tìm nguồn bổ sung nhưng vẫn chưa đủ căn cứ đã kiểm tra để trả lời.</p>
+            <p class="hint">Không trừ lượt. Hệ thống không tự mở thêm đợt tìm kiếm; bạn có thể nêu rõ văn bản, điều khoản hoặc thời điểm áp dụng.</p>
+        </div>
+
+        <div th:case="'WEB_FAILED'" class="state-box state-danger">
+            <p class="message-status">Tìm Web gặp lỗi tạm thời.</p>
+            <p class="hint">
+                Không trừ lượt.
+                <span th:if="${view.jobErrorCode != null}"> Mã lỗi: <code th:text="${view.jobErrorCode}">ERROR</code>.</span>
+            </p>
+            <div class="confirm-actions" th:if="${view.canRetry}">
+                <form method="post"
+                      th:action="@{/api/chat/messages/{id}/retry-web-search(id=${view.id})}"
+                      th:attr="hx-post=@{/api/chat/messages/{id}/retry-web-search(id=${view.id})}"
+                      hx-target="closest article"
+                      hx-swap="outerHTML"
+                      hx-disabled-elt="find button">
+                    <button type="submit" class="btn">Thử lại tìm trên Web</button>
+                </form>
+            </div>
+            <p class="hint" th:unless="${view.canRetry}">
+                Hạn xác nhận đã hết hoặc đã đạt giới hạn lần thử. Vui lòng gửi câu hỏi mới.
+            </p>
+        </div>
+
+        <div th:case="'FAILED'" class="state-box state-danger">
+            <p class="message-status">Không thể hoàn tất câu trả lời vì bộ kiểm tra căn cứ tạm thời không khả dụng hoặc lỗi xử lý.</p>
+            <p class="hint">Hệ thống không tạo câu trả lời khi thiếu bước kiểm tra căn cứ và không trừ lượt. Vui lòng thử lại sau hoặc gửi câu hỏi mới.</p>
+        </div>
+
+        <div th:case="*" class="state-box state-muted">
+            <p class="hint">Tin nhắn đang ở trạng thái không xác định. Vui lòng tải lại trang chat.</p>
+        </div>
+    </div>
+</article>
+
+</body>
+</html>

@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<body>
+<div th:fragment="response" class="chat-response" role="status">
+    <p class="chat-response-title">Khung chat đã sẵn sàng.</p>
+    <p th:if="${skeletonMessage != null and !skeletonMessage.isBlank()}">
+        Nội dung nhận được: <strong th:text="${skeletonMessage}">…</strong>
+    </p>
+    <p class="muted">
+        Phase 1 chỉ kiểm tra HTMX và CSRF. Xử lý câu hỏi RAG sẽ được nối ở Phase 2.
+    </p>
+    <p class="meta">Mã yêu cầu: <code th:text="${requestId ?: 'n/a'}">n/a</code></p>
+</div>
+</body>
+</html>

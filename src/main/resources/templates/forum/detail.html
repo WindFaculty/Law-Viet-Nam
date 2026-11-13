@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title th:text="${post.title + ' — Diễn đàn Pháp Luật Việt Nam'}">Chi tiết bài viết — Diễn đàn</title>
+    <link rel="icon" type="image/svg+xml" th:href="@{/images/favicon.svg}">
+    <link rel="stylesheet" th:href="@{/css/ui.css}">
+    <script th:src="@{/js/app.js}" defer></script>
+</head>
+<body>
+<a class="skip-link" href="#main">Bỏ qua điều hướng</a>
+
+<div th:replace="~{fragments/layout :: topbar('forum')}"></div>
+
+<main id="main" class="page forum-page">
+    <nav class="forum-breadcrumb" aria-label="Đường dẫn">
+        <a class="btn btn-secondary btn-sm" th:href="@{/forum}">← Quay lại diễn đàn</a>
+    </nav>
+
+    <div class="alert alert-ok" th:if="${message}" role="status">
+        <p th:text="${message}">Thành công.</p>
+    </div>
+    <div class="alert alert-error" th:if="${error}" role="alert">
+        <p th:text="${error}">Có lỗi xảy ra.</p>
+    </div>
+
+    <article class="card forum-detail-card">
+        <div class="forum-detail-head">
+            <div class="forum-post-badges">
+                <span class="badge badge-ok" th:if="${post.pinned}">Ghim</span>
+                <span class="badge badge-info" th:text="${post.categoryLabel}">Thảo luận chung</span>
+            </div>
+
+            <div class="forum-comment-actions">
+                <form th:if="${post.canPin}"
+                      th:action="@{/forum/posts/{id}/pin(id=${post.id})}"
+                      method="post">
+                    <button type="submit" class="btn btn-secondary btn-sm"
+                            th:text="${post.pinned} ? 'Bỏ ghim' : 'Ghim bài viết'">Ghim</button>
+                </form>
+                <form th:if="${post.canDelete}"
+                      th:action="@{/forum/posts/{id}/delete(id=${post.id})}"
+                      method="post">
+                    <button type="submit" class="btn btn-secondary btn-sm">Xóa bài viết</button>
+                </form>
+            </div>
+        </div>
+
+        <h1 class="forum-detail-title" th:text="${post.title}">Tiêu đề bài viết</h1>
+
+        <div class="forum-post-meta">
+            <span>
+                Đăng bởi <strong th:text="${post.authorDisplayName}">Tác giả</strong>
+                <span class="muted" th:text="'@' + ${post.authorUsername}">@user</span>
+            </span>
+            <span class="muted" th:text="${post.createdAtDisplay}">01/01/2026</span>
+        </div>
+
+        <div class="forum-detail-body" th:text="${post.content}">Nội dung bài viết</div>
+    </article>
+
+    <section id="comments" class="card forum-comments-section" aria-labelledby="comments-heading">
+        <div class="card-head">
+            <h2 id="comments-heading">
+                Bình luận
+                <span class="count-pill" th:text="${#lists.size(post.comments)}">0</span>
+            </h2>
+        </div>
+
+        <div class="empty-state" th:if="${#lists.isEmpty(post.comments)}">
+            <p class="muted">Chưa có bình luận nào. Hãy là người đầu tiên chia sẻ ý kiến.</p>
+        </div>
+
+        <ul class="forum-comment-list" th:unless="${#lists.isEmpty(post.comments)}">
+            <li class="forum-comment-item" th:each="comment : ${post.comments}">
+                <div class="forum-comment-head">
+                    <span>
+                        <strong th:text="${comment.authorDisplayName}">Thành viên</strong>
+                        <span class="muted" th:text="'@' + ${comment.authorUsername}">@user</span>
+                    </span>
+                    <span class="forum-comment-actions">
+                        <span class="muted" th:text="${comment.createdAtDisplay}">01/01/2026</span>
+                        <form th:if="${comment.canDelete}"
+                              th:action="@{/forum/comments/{id}/delete(id=${comment.id})}"
+                              method="post">
+                            <button type="submit" class="btn btn-secondary btn-sm">Xóa</button>
+                        </form>
+                    </span>
+                </div>
+                <p class="forum-comment-body" th:text="${comment.content}">Nội dung bình luận</p>
+            </li>
+        </ul>
+
+        <form class="form-stack forum-comment-form"
+              th:if="${currentUser != null}"
+              th:action="@{/forum/posts/{id}/comments(id=${post.id})}"
+              method="post">
+            <label class="form-field">
+                <span>Viết bình luận của bạn</span>
+                <textarea name="content"
+                          rows="3"
+                          required
+                          minlength="2"
+                          maxlength="2000"
+                          placeholder="Chia sẻ nhận định hoặc dẫn chiếu văn bản pháp luật liên quan..."
+                          th:text="${draftComment}"></textarea>
+            </label>
+            <div class="forum-compose-actions">
+                <button type="submit" class="btn">Gửi bình luận</button>
+            </div>
+        </form>
+
+        <div class="alert alert-info forum-guest-cta" th:if="${currentUser == null}">
+            <p>
+                <a th:href="@{/login}">Đăng nhập</a> hoặc <a th:href="@{/register}">đăng ký</a> để tham gia bình luận bài viết này.
+            </p>
+        </div>
+    </section>
+</main>
+
+<div th:replace="~{fragments/layout :: footer}"></div>
+</body>
+</html>
+

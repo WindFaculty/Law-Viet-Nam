@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Diễn đàn — Pháp Luật Việt Nam</title>
+    <link rel="icon" type="image/svg+xml" th:href="@{/images/favicon.svg}">
+    <link rel="stylesheet" th:href="@{/css/ui.css}">
+    <script th:src="@{/js/app.js}" defer></script>
+</head>
+<body>
+<a class="skip-link" href="#main">Bỏ qua điều hướng</a>
+
+<div th:replace="~{fragments/layout :: topbar('forum')}"></div>
+
+<main id="main" class="page forum-page">
+    <section class="card forum-hero" aria-labelledby="forum-heading">
+        <div class="forum-hero-head">
+            <div>
+                <p class="eyebrow">Cộng đồng trao đổi</p>
+                <h1 id="forum-heading">Diễn đàn Pháp Luật Việt Nam</h1>
+                <p class="lead">
+                    Thảo luận tình huống thực tiễn, chia sẻ kinh nghiệm tra cứu văn bản quy phạm pháp luật và giải đáp cùng thành viên.
+                </p>
+            </div>
+            <div class="forum-hero-stats">
+                <span class="badge badge-info">
+                    <strong th:text="${#lists.size(posts)}">0</strong> bài viết
+                </span>
+            </div>
+        </div>
+
+        <form class="forum-search" th:action="@{/forum}" method="get">
+            <input type="hidden" name="category" th:if="${!#strings.isEmpty(selectedCategory)}" th:value="${selectedCategory}">
+            <input type="search"
+                   name="q"
+                   th:value="${query}"
+                   placeholder="Tìm kiếm theo tiêu đề hoặc nội dung thảo luận..."
+                   aria-label="Tìm kiếm bài viết">
+            <button type="submit" class="btn">Tìm kiếm</button>
+            <a class="btn btn-secondary"
+               th:if="${!#strings.isEmpty(query) or !#strings.isEmpty(selectedCategory)}"
+               th:href="@{/forum}">Xóa lọc</a>
+        </form>
+
+        <nav class="forum-filters" aria-label="Lọc theo chủ đề">
+            <a class="filter-chip"
+               th:href="@{/forum(q=${#strings.isEmpty(query) ? null : query})}"
+               th:classappend="${#strings.isEmpty(selectedCategory)} ? ' is-active'">
+                Tất cả
+            </a>
+            <a class="filter-chip"
+               th:each="cat : ${categories}"
+               th:href="@{/forum(category=${cat.name()}, q=${#strings.isEmpty(query) ? null : query})}"
+               th:text="${cat.label}"
+               th:classappend="${selectedCategory == cat.name()} ? ' is-active'">
+                Chủ đề
+            </a>
+        </nav>
+    </section>
+
+    <div class="alert alert-ok" th:if="${message}" role="status">
+        <p th:text="${message}">Thành công.</p>
+    </div>
+    <div class="alert alert-error" th:if="${error}" role="alert">
+        <p th:text="${error}">Có lỗi xảy ra.</p>
+    </div>
+
+    <details class="card forum-compose"
+             th:if="${currentUser != null}"
+             th:open="${draftTitle != null or draftContent != null}">
+        <summary class="forum-compose-toggle">
+            <span>+ Tạo bài viết thảo luận mới</span>
+            <span class="hint">Đăng với tư cách <strong th:text="${currentUser.displayName}">Thành viên</strong></span>
+        </summary>
+
+        <form class="form-stack forum-compose-form" th:action="@{/forum/posts}" method="post">
+            <div class="forum-compose-row">
+                <label class="form-field">
+                    <span>Tiêu đề</span>
+                    <input type="text"
+                           name="title"
+                           th:value="${draftTitle}"
+                           required
+                           minlength="5"
+                           maxlength="200"
+                           placeholder="Nhập tiêu đề ngắn gọn, rõ ràng (5–200 ký tự)">
+                </label>
+                <label class="form-field forum-category-field">
+                    <span>Chuyên mục</span>
+                    <select name="category">
+                        <option th:each="cat : ${categories}"
+                                th:value="${cat.name()}"
+                                th:text="${cat.label}"
+                                th:selected="${draftCategory == cat.name()}">
+                            Thảo luận chung
+                        </option>
+                    </select>
+                </label>
+            </div>
+
+            <label class="form-field">
+                <span>Nội dung</span>
+                <textarea name="content"
+                          rows="5"
+                          required
+                          minlength="10"
+                          maxlength="5000"
+                          placeholder="Mô tả chi tiết tình huống hoặc vấn đề pháp lý cần trao đổi..."
+                          th:text="${draftContent}"></textarea>
+            </label>
+
+            <div class="forum-compose-actions">
+                <button type="submit" class="btn">Đăng bài viết</button>
+            </div>
+        </form>
+    </details>
+
+    <section class="alert alert-info forum-guest-cta" th:if="${currentUser == null}">
+        <div>
+            <strong>Bạn muốn tạo bài viết hoặc tham gia bình luận?</strong>
+            <p>Đăng nhập bằng tài khoản thành viên để đăng chủ đề mới và trao đổi trên diễn đàn.</p>
+        </div>
+        <div class="forum-guest-actions">
+            <a class="btn btn-sm" th:href="@{/login}">Đăng nhập</a>
+            <a class="btn btn-secondary btn-sm" th:href="@{/register}">Đăng ký</a>
+        </div>
+    </section>
+
+    <section class="forum-list" aria-label="Danh sách bài viết">
+        <div class="card empty-state" th:if="${#lists.isEmpty(posts)}">
+            <p class="muted">Chưa có bài viết nào phù hợp với bộ lọc hiện tại.</p>
+        </div>
+
+        <article class="card forum-post-card" th:each="post : ${posts}">
+            <div class="forum-post-badges">
+                <span class="badge badge-ok" th:if="${post.pinned}">Ghim</span>
+                <span class="badge badge-info" th:text="${post.categoryLabel}">Thảo luận chung</span>
+            </div>
+
+            <h2 class="forum-post-title">
+                <a th:href="@{/forum/{id}(id=${post.id})}" th:text="${post.title}">Tiêu đề bài viết</a>
+            </h2>
+
+            <p class="forum-post-excerpt" th:text="${post.excerpt}">Tóm tắt nội dung...</p>
+
+            <div class="forum-post-meta">
+                <span>
+                    Đăng bởi <strong th:text="${post.authorDisplayName}">Tác giả</strong>
+                    <span class="muted" th:text="'@' + ${post.authorUsername}">@user</span>
+                </span>
+                <span class="forum-post-right">
+                    <span class="muted" th:text="${post.createdAtDisplay}">01/01/2026</span>
+                    <a class="badge" th:href="@{/forum/{id}#comments(id=${post.id})}"
+                       th:text="${post.commentCount} + ' bình luận'">0 bình luận</a>
+                </span>
+            </div>
+        </article>
+    </section>
+</main>
+
+<div th:replace="~{fragments/layout :: footer}"></div>
+</body>
+</html>
+

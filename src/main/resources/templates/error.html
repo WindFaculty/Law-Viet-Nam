@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Không thể xử lý yêu cầu — LawRAG</title>
+    <link rel="icon" type="image/svg+xml" th:href="@{/images/favicon.svg}">
+    <link rel="stylesheet" th:href="@{/css/ui.css}">
+    <script th:src="@{/js/app.js}" defer></script>
+</head>
+<body>
+<a class="skip-link" href="#main">Bỏ qua điều hướng</a>
+
+<div th:replace="~{fragments/layout :: topbar(null)}"></div>
+
+<main id="main" class="page error-page">
+    <section class="card error-card">
+        <p class="eyebrow">LawRAG</p>
+        <h1>Không thể xử lý yêu cầu</h1>
+
+        <div class="alert alert-error">
+            <strong>Mã HTTP: <span th:text="${status != null ? status : 500}">500</span></strong>
+            <p>Vui lòng thử lại. Nếu lỗi tiếp diễn, hãy gửi mã yêu cầu bên dưới cho quản trị viên.</p>
+            <p class="meta">Mã yêu cầu: <code th:text="${requestId ?: 'unknown'}">unknown</code></p>
+        </div>
+
+        <div class="error-actions">
+            <a class="btn" th:href="@{/chat}">Quay lại trang chat</a>
+        </div>
+    </section>
+</main>
+
+<div th:replace="~{fragments/layout :: footer}"></div>
+</body>
+</html>

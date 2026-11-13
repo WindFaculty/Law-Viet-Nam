@@ -1,0 +1,8 @@
+<div th:fragment="error" class="alert alert-error" role="alert" data-error="server">
+    <strong th:text="${status != null ? 'Lỗi ' + status : 'Lỗi xử lý'}">Lỗi xử lý</strong>
+    <p th:text="${message != null ? message : 'Đã xảy ra lỗi khi xử lý yêu cầu.'}">
+        Đã xảy ra lỗi khi xử lý yêu cầu.
+    </p>
+    <p class="meta">Mã yêu cầu: <code th:text="${requestId ?: 'unknown'}">unknown</code></p>
+    <p><a class="btn btn-secondary btn-sm" th:href="@{/chat}">Tải lại trang chat</a></p>
+</div>

@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Quản trị — LawRAG</title>
+    <link rel="icon" type="image/svg+xml" th:href="@{/images/favicon.svg}">
+    <link rel="stylesheet" th:href="@{/css/ui.css}">
+    <script th:src="@{/js/app.js}" defer></script>
+</head>
+<body>
+<a class="skip-link" href="#main">Bỏ qua điều hướng</a>
+
+<div th:replace="~{fragments/layout :: topbar('admin')}"></div>
+
+<main id="main" class="page">
+
+    <section class="admin-hero card">
+        <div class="admin-hero-top">
+            <div>
+                <p class="eyebrow">Khu vực hạn chế · ROLE_ADMIN</p>
+                <h1>Quản trị hệ thống</h1>
+                <p class="lead">
+                    Theo dõi trạng thái job tìm Web, rà soát văn bản đang cách ly và duyệt xuất bản sau khi kiểm tra metadata pháp lý.
+                </p>
+            </div>
+            <nav class="admin-nav" aria-label="Điều hướng quản trị">
+                <a th:href="@{/admin/web-search-jobs}">Job tìm Web</a>
+                <a href="#users-heading">Quản lý tài khoản</a>
+                <a th:href="@{/admin}">Tổng quan quản trị</a>
+                <a th:href="@{/chat}">Về trang chat</a>
+            </nav>
+        </div>
+
+        <div class="kpi-grid" aria-label="Thống kê nhanh">
+            <div class="kpi-card">
+                <span class="kpi-label">Job tìm Web</span>
+                <strong class="kpi-value" th:text="${#lists.size(jobs)}">0</strong>
+            </div>
+            <div class="kpi-card kpi-warn">
+                <span class="kpi-label">Văn bản đang cách ly</span>
+                <strong class="kpi-value" th:text="${#lists.size(quarantinedDocuments)}">0</strong>
+            </div>
+            <div class="kpi-card">
+                <span class="kpi-label">Tài khoản</span>
+                <strong class="kpi-value" th:text="${#lists.size(users)}">0</strong>
+            </div>
+            <div class="kpi-card">
+                <span class="kpi-label">Bản ghi Audit gần đây</span>
+                <strong class="kpi-value" th:text="${#lists.size(auditRows)}">0</strong>
+            </div>
+        </div>
+    </section>
+
+    <div class="alert alert-ok admin-flash" th:if="${message}" role="status">
+        <p th:text="${message}">Đã duyệt.</p>
+    </div>
+    <div class="alert alert-error admin-flash" th:if="${error}" role="alert">
+        <p th:text="${error}">Không thể duyệt.</p>
+    </div>
+
+    <section class="admin-section" aria-labelledby="jobs-heading">
+        <div class="section-head">
+            <h2 id="jobs-heading">
+                Job tìm Web
+                <span class="count-pill" th:text="${#lists.size(jobs)}">0</span>
+            </h2>
+        </div>
+        <div class="empty-state" th:if="${#lists.isEmpty(jobs)}">
+            <p class="muted">Chưa có job tìm Web nào.</p>
+        </div>
+        <div class="table-wrap" th:unless="${#lists.isEmpty(jobs)}">
+            <table class="admin-table">
+                <thead>
+                <tr>
+                    <th>Job</th>
+                    <th>Trạng thái / giai đoạn</th>
+                    <th>Lần thử</th>
+                    <th>Lease</th>
+                    <th>Lỗi</th>
+                    <th>URL ứng viên</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="job : ${jobs}">
+                    <td>
+                        <code class="mono-cell" th:text="${job.id}">job</code><br>
+                        <small>message <code class="mono-cell" th:text="${job.messageId}">message</code></small>
+                    </td>
+                    <td>
+                        <span class="badge"
+                              th:classappend="${job.status == 'SUCCEEDED'} ? ' badge-ok'
+                                              : (${job.status == 'FAILED'} ? ' badge-danger' : ' badge-info')"
+                              th:text="${job.status}">QUEUED</span>
+                        <div class="stage-track" th:if="${job.stage != null}">
+                            <span class="stage-chip is-current" th:text="${job.stage}">SEARCH</span>
+                        </div>
+                    </td>
+                    <td th:text="${job.attemptCount}">1</td>
+                    <td>
+                        <small th:if="${job.leaseOwner != null}">
+                            <span class="mono-cell" th:text="${job.leaseOwner}">worker</span><br>
+                            hết hạn: <span th:text="${job.leaseExpiresAt}">…</span>
+                        </small>
+                        <small th:if="${job.leaseOwner == null}">Không giữ lease</small>
+                    </td>
+                    <td>
+                        <code class="mono-cell" th:if="${job.errorCode != null}" th:text="${job.errorCode}">ERROR</code>
+                        <span class="muted" th:if="${job.errorCode == null}">—</span>
+                    </td>
+                    <td>
+                        <ul class="candidate-list" th:if="${!#lists.isEmpty(job.candidates)}">
+                            <li th:each="candidate : ${job.candidates}">
+                                <span class="count-pill" th:text="${candidate.rank}">1</span>
+                                <a th:href="${candidate.url}" target="_blank" rel="noopener noreferrer"
+                                   th:text="${candidate.url}">url</a>
+                                <span class="badge"
+                                      th:classappend="${candidate.accepted} ? ' badge-ok' : ' badge-warn'"
+                                      th:text="${candidate.accepted ? 'NHẬN' : candidate.rejectionReason}">NHẬN</span>
+                                <small class="mono-cell" th:if="${candidate.resultCode != null}"
+                                       th:text="${candidate.resultCode}">READY</small>
+                            </li>
+                        </ul>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    <section class="admin-section" aria-labelledby="quarantine-heading">
+        <div class="section-head">
+            <h2 id="quarantine-heading">
+                Văn bản đang cách ly
+                <span class="count-pill" th:text="${#lists.size(quarantinedDocuments)}">0</span>
+            </h2>
+        </div>
+        <div class="empty-state" th:if="${#lists.isEmpty(quarantinedDocuments)}">
+            <p class="muted">Không có văn bản cách ly.</p>
+        </div>
+        <section class="quarantine-list" th:unless="${#lists.isEmpty(quarantinedDocuments)}">
+            <article class="quarantine-card" th:each="doc : ${quarantinedDocuments}">
+                <div class="quarantine-card-head">
+                    <h3 th:text="${doc.title}">Văn bản</h3>
+                    <span class="badge badge-warn">QUARANTINED</span>
+                </div>
+                <p class="meta">
+                    <span th:text="${doc.sourceUrl}">url</span><br>
+                    SHA-256: <code th:text="${doc.contentSha256}">hash</code><br>
+                    Số hiệu: <strong th:text="${doc.docNumber ?: 'chưa xác minh'}">…</strong>
+                    · Cơ quan: <strong th:text="${doc.issuingBody ?: 'chưa xác minh'}">…</strong>
+                    · Điều: <strong th:text="${doc.articleCount}">0</strong>
+                </p>
+                <p class="notice" th:if="${doc.verificationNotes != null}" th:text="${doc.verificationNotes}">Lý do cách ly</p>
+
+                <form method="post"
+                      th:action="@{/admin/legal-documents/{id}/approve(id=${doc.id})}">
+                    <div class="approval-grid">
+                        <label>Số hiệu
+                            <input type="text" name="docNumber" th:value="${doc.docNumber}" required>
+                        </label>
+                        <label>Cơ quan ban hành
+                            <input type="text" name="issuingBody" th:value="${doc.issuingBody}" required>
+                        </label>
+                        <label>Ngày ban hành
+                            <input type="date" name="issueDate" th:value="${doc.issueDate}" required>
+                        </label>
+                        <label>Hiệu lực từ
+                            <input type="date" name="effectiveFrom" th:value="${doc.effectiveFrom}" required>
+                        </label>
+                        <label>Hiệu lực đến
+                            <input type="date" name="effectiveTo" th:value="${doc.effectiveTo}">
+                        </label>
+                        <label>Trạng thái hiệu lực
+                            <select name="effectiveStatus" required>
+                                <option value="EFFECTIVE" th:selected="${doc.effectiveStatus == 'EFFECTIVE'}">EFFECTIVE</option>
+                                <option value="UPCOMING" th:selected="${doc.effectiveStatus == 'UPCOMING'}">UPCOMING</option>
+                                <option value="EXPIRED" th:selected="${doc.effectiveStatus == 'EXPIRED'}">EXPIRED</option>
+                            </select>
+                        </label>
+                        <label class="approval-reason">Lý do / ghi chú
+                            <input type="text" name="reason" maxlength="500" required>
+                        </label>
+                    </div>
+                    <div class="approval-actions">
+                        <button type="submit" class="btn">Duyệt sang READY</button>
+                    </div>
+                </form>
+            </article>
+        </section>
+    </section>
+
+    <section class="admin-section" aria-labelledby="users-heading">
+        <div class="section-head">
+            <h2 id="users-heading">
+                Quản lý tài khoản
+                <span class="count-pill" th:text="${#lists.size(users)}">0</span>
+            </h2>
+        </div>
+        <div class="empty-state" th:if="${#lists.isEmpty(users)}">
+            <p class="muted">Chưa có tài khoản nào.</p>
+        </div>
+        <div class="table-wrap" th:unless="${#lists.isEmpty(users)}">
+            <table class="admin-table">
+                <thead>
+                <tr>
+                    <th>Tài khoản</th>
+                    <th>Tên hiển thị</th>
+                    <th>Vai trò</th>
+                    <th>Trạng thái</th>
+                    <th>Ngày tạo</th>
+                    <th>Thao tác</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="account : ${users}">
+                    <td>
+                        <code class="mono-cell" th:text="'@' + ${account.username}">@user</code>
+                    </td>
+                    <td th:text="${account.displayName}">Người dùng</td>
+                    <td>
+                        <span class="badge"
+                              th:classappend="${account.role.name() == 'ADMIN'} ? ' badge-violet' : ' badge-info'"
+                              th:text="${account.role.name()}">USER</span>
+                    </td>
+                    <td>
+                        <span class="badge"
+                              th:classappend="${account.enabled} ? ' badge-ok' : ' badge-danger'"
+                              th:text="${account.enabled} ? 'Hoạt động' : 'Đã khóa'">Hoạt động</span>
+                    </td>
+                    <td th:text="${account.createdAtDisplay}">01/01/2026</td>
+                    <td>
+                        <span class="muted" th:if="${account.systemAccount}">Tài khoản hệ thống</span>
+                        <span class="muted"
+                              th:if="${!account.systemAccount and currentUser != null and account.username == currentUser.username}">
+                            Đang đăng nhập
+                        </span>
+                        <div class="forum-comment-actions"
+                             th:if="${!account.systemAccount and (currentUser == null or account.username != currentUser.username)}">
+                            <form th:action="@{/admin/users/{id}/role(id=${account.id})}" method="post">
+                                <input type="hidden" name="role"
+                                       th:value="${account.role.name() == 'ADMIN'} ? 'USER' : 'ADMIN'">
+                                <button type="submit" class="btn btn-secondary btn-sm"
+                                        th:text="${account.role.name() == 'ADMIN'} ? 'Hạ xuống USER' : 'Nâng lên ADMIN'">
+                                    Đổi vai trò
+                                </button>
+                            </form>
+                            <form th:action="@{/admin/users/{id}/toggle-enabled(id=${account.id})}" method="post">
+                                <button type="submit" class="btn btn-secondary btn-sm"
+                                        th:text="${account.enabled} ? 'Khóa' : 'Mở khóa'">
+                                    Khóa
+                                </button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    <section class="admin-section" aria-labelledby="audit-heading">
+        <div class="section-head">
+            <h2 id="audit-heading">
+                Audit gần đây
+                <span class="count-pill" th:text="${#lists.size(auditRows)}">0</span>
+            </h2>
+        </div>
+        <div class="empty-state" th:if="${#lists.isEmpty(auditRows)}">
+            <p class="muted">Chưa có bản ghi audit.</p>
+        </div>
+        <div class="table-wrap" th:unless="${#lists.isEmpty(auditRows)}">
+            <table class="admin-table">
+                <thead>
+                <tr>
+                    <th>Thời điểm</th>
+                    <th>Người thực hiện</th>
+                    <th>Hành động</th>
+                    <th>Đối tượng</th>
+                    <th>Chi tiết</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="row : ${auditRows}">
+                    <td th:text="${row.createdAt}">…</td>
+                    <td th:text="${row.actor}">admin</td>
+                    <td><span class="badge badge-info" th:text="${row.action}">APPROVE</span></td>
+                    <td>
+                        <span th:text="${row.entityType}">LEGAL_DOCUMENT</span><br>
+                        <code class="mono-cell" th:text="${row.entityId}">id</code>
+                    </td>
+                    <td th:text="${row.details}">…</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+</main>
+
+<div th:replace="~{fragments/layout :: footer}"></div>
+</body>
+</html>

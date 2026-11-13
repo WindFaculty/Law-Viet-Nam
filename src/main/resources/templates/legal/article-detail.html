@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title th:text="${detail.locator() + ' — ' + detail.documentTitle() + ' — LawRAG'}">Điều khoản — LawRAG</title>
+    <link rel="icon" type="image/svg+xml" th:href="@{/images/favicon.svg}">
+    <link rel="stylesheet" th:href="@{/css/ui.css}">
+    <script th:src="@{/js/app.js}" defer></script>
+</head>
+<body>
+<a class="skip-link" href="#main">Bỏ qua điều hướng</a>
+
+<div th:replace="~{fragments/layout :: topbar('chat')}"></div>
+
+<main id="main" class="page">
+
+    <div class="page-back-row">
+        <a class="btn btn-secondary btn-sm" th:href="@{/chat}">
+            <svg viewBox="0 0 16 16" fill="none" width="14" height="14" aria-hidden="true">
+                <path d="M10.5 3.5L6 8L10.5 12.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            <span>Quay lại trang chat</span>
+        </a>
+    </div>
+
+    <header class="legal-head card">
+        <nav aria-label="Vị trí điều khoản">
+            <ol class="breadcrumb">
+                <li th:each="ancestor : ${detail.ancestors()}">
+                    <span th:text="${ancestor.locator()}">Điều</span>
+                </li>
+                <li aria-current="page" th:text="${detail.locator()}">Điều 10 khoản 1</li>
+            </ol>
+        </nav>
+
+        <div class="legal-head-main">
+            <div>
+                <p class="eyebrow" th:text="${detail.hierarchyLevel()}">DIEU</p>
+                <h1 th:text="${detail.documentTitle()}">Tên văn bản</h1>
+                <p class="meta">
+                    <strong th:text="${detail.docNumber() ?: 'Chưa xác minh số hiệu'}">36/2024/QH15</strong>
+                    <span th:if="${detail.issuingBody() != null}" th:text="${' · ' + detail.issuingBody()}"></span>
+                </p>
+            </div>
+            <div class="badges">
+                <span class="badge badge-ok"
+                      th:if="${detail.verificationStatus().name() == 'READY' and detail.articleVerificationStatus().name() == 'READY'}">READY</span>
+                <span class="badge badge-warn"
+                      th:unless="${detail.verificationStatus().name() == 'READY' and detail.articleVerificationStatus().name() == 'READY'}"
+                      th:text="${detail.articleVerificationStatus()}">QUARANTINED</span>
+                <span class="badge badge-info" th:if="${detail.freshness() != null}" th:text="${detail.freshness()}">FRESH</span>
+                <span class="badge badge-violet" th:if="${adminView}">ROLE_ADMIN</span>
+            </div>
+        </div>
+    </header>
+
+    <div class="alert alert-warn legal-warn" th:unless="${detail.verificationStatus().name() == 'READY' and detail.articleVerificationStatus().name() == 'READY'}">
+        <strong>Dữ liệu đang cách ly</strong>
+        <p>Văn bản hoặc điều khoản này chưa được xuất bản. Chỉ quản trị viên đang xem dữ liệu cách ly.</p>
+    </div>
+
+    <section class="legal-unit" aria-labelledby="article-locator">
+        <div class="legal-unit-head">
+            <h2 id="article-locator" th:text="${detail.locator()}">Điều 10 khoản 1</h2>
+            <span class="badge">Nguyên văn điều khoản</span>
+        </div>
+        <p class="lead" th:if="${detail.articleTitle() != null and !#strings.isEmpty(detail.articleTitle())}"
+           th:text="${detail.articleTitle()}">Tiêu đề điều</p>
+        <div class="verbatim verbatim-featured" data-testid="verbatim" th:text="${detail.rawText()}">Nguyên văn điều khoản</div>
+    </section>
+
+    <section class="legal-context-section" th:if="${!detail.ancestors().isEmpty()}" aria-labelledby="parent-context">
+        <h2 id="parent-context">Ngữ cảnh cha</h2>
+        <div class="context-unit" th:each="ancestor : ${detail.ancestors()}">
+            <h3 th:text="${ancestor.locator()}">Điều</h3>
+            <div class="verbatim verbatim-muted" th:text="${ancestor.rawText()}">Nguyên văn cấp cha</div>
+        </div>
+    </section>
+
+    <section class="legal-context-section" th:if="${!detail.children().isEmpty()}" aria-labelledby="child-units">
+        <h2 id="child-units">Đơn vị trực thuộc</h2>
+        <div class="context-unit" th:each="child : ${detail.children()}">
+            <h3 th:text="${child.locator()}">Khoản</h3>
+            <div class="verbatim" th:text="${child.rawText()}">Nguyên văn đơn vị con</div>
+        </div>
+    </section>
+
+    <div class="detail-grid">
+        <section class="card" aria-labelledby="document-metadata">
+            <div class="card-head">
+                <h2 id="document-metadata">Thông tin văn bản</h2>
+            </div>
+            <dl class="legal-meta">
+                <dt>Mã văn bản</dt>
+                <dd><code th:text="${detail.documentKey()}">luat-36-2024-qh15</code></dd>
+                <dt>Số hiệu</dt>
+                <dd th:text="${detail.docNumber() ?: 'Chưa xác minh'}">36/2024/QH15</dd>
+                <dt>Cơ quan ban hành</dt>
+                <dd th:text="${detail.issuingBody() ?: 'Chưa xác minh'}">Quốc hội</dd>
+                <dt>Ngày ban hành</dt>
+                <dd th:text="${detail.issueDate() ?: 'Chưa xác minh'}">2024-06-27</dd>
+                <dt>Hiệu lực từ</dt>
+                <dd th:text="${detail.effectiveFrom() ?: 'UNVERIFIED'}">2025-01-01</dd>
+                <dt>Hiệu lực đến</dt>
+                <dd th:text="${detail.effectiveTo() ?: 'Không giới hạn / chưa xác minh'}">—</dd>
+                <dt>Trạng thái hiệu lực</dt>
+                <dd th:text="${detail.effectiveStatus()}">EFFECTIVE</dd>
+                <dt>Trạng thái xác minh văn bản</dt>
+                <dd th:text="${detail.verificationStatus()}">READY</dd>
+                <dt>Trạng thái xác minh điều khoản</dt>
+                <dd th:text="${detail.articleVerificationStatus()}">READY</dd>
+                <dt>Người kiểm tra nguồn</dt>
+                <dd th:text="${detail.sourceCheckedBy() ?: 'Chưa có'}">Phase 3</dd>
+                <dt>Kiểm tra gần nhất</dt>
+                <dd>
+                    <span th:text="${detail.lastVerifiedAt() ?: 'Chưa xác minh'}">2026-11-12</span>
+                    <span class="badge" th:text="${detail.freshness()}">FRESH</span>
+                </dd>
+                <dt>Xuất bản</dt>
+                <dd th:text="${detail.publishedAt() ?: 'Chưa xuất bản'}">2026-11-12</dd>
+            </dl>
+            <p class="notice" th:if="${detail.verificationNotes() != null and !#strings.isEmpty(detail.verificationNotes())}"
+               th:text="${detail.verificationNotes()}">Ghi chú xác minh</p>
+        </section>
+
+        <section class="card" aria-labelledby="snapshot-provenance">
+            <div class="card-head">
+                <h2 id="snapshot-provenance">Nguồn và snapshot</h2>
+            </div>
+            <p class="source-link-box" th:if="${detail.sourceUrl() != null and !#strings.isEmpty(detail.sourceUrl())}">
+                <span>Văn bản nguồn chính thức:</span>
+                <a th:if="${#strings.startsWith(detail.sourceUrl(), 'https://')}"
+                   th:href="${detail.sourceUrl()}" target="_blank" rel="noopener noreferrer"
+                   th:text="${detail.sourceUrl()}">https://vanban.chinhphu.vn/</a>
+                <span th:unless="${#strings.startsWith(detail.sourceUrl(), 'https://')}"
+                      th:text="${detail.sourceUrl()}">https://vanban.chinhphu.vn/</span>
+            </p>
+            <p class="muted" th:unless="${detail.sourceUrl() != null and !#strings.isEmpty(detail.sourceUrl())}">
+                Chưa có URL văn bản nguồn cụ thể; hệ thống không tạo anchor giả.
+            </p>
+            <dl class="legal-meta">
+                <dt>SHA-256 snapshot</dt>
+                <dd><code th:text="${detail.snapshot().sha256()}">hash</code></dd>
+                <dt>Thời điểm tải (fetched_at)</dt>
+                <dd th:text="${detail.snapshot().fetchedAt()}">2026-11-12</dd>
+                <dt>Content-Type</dt>
+                <dd th:text="${detail.snapshot().contentType()}">text/plain</dd>
+                <dt>Parser</dt>
+                <dd th:text="${detail.snapshot().parserVersion()}">legal-structure-parser-v1</dd>
+                <dt>Đường dẫn lưu trữ</dt>
+                <dd><code th:text="${detail.snapshot().storagePath() ?: 'inline'}">classpath</code></dd>
+                <dt>Kích thước</dt>
+                <dd th:text="${detail.snapshot().byteSize() != null ? detail.snapshot().byteSize() + ' bytes' : 'không rõ'}">0</dd>
+            </dl>
+            <p class="hint">Thời điểm tải snapshot được hiển thị riêng với ngày hiệu lực pháp lý.</p>
+        </section>
+    </div>
+
+    <section class="card relation-card" th:if="${!detail.relations().isEmpty()}" aria-labelledby="document-relations">
+        <div class="card-head">
+            <h2 id="document-relations">Quan hệ văn bản</h2>
+        </div>
+        <ul class="relation-list">
+            <li th:each="relation : ${detail.relations()}">
+                <div class="badges">
+                    <span class="badge" th:text="${relation.relationType()}">REPLACEMENT</span>
+                    <span class="badge" th:text="${relation.direction()}">OUTGOING</span>
+                    <span class="badge" th:text="${relation.verificationStatus()}">READY</span>
+                </div>
+                <strong th:text="${relation.otherTitle()}">Văn bản liên quan</strong>
+                <span th:if="${relation.otherDocNumber() != null}" th:text="${'(' + relation.otherDocNumber() + ')'}"></span>
+                <p class="hint" th:if="${relation.notes() != null}" th:text="${relation.notes()}"></p>
+            </li>
+        </ul>
+    </section>
+
+</main>
+
+<div th:replace="~{fragments/layout :: footer}"></div>
+</body>
+</html>

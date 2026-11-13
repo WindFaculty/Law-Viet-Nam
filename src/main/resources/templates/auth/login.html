@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Đăng nhập — Pháp Luật Việt Nam</title>
+    <link rel="icon" type="image/svg+xml" th:href="@{/images/favicon.svg}">
+    <link rel="stylesheet" th:href="@{/css/ui.css}">
+    <script th:src="@{/js/app.js}" defer></script>
+</head>
+<body>
+<a class="skip-link" href="#main">Bỏ qua điều hướng</a>
+
+<div th:replace="~{fragments/layout :: topbar('login')}"></div>
+
+<main id="main" class="page auth-page">
+    <section class="card auth-card" aria-labelledby="login-heading">
+        <p class="eyebrow">Tài khoản thành viên</p>
+        <h1 id="login-heading">Đăng nhập</h1>
+        <p class="lead">
+            Đăng nhập để đăng bài, thảo luận trên diễn đàn và lưu lịch sử hỏi đáp theo tài khoản của bạn.
+        </p>
+
+        <div class="alert alert-error" th:if="${param.error != null}" role="alert">
+            <strong>Đăng nhập không thành công.</strong>
+            <p>Tên đăng nhập hoặc mật khẩu không đúng, hoặc tài khoản đã bị khóa.</p>
+        </div>
+
+        <div class="alert alert-ok" th:if="${param.registered != null}" role="status">
+            <strong>Đăng ký thành công.</strong>
+            <p>Bạn có thể đăng nhập bằng tài khoản vừa tạo.</p>
+        </div>
+
+        <div class="alert alert-info" th:if="${param.logout != null}" role="status">
+            <p>Bạn đã đăng xuất khỏi hệ thống.</p>
+        </div>
+
+        <div class="alert alert-warn" th:if="${param.expired != null}" role="status">
+            <p>Phiên làm việc đã hết hạn. Vui lòng đăng nhập lại.</p>
+        </div>
+
+        <form class="form-stack" th:action="@{/login}" method="post">
+            <label class="form-field">
+                <span>Tên đăng nhập</span>
+                <input type="text"
+                       name="username"
+                       required
+                       autocomplete="username"
+                       minlength="3"
+                       maxlength="32"
+                       placeholder="ví dụ: nguyenvana"
+                       autofocus>
+            </label>
+
+            <label class="form-field">
+                <span>Mật khẩu</span>
+                <input type="password"
+                       name="password"
+                       required
+                       autocomplete="current-password"
+                       minlength="6"
+                       maxlength="100"
+                       placeholder="Nhập mật khẩu">
+            </label>
+
+            <button type="submit" class="btn auth-submit">Đăng nhập</button>
+        </form>
+
+        <p class="auth-switch">
+            Chưa có tài khoản?
+            <a th:href="@{/register}">Đăng ký tài khoản mới</a>
+        </p>
+    </section>
+</main>
+
+<div th:replace="~{fragments/layout :: footer}"></div>
+</body>
+</html>
+
