@@ -1,0 +1,128 @@
+spring:
+  application:
+    name: lawrag
+  profiles:
+    default: local
+  datasource:
+    hikari:
+      maximum-pool-size: 10
+      minimum-idle: 2
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        jdbc:
+          time_zone: Asia/Ho_Chi_Minh
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+  thymeleaf:
+    cache: true
+  jackson:
+    time-zone: Asia/Ho_Chi_Minh
+
+server:
+  port: ${SERVER_PORT:8080}
+  error:
+    include-message: never
+    include-stacktrace: never
+    include-exception: false
+  servlet:
+    encoding:
+      charset: UTF-8
+      force: true
+    session:
+      timeout: 30m
+      tracking-modes: cookie
+      cookie:
+        name: LAWRAG_SESSION
+        http-only: true
+        same-site: lax
+        secure: ${SECURE_COOKIES:false}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      show-details: never
+      probes:
+        enabled: true
+
+app:
+  security:
+    # Also used by the anon_id cookie. Local HTTP is false; staging/HTTPS must be true.
+    secure-cookies: ${SECURE_COOKIES:false}
+    bootstrap-admin:
+      enabled: ${BOOTSTRAP_ADMIN_ENABLED:false}
+      username: ${ADMIN_USERNAME:admin}
+      display-name: ${ADMIN_DISPLAY_NAME:Quản trị viên}
+      password: ${ADMIN_PASSWORD:}
+  gemini:
+    enabled: false
+    api-key: ${GOOGLE_API_KEY:}
+    model-id: gemini-2.5-flash
+    embedding-model-id: gemini-embedding-001
+    embedding-space-id: gemini-embedding-001@768:v1
+    embedding-dimensions: 768
+    timeout: 30s
+  retrieval:
+    top-k: 20
+    rrf-k: 60
+    context-limit: 16
+    cosine-threshold: 0.75
+    strong-lexical-min-coverage: 0.5
+    context-token-budget: 12000
+  websearch:
+    enabled: false
+    allow-anonymous: true
+    provider: vanban
+    scheduler: true
+    max-urls-per-job: 5
+    max-concurrent-jobs: 2
+    max-results: 10
+    max-attempts: 2
+    job-deadline: 120s
+    lease-duration: 60s
+    heartbeat-interval: 20s
+    retry-backoff: 2s
+    worker-id: ${HOSTNAME:lawrag-worker}
+    user-agent: "LawRAG/0.1 (HITL legal RAG; contact: nhom7@example.invalid)"
+  ratelimit:
+    enabled: true
+    question-min-interval: 5s
+    questions-per-ip-per-hour: 20
+    confirm-retry-per-subject-per-minute: 10
+    polls-per-session-per-minute: 60
+  budget:
+    crawler-enabled: true
+    gemini-enabled: true
+    max-gemini-calls-per-day: 200
+    max-embedding-calls-per-day: 2000
+    max-web-jobs-per-day: 20
+    max-tokens-per-context: 12000
+    max-urls-per-job: 5
+    max-concurrent-web-jobs: 2
+  quota:
+    recovery-interval-ms: 30000
+  ingestion:
+    enabled: false
+    max-bytes: 15728640
+    connect-timeout: 5s
+    read-timeout: 30s
+    total-timeout: 45s
+    max-redirects: 3
+    parser-version: web-ingestion-parser-v1
+    auto-publish-hosts:
+      - vanban.chinhphu.vn
+    user-agent: "LawRAG/0.1 (HITL legal RAG; contact: nhom7@example.invalid)"
+
+logging:
+  pattern:
+    level: "%5p [rid=%X{requestId:-}]"
+  level:
+    vn.edu.hsf302.lawrag: INFO

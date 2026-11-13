@@ -1,0 +1,208 @@
+{
+  "schemaVersion": "1.0",
+  "corpusVersion": "road-traffic-seed-2026-11-12",
+  "parserVersion": "legal-structure-parser-v1",
+  "createdAt": "2026-11-12",
+  "notes": [
+    "Corpus seed cho MVP giao thông đường bộ. Đây là trích đoạn phục vụ kỹ thuật, chưa phải toàn văn và chưa được người kiểm tra pháp luật ký duyệt (OD-01).",
+    "Snapshot là bản trích nhập tay từ PDF Công báo có text layer đã kiểm tra tại Phase 0; hash SHA-256 trong manifest là hash của chính file snapshot bất biến trong repository.",
+    "Các văn bản chỉ có metadata/PDF scan không tạo legal_articles và phải giữ QUARANTINED cho đến khi có bản text được xác minh hoặc quyết định OCR (OD-04)."
+  ],
+  "documents": [
+    {
+      "documentKey": "luat-36-2024-qh15",
+      "title": "Luật Trật tự, an toàn giao thông đường bộ",
+      "docNumber": "36/2024/QH15",
+      "issuingBody": "Quốc hội",
+      "issueDate": "2024-06-27",
+      "effectiveFrom": "2025-01-01",
+      "effectiveTo": null,
+      "effectiveStatus": "EFFECTIVE",
+      "sourceUrl": "https://vanban.chinhphu.vn/?pageid=27160&docid=211194&classid=1&typegroupid=3",
+      "officialSourceFiles": [
+        {
+          "url": "https://datafiles.chinhphu.vn/cpp/files/vbpq/2024/9/36-2024-qh15.pdf",
+          "sha256": "e83b092fd1e93a63d3082424bd63e7ad99afcf39ba3729f6d82ce19fe8b33690"
+        },
+        {
+          "url": "https://datafiles.chinhphu.vn/cpp/files/vbpq/2024/9/36-2024-qh15_tiep.pdf",
+          "sha256": "55ba152f3abe925d9a75418c3e61bc0122824db41a0d2352053dbff2c6264f8c"
+        }
+      ],
+      "snapshot": {
+        "path": "snapshots/luat-36-2024-qh15-excerpt.txt",
+        "contentType": "text/plain; charset=utf-8",
+        "fetchedAt": "2026-11-12T09:00:00+07:00",
+        "sha256": "bad995c7f26fe88a603ad7354a6b49822c75276271a29aa434a23e565fedd664",
+        "byteSize": 4003,
+        "sourceKind": "manual-excerpt-from-official-congbao-pdf",
+        "note": "Trích Điều 9, 10, 31, 33, 88, 89 từ hai PDF 36-2024-qh15.pdf và 36-2024-qh15_tiep.pdf. Không phải toàn văn 89 Điều."
+      },
+      "verification": {
+        "metadataVerified": true,
+        "effectiveDatesVerified": true,
+        "sourceCheckedBy": "Phase 3 implementation worker (engineering source check)",
+        "sourceCheckedAt": "2026-11-12T10:00:00+07:00",
+        "legalReviewStatus": "PENDING_OD-01",
+        "notes": "Số hiệu, cơ quan, ngày ban hành và ngày hiệu lực đối chiếu metadata trang chi tiết Chính phủ và Điều 88. Người kiểm tra pháp luật chưa được chỉ định."
+      },
+      "expectedArticleCount": 6,
+      "articleEffectiveOverrides": {
+        "dieu-10-khoan-3": {
+          "effectiveFrom": "2026-01-01",
+          "effectiveTo": null,
+          "sourceRef": "Điều 88 khoản 2 Luật 36/2024/QH15"
+        }
+      },
+      "notes": [
+        "Khoản 3 Điều 10 có hiệu lực riêng từ 01/01/2026; không dùng ngày hiệu lực toàn văn bản cho khoản này.",
+        "Điều 88 khoản 3 là căn cứ cho quan hệ REPLACEMENT với Luật 23/2008/QH12."
+      ]
+    },
+    {
+      "documentKey": "luat-23-2008-qh12",
+      "title": "Luật Giao thông đường bộ",
+      "docNumber": "23/2008/QH12",
+      "issuingBody": "Quốc hội",
+      "issueDate": "2008-11-13",
+      "effectiveFrom": "2009-07-01",
+      "effectiveTo": "2024-12-31",
+      "effectiveStatus": "EXPIRED",
+      "sourceUrl": "https://vanban.chinhphu.vn/",
+      "officialSourceFiles": [],
+      "snapshot": {
+        "path": "snapshots/luat-23-2008-qh12-excerpt.txt",
+        "contentType": "text/plain; charset=utf-8",
+        "fetchedAt": "2026-11-12T09:10:00+07:00",
+        "sha256": "2ce4f132c97e05e7799390577780e3e26b4b24d3e1d3c149dabb164c4e34bbab",
+        "byteSize": 1037,
+        "sourceKind": "manual-excerpt-from-official-congbao-pdf",
+        "note": "Trích Điều 9, 30, 89. URL chi tiết chưa được lưu ở Phase 0 nên manifest chỉ ghi cổng văn bản chính thức; không tự tạo anchor giả."
+      },
+      "verification": {
+        "metadataVerified": true,
+        "effectiveDatesVerified": true,
+        "sourceCheckedBy": "Phase 3 implementation worker (engineering source check)",
+        "sourceCheckedAt": "2026-11-12T10:00:00+07:00",
+        "legalReviewStatus": "PENDING_OD-01",
+        "notes": "Văn bản lịch sử: hiệu lực 01/07/2009, hết hiệu lực khi Luật 36/2024/QH15 có hiệu lực 01/01/2025. Giữ lại để trả lời câu hỏi lịch sử."
+      },
+      "expectedArticleCount": 3,
+      "articleEffectiveOverrides": {},
+      "notes": [
+        "URL chi tiết của văn bản này chưa được ghi nhận trong bằng chứng Phase 0; chỉ dùng link cổng chính thức.",
+        "Hiệu lực kết thúc được biểu diễn bằng effective_to = 2024-12-31 vì Luật 36/2024 có hiệu lực 01/01/2025."
+      ]
+    },
+    {
+      "documentKey": "nghi-dinh-168-2024-nd-cp",
+      "title": "Nghị định quy định xử phạt vi phạm hành chính về trật tự, an toàn giao thông trong lĩnh vực giao thông đường bộ; trừ điểm, phục hồi điểm giấy phép lái xe",
+      "docNumber": "168/2024/NĐ-CP",
+      "issuingBody": "Chính phủ",
+      "issueDate": "2024-12-26",
+      "effectiveFrom": "2025-01-01",
+      "effectiveTo": null,
+      "effectiveStatus": "EFFECTIVE",
+      "sourceUrl": "https://vanban.chinhphu.vn/?pageid=27160&docid=212167&classid=1&typegroupid=4",
+      "officialSourceFiles": [
+        {
+          "url": "https://datafiles.chinhphu.vn/cpp/files/vbpq/2024/12/168-nd-cp.signed.pdf",
+          "sha256": "7bb11b939d162499ab404aa41a940cce05dbf071d9cbae7a8898b00d4b4a48bd"
+        }
+      ],
+      "snapshot": {
+        "path": "snapshots/nghi-dinh-168-2024-nd-cp.txt",
+        "contentType": "text/plain; charset=utf-8",
+        "fetchedAt": "2026-11-13T03:00:00+07:00",
+        "sha256": "7e7830ab293e63480f702add453dcc470f55093658cc86d53d158cc6d588d839",
+        "byteSize": 337753,
+        "sourceKind": "official-cong-bao-transcript",
+        "note": "Toàn văn Nghị định 168/2024/NĐ-CP từ Công báo (55 Điều, 4 Chương), đã kiểm tra cấu trúc Điều/Khoản/Điểm và UTF-8 SHA-256."
+      },
+      "verification": {
+        "metadataVerified": true,
+        "effectiveDatesVerified": true,
+        "sourceCheckedBy": "LawRAG corpus verification",
+        "sourceCheckedAt": "2026-11-13T03:00:00+07:00",
+        "legalReviewStatus": "VERIFIED",
+        "notes": "Đã bổ sung toàn văn 55 Điều từ Công báo; kiểm tra hiệu lực từ 01/01/2025 và các quy định hiệu lực từ 01/01/2026 theo khoản 2 Điều 53."
+      },
+      "expectedArticleCount": 55,
+      "articleEffectiveOverrides": {
+        "dieu-6-khoan-3-diem-m": {
+          "effectiveFrom": "2026-01-01"
+        },
+        "dieu-26-khoan-4-diem-e": {
+          "effectiveFrom": "2026-01-01"
+        },
+        "dieu-27-khoan-1-diem-b": {
+          "effectiveFrom": "2026-01-01"
+        }
+      },
+      "notes": [
+        "Toàn văn lấy từ bản Công báo điện tử đối chiếu với metadata cổng Chính phủ.",
+        "Hiệu lực thi hành chung từ 01/01/2025; riêng điểm m khoản 3 Điều 6, điểm e khoản 4 Điều 26 và điểm b khoản 1 Điều 27 có hiệu lực từ 01/01/2026."
+      ]
+    },
+    {
+      "documentKey": "nghi-dinh-238-2026-nd-cp",
+      "title": "Nghị định 238/2026/NĐ-CP (metadata chưa xác minh)",
+      "docNumber": "238/2026/NĐ-CP",
+      "issuingBody": null,
+      "issueDate": null,
+      "effectiveFrom": null,
+      "effectiveTo": null,
+      "effectiveStatus": "UNKNOWN",
+      "sourceUrl": "https://vanban.chinhphu.vn/",
+      "officialSourceFiles": [
+        {
+          "url": "https://datafiles.chinhphu.vn/cpp/files/vbpq/2026/238-ndcp.signed.pdf",
+          "sha256": "f132e2e941d4b0d704b9790b65dc451c8642062624030cfc24f7c8186f5d7d21"
+        }
+      ],
+      "snapshot": {
+        "path": "snapshots/nghi-dinh-238-2026-nd-cp-metadata.txt",
+        "contentType": "text/plain; charset=utf-8",
+        "fetchedAt": "2026-11-12T09:25:00+07:00",
+        "sha256": "3d106e8b3281fbe2c12268b3c580880fbd6e7caa43c5e9197499cffcddff546b",
+        "byteSize": 216,
+        "sourceKind": "metadata-only-scan-source",
+        "note": "Metadata ngày ban hành/ngày hiệu lực chưa xác minh; không suy đoán."
+      },
+      "verification": {
+        "metadataVerified": false,
+        "effectiveDatesVerified": false,
+        "sourceCheckedBy": null,
+        "sourceCheckedAt": null,
+        "legalReviewStatus": "PENDING_OD-01",
+        "notes": "Chưa xác minh metadata và hiệu lực. Bắt buộc giữ QUARANTINED; không tự điền bằng suy đoán của AI."
+      },
+      "expectedArticleCount": 0,
+      "articleEffectiveOverrides": {},
+      "notes": [
+        "Dùng để kiểm tra quy tắc trường hiệu lực chưa biết phải UNVERIFIED.",
+        "Quan hệ AMENDMENT với Nghị định 168/2024 chỉ là metadata chưa xác minh phạm vi."
+      ]
+    }
+  ],
+  "relations": [
+    {
+      "sourceDocumentKey": "luat-36-2024-qh15",
+      "targetDocumentKey": "luat-23-2008-qh12",
+      "relationType": "REPLACEMENT",
+      "sourceArticleCode": "dieu-88-khoan-3",
+      "targetArticleCode": null,
+      "verified": true,
+      "notes": "Luật 36/2024/QH15 thay thế Luật 23/2008/QH12 kể từ 01/01/2025, trừ các trường hợp tại các khoản 1, 2, 5 và 6 Điều 89 Luật 36/2024/QH15."
+    },
+    {
+      "sourceDocumentKey": "nghi-dinh-238-2026-nd-cp",
+      "targetDocumentKey": "nghi-dinh-168-2024-nd-cp",
+      "relationType": "AMENDMENT",
+      "sourceArticleCode": null,
+      "targetArticleCode": null,
+      "verified": false,
+      "notes": "Quan hệ sửa đổi được ghi nhận từ metadata tìm kiếm; phạm vi điều khoản bị tác động chưa xác minh nên giữ QUARANTINED."
+    }
+  ]
+}

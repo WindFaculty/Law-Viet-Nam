@@ -1,0 +1,41 @@
+# The datasource is supplied by PostgresIntegrationTest / StartupFailFastTest (@DynamicPropertySource) against local PostgreSQL.
+spring:
+  thymeleaf:
+    cache: false
+  jpa:
+    hibernate:
+      ddl-auto: validate
+
+app:
+  security:
+    secure-cookies: false
+    bootstrap-admin:
+      enabled: true
+      username: admin
+      display-name: "Quản trị viên"
+      password: "admin-test-password"
+  gemini:
+    enabled: false
+    api-key: ""
+  websearch:
+    enabled: false
+    allow-anonymous: true
+  ingestion:
+    enabled: false
+  # Acceptance classes enable the real locked limits explicitly; other tests
+  # submit many questions back-to-back and would otherwise trip the spam guard.
+  ratelimit:
+    enabled: false
+  budget:
+    crawler-enabled: true
+    gemini-enabled: true
+    max-gemini-calls-per-day: 100000
+    max-embedding-calls-per-day: 1000000
+    max-web-jobs-per-day: 100000
+    max-tokens-per-context: 12000
+    max-urls-per-job: 5
+    max-concurrent-web-jobs: 2
+
+logging:
+  level:
+    vn.edu.hsf302.lawrag: INFO

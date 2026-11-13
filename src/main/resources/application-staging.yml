@@ -1,0 +1,26 @@
+spring:
+  datasource:
+    # No defaults on purpose: missing staging configuration must fail startup.
+    url: ${DB_URL}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+  thymeleaf:
+    cache: true
+
+server:
+  forward-headers-strategy: framework
+  servlet:
+    session:
+      cookie:
+        secure: true
+
+app:
+  security:
+    secure-cookies: true
+  gemini:
+    enabled: ${GEMINI_ENABLED:false}
+    api-key: ${GOOGLE_API_KEY:}
+  websearch:
+    enabled: ${WEBSEARCH_ENABLED:false}
+  ingestion:
+    enabled: ${INGESTION_ENABLED:false}
