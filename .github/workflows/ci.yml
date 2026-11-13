@@ -1,0 +1,45 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Java 25
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "25"
+          cache: maven
+
+      - name: Make wrapper and scripts executable
+        run: chmod +x mvnw scripts/run-local.sh
+
+      - name: Verify Maven Wrapper
+        run: ./mvnw -v
+
+      # Testcontainers starts pgvector/pgvector:pg18 on the runner's Docker
+      # daemon. A separate CI database service is therefore not required, and
+      # tests never fall back to H2.
+      - name: Build and test against PostgreSQL + pgvector
+        run: ./mvnw -B clean verify
+
+      - name: Upload test reports
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: surefire-reports
+          path: target/surefire-reports/
+          if-no-files-found: ignore

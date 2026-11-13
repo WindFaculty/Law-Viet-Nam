@@ -1,0 +1,17 @@
+{
+  "schemaVersion": "2.0",
+  "datasetId": "road-traffic-120-v1",
+  "canonicalDataset": "src/main/resources/eval/eval-120-questions.json",
+  "status": "source-checked-ai-pending-legal-review",
+  "counts": {
+    "total": 120,
+    "dev": 60,
+    "holdout": 60,
+    "perCategory": {
+      "total": 20,
+      "dev": 10,
+      "holdout": 10
+    }
+  },
+  "note": "Bộ seed 12 câu đã được mở rộng thành bộ 120 câu tại file canonical ở trên. File này chỉ là con trỏ để tránh hai bản dữ liệu lệch nhau; harness đọc file canonical từ classpath."
+}

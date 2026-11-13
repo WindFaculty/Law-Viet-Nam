@@ -1,0 +1,33 @@
+# Build output
+target/
+*.class
+
+# IDE
+.idea/
+*.iml
+*.ipr
+*.iws
+.vscode/
+.project
+.classpath
+.settings/
+out/
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Local runtime
+.env
+*.log
+logs/
+.run/
+tmp/
+
+# Downloaded raw legal reference files (seeded corpus lives in src/main/resources/corpus)
+data/
+
+# Local database dumps / snapshots
+*.dump
+*.sql.gz
