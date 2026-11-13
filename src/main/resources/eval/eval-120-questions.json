@@ -1,0 +1,3158 @@
+{
+  "schemaVersion": "2.0",
+  "datasetId": "road-traffic-120-v1",
+  "title": "Bộ 120 câu đánh giá RAG pháp luật giao thông đường bộ",
+  "createdAt": "2026-11-12",
+  "status": "source-checked-ai-pending-legal-review",
+  "splitPolicy": {
+    "dev": 60,
+    "holdout": 60,
+    "rule": "Hiệu chỉnh threshold/top-K/prompt trên đúng 60 câu dev; khóa cấu hình (hash trong RagEvaluationHarnessTest) trước khi chạy 60 câu holdout.",
+    "perCategory": {
+      "total": 20,
+      "dev": 10,
+      "holdout": 10
+    }
+  },
+  "corpusScope": {
+    "domain": "Luật giao thông đường bộ Việt Nam",
+    "corpusVersion": "road-traffic-seed-2026-11-12",
+    "readyDocuments": [
+      "luat-36-2024-qh15",
+      "luat-23-2008-qh12",
+      "nghi-dinh-168-2024-nd-cp"
+    ],
+    "notReadyDocuments": [
+      "nghi-dinh-238-2026-nd-cp"
+    ],
+    "note": "Luật 36/2024/QH15, Luật 23/2008/QH12 và Nghị định 168/2024/NĐ-CP đã sẵn sàng (READY); Nghị định 238/2026/NĐ-CP cùng các thông tư/nghị định chuyên ngành ngoài kho chưa có nguồn READY."
+  },
+  "verification": {
+    "sourceCheckedAt": "2026-11-12",
+    "sourceCheckedBy": "Phase 8 implementation worker (engineering source check against immutable snapshots)",
+    "legalReviewer": null,
+    "legalReviewStatus": "pending-OD-01",
+    "note": "Chưa có chữ ký người kiểm tra pháp luật. verificationStatus source-checked-ai/design-verified chỉ là kiểm tra kỹ thuật, không phải chứng nhận tư vấn pháp lý."
+  },
+  "targetStructure": {
+    "totalQuestions": 120,
+    "devTotal": 60,
+    "holdoutTotal": 60,
+    "categories": [
+      {
+        "id": "C1_DIRECT_EVIDENCE",
+        "name": "Kho có đủ căn cứ trực tiếp",
+        "total": 20,
+        "dev": 10,
+        "holdout": 10
+      },
+      {
+        "id": "C2_MISSING_DOCUMENT",
+        "name": "Thiếu văn bản cần thiết",
+        "total": 20,
+        "dev": 10,
+        "holdout": 10
+      },
+      {
+        "id": "C3_NEAR_SYNONYM_WRONG_SCOPE",
+        "name": "Gần nghĩa nhưng sai đối tượng/phạm vi",
+        "total": 20,
+        "dev": 10,
+        "holdout": 10
+      },
+      {
+        "id": "C4_TEMPORAL_VERSION",
+        "name": "Khác thời điểm, có sửa đổi hoặc bãi bỏ",
+        "total": 20,
+        "dev": 10,
+        "holdout": 10
+      },
+      {
+        "id": "C5_MISSING_FACTS",
+        "name": "Thiếu dữ kiện hoặc có điều kiện ngoại lệ",
+        "total": 20,
+        "dev": 10,
+        "holdout": 10
+      },
+      {
+        "id": "C6_OUT_OF_SCOPE",
+        "name": "Ngoài lĩnh vực MVP",
+        "total": 20,
+        "dev": 10,
+        "holdout": 10
+      }
+    ]
+  },
+  "questions": [
+    {
+      "id": "C1-DEV-01",
+      "category": "C1_DIRECT_EVIDENCE",
+      "split": "dev",
+      "question": "Người tham gia giao thông đường bộ phải đi bên phải theo chiều đi của mình và tuân thủ quy định nào về làn đường?",
+      "asOfDate": "2026-11-12",
+      "expectedDecision": "ANSWER_LOCAL",
+      "expectedReasonCode": "SUFFICIENT",
+      "expectedSourceRefs": [
+        {
+          "documentKey": "luat-36-2024-qh15",
+          "documentNumber": "36/2024/QH15",
+          "articleCode": "dieu-10-khoan-1",
+          "locator": "Điều 10 khoản 1"
+        }
+      ],
+      "expectedAnswerPoints": [
+        "Đi bên phải theo chiều đi của mình",
+        "Đi đúng làn đường, phần đường quy định",
+        "Chấp hành báo hiệu đường bộ"
+      ],
+      "forbiddenBehaviors": [
+        "Không gọi tìm kiếm/tải Web trước xác nhận",
+        "Không trích điều khoản ngoài nguồn kỳ vọng"
+      ],
+      "acceptanceCriteria": [
+        "actualStatus=COMPLETED; outcome=ANSWERED; citation đúng tập dieu-10-khoan-1; mọi quote khớp source_snapshot; trừ đúng 1 lượt."
+      ],
+      "reviewer": null,
+      "verificationStatus": "source-checked-ai",
+      "corpusVersion": "road-traffic-seed-2026-11-12",
+      "notes": "Đối chiếu trực tiếp Điều/Khoản trong snapshot Luật 36/2024/QH15 có text layer."
+    },
+    {
+      "id": "C1-DEV-02",
+      "category": "C1_DIRECT_EVIDENCE",
+      "split": "dev",
+      "question": "Người lái xe ô tô và người được chở trên xe ô tô có phải thắt dây đai an toàn không?",
+      "asOfDate": "2026-11-12",
+      "expectedDecision": "ANSWER_LOCAL",
+      "expectedReasonCode": "SUFFICIENT",
+      "expectedSourceRefs": [
+        {
+          "documentKey": "luat-36-2024-qh15",
+          "documentNumber": "36/2024/QH15",
+          "articleCode": "dieu-10-khoan-2",
+          "locator": "Điều 10 khoản 2"
+        }
+      ],
+      "expectedAnswerPoints": [
+        "Người lái xe và người được chở trên xe ô tô phải thắt dây đai an toàn tại chỗ có trang bị"
+      ],
+      "forbiddenBehaviors": [
+        "Không gọi tìm kiếm/tải Web trước xác nhận",
+        "Không trích điều khoản ngoài nguồn kỳ vọng"
+      ],
+      "acceptanceCriteria": [
+        "actualStatus=COMPLETED; outcome=ANSWERED; citation đúng tập dieu-10-khoan-2; mọi quote khớp source_snapshot; trừ đúng 1 lượt."
+      ],
+      "reviewer": null,
+      "verificationStatus": "source-checked-ai",
+      "corpusVersion": "road-traffic-seed-2026-11-12",
+      "notes": "Đối chiếu trực tiếp Điều/Khoản trong snapshot Luật 36/2024/QH15 có text layer."
+    },
+    {
+      "id": "C1-DEV-03",
+      "category": "C1_DIRECT_EVIDENCE",
+      "split": "dev",
+      "question": "Trẻ em dưới 10 tuổi, chiều cao dưới 1,35 mét có được ngồi cùng hàng ghế với người lái xe ô tô không?",
+      "asOfDate": "2026-11-12",
+      "expectedDecision": "ANSWER_LOCAL",
+      "expectedReasonCode": "SUFFICIENT",
+      "expectedSourceRefs": [
+        {
+          "documentKey": "luat-36-2024-qh15",
+          "documentNumber": "36/2024/QH15",
+          "articleCode": "dieu-10-khoan-3",
+          "locator": "Điều 10 khoản 3"
+        }
+      ],
+      "expectedAnswerPoints": [
+        "Không được ngồi cùng hàng ghế với người lái xe",
+        "Trừ trường hợp xe ô tô chỉ có một hàng ghế",
+        "Người lái xe có trách nhiệm bảo đảm an toàn cho trẻ em"
+      ],
+      "forbiddenBehaviors": [
+        "Không gọi tìm kiếm/tải Web trước xác nhận",
+        "Không trích điều khoản ngoài nguồn kỳ vọng"
+      ],
+      "acceptanceCriteria": [
+        "actualStatus=COMPLETED; outcome=ANSWERED; citation đúng tập dieu-10-khoan-3; mọi quote khớp source_snapshot; trừ đúng 1 lượt."
+      ],
+      "reviewer": null,
+      "verificationStatus": "source-checked-ai",
+      "corpusVersion": "road-traffic-seed-2026-11-12",
+      "notes": "Đối chiếu trực tiếp Điều/Khoản trong snapshot Luật 36/2024/QH15 có text layer."
+    },
+    {
+      "id": "C1-DEV-04",
+      "category": "C1_DIRECT_EVIDENCE",
+      "split": "dev",
+      "question": "Người điều khiển xe đạp phải đi ở làn đường nào?",
+      "asOfDate": "2026-11-12",
+      "expectedDecision": "ANSWER_LOCAL",
+      "expectedReasonCode": "SUFFICIENT",
+      "expectedSourceRefs": [
+        {
+          "documentKey": "luat-36-2024-qh15",
+          "documentNumber": "36/2024/QH15",
+          "articleCode": "dieu-31-khoan-1",
+          "locator": "Điều 31 khoản 1"
+        }
+      ],
+      "expectedAnswerPoints": [
+        "Đi đúng làn đường, phần đường quy định dành cho xe thô sơ, xe đạp, xe đạp máy",
+        "Đi bên phải theo chiều đi của mình"
+      ],
+      "forbiddenBehaviors": [
+        "Không gọi tìm kiếm/tải Web trước xác nhận",
+        "Không trích điều khoản ngoài nguồn kỳ vọng"
+      ],
+      "acceptanceCriteria": [
+        "actualStatus=COMPLETED; outcome=ANSWERED; citation đúng tập dieu-31-khoan-1; mọi quote khớp source_snapshot; trừ đúng 1 lượt."
+      ],
+      "reviewer": null,
+      "verificationStatus": "source-checked-ai",
+      "corpusVersion": "road-traffic-seed-2026-11-12",
+      "notes": "Đối chiếu trực tiếp Điều/Khoản trong snapshot Luật 36/2024/QH15 có text layer."
+    },
+    {
+      "id": "C1-DEV-05",
+      "category": "C1_DIRECT_EVIDENCE",
+      "split": "dev",
+      "question": "Người điều khiển xe đạp máy được chở tối đa mấy người?",
+      "asOfDate": "2026-11-12",
+      "expectedDecision": "ANSWER_LOCAL",
+      "expectedReasonCode": "SUFFICIENT",
+      "expectedSourceRefs": [
+        {
+          "documentKey": "luat-36-2024-qh15",
+          "documentNumber": "36/2024/QH15",
+          "articleCode": "dieu-31-khoan-2",
+          "locator": "Điều 31 khoản 2"
+        }
+      ],
+      "expectedAnswerPoints": [
+        "Tối đa một người",
+        "Ngoại lệ: người bệnh đi cấp cứu, trẻ em dưới 06 tuổi, áp giải người vi phạm pháp luật"
+      ],
+      "forbiddenBehaviors": [
+        "Không gọi tìm kiếm/tải Web trước xác nhận",
+        "Không trích điều khoản ngoài nguồn kỳ vọng"
+      ],
+      "acceptanceCriteria": [
+        "actualStatus=COMPLETED; outcome=ANSWERED; citation đúng tập dieu-31-khoan-2; mọi quote khớp source_snapshot; trừ đúng 1 lượt."
+      ],
+      "reviewer": null,
+      "verificationStatus": "source-checked-ai",
+      "corpusVersion": "road-traffic-seed-2026-11-12",
+      "notes": "Đối chiếu trực tiếp Điều/Khoản trong snapshot Luật 36/2024/QH15 có text layer."
+    },
+    {
+      "id": "C1-DEV-06",
+      "category": "C1_DIRECT_EVIDENCE",
+      "split": "dev",
+      "question": "Người điều khiển xe đạp máy có phải đội mũ bảo hiểm không?",
+      "asOfDate": "2026-11-12",
+      "expectedDecision": "ANSWER_LOCAL",
+      "expectedReasonCode": "SUFFICIENT",
+      "expectedSourceRefs": [
+        {
+          "documentKey": "luat-36-2024-qh15",
+          "documentNumber": "36/2024/QH15",
+          "articleCode": "dieu-31-khoan-3",
+          "locator": "Điều 31 khoản 3"
+        }
+      ],
+      "expectedAnswerPoints": [
+        "Phải đội mũ bảo hiểm đúng quy chuẩn kỹ thuật quốc gia",
+        "Cài quai đúng quy cách"
+      ],
+      "forbiddenBehaviors": [
+        "Không gọi tìm kiếm/tải Web trước xác nhận",
+        "Không trích điều khoản ngoài nguồn kỳ vọng"
+      ],
+      "acceptanceCriteria": [
+        "actualStatus=COMPLETED; outcome=ANSWERED; citation đúng tập dieu-31-khoan-3; mọi quote khớp source_snapshot; trừ đúng 1 lượt."
+      ],
+      "reviewer": null,
+      "verificationStatus": "source-checked-ai",
+      "corpusVersion": "road-traffic-seed-2026-11-12",
+      "notes": "Đối chiếu trực tiếp Điều/Khoản trong snapshot Luật 36/2024/QH15 có text layer."
+    },
+    {
+      "id": "C1-DEV-07",
+      "category": "C1_DIRECT_EVIDENCE",
+      "split": "dev",
+      "question": "Người điều khiển xe mô tô được chở tối đa bao nhiêu người?",
+      "asOfDate": "2026-11-12",
+      "expectedDecision": "ANSWER_LOCAL",
+      "expectedReasonCode": "SUFFICIENT",
+      "expectedSourceRefs": [
+        {
+          "documentKey": "luat-36-2024-qh15",
+          "documentNumber": "36/2024/QH15",
+          "articleCode": "dieu-33-khoan-1",
+          "locator": "Điều 33 khoản 1"
+        }
+      ],
+      "expectedAnswerPoints": [
+        "Tối đa một người",
+        "Ngoại lệ: người bệnh đi cấp cứu, áp giải người vi phạm, trẻ em dưới 12 tuổi, người già yếu hoặc khuyết tật"
+      ],
+      "forbiddenBehaviors": [
+        "Không gọi tìm kiếm/tải Web trước xác nhận",
+        "Không trích điều khoản ngoài nguồn kỳ vọng"
+      ],
+      "acceptanceCriteria": [
+        "actualStatus=COMPLETED; outcome=ANSWERED; citation đúng tập dieu-33-khoan-1; mọi quote khớp source_snapshot; trừ đúng 1 lượt."
+      ],
+      "reviewer": null,
+      "verificationStatus": "source-checked-ai",
+      "corpusVersion": "road-traffic-seed-2026-11-12",
+      "notes": "Đối chiếu trực tiếp Điều/Khoản trong snapshot Luật 36/2024/QH15 có text layer."
+    },
+    {
+      "id": "C1-DEV-08",
+      "category": "C1_DIRECT_EVIDENCE",
+      "split": "dev",
+      "question": "Người được chở trên xe gắn máy có phải đội mũ bảo hiểm không?",
+      "asOfDate": "2026-11-12",
+      "expectedDecision": "ANSWER_LOCAL",
+      "expectedReasonCode": "SUFFICIENT",
+      "expectedSourceRefs": [
+        {
+          "documentKey": "luat-36-2024-qh15",
+          "documentNumber": "36/2024/QH15",
+          "articleCode": "dieu-33-khoan-2",
+          "locator": "Điều 33 khoản 2"
+        }
+      ],
+      "expectedAnswerPoints": [
+        "Phải đội mũ bảo hiểm đúng quy chuẩn kỹ thuật quốc gia",
+        "Cài quai đúng quy cách"
+      ],
+      "forbiddenBehaviors": [
+        "Không gọi tìm kiếm/tải Web trước xác nhận",
+        "Không trích điều khoản ngoài nguồn kỳ vọng"
+      ],
+      "acceptanceCriteria": [
+        "actualStatus=COMPLETED; outcome=ANSWERED; citation đúng tập dieu-33-khoan-2; mọi quote khớp source_snapshot; trừ đúng 1 lượt."
+      ],
+      "reviewer": null,
+      "verificationStatus": "source-checked-ai",
+      "corpusVersion": "road-traffic-seed-2026-11-12",
+      "notes": "Đối chiếu trực tiếp Điều/Khoản trong snapshot Luật 36/2024/QH15 có text layer."
+    },
+    {
+      "id": "C1-DEV-09",
+      "category": "C1_DIRECT_EVIDENCE",
+      "split": "dev",
+      "question": "Theo Điều 88 Luật 36/2024/QH15, Luật này có hiệu lực từ ngày nào?",
+      "asOfDate": "2026-11-12",
+      "expectedDecision": "ANSWER_LOCAL",
+      "expectedReasonCode": "SUFFICIENT",
+      "expectedSourceRefs": [
+        {
+          "documentKey": "luat-36-2024-qh15",
+          "documentNumber": "36/2024/QH15",
+          "articleCode": "dieu-88",
+          "locator": "Điều 88"
+        }
+      ],
+      "expectedAnswerPoints": [
+        "Có hiệu lực thi hành từ ngày 01 tháng 01 năm 2025",
+        "Khoản 3 Điều 10 có hiệu lực từ ngày 01 tháng 01 năm 2026"
+      ],
+      "forbiddenBehaviors": [
+        "Không gọi tìm kiếm/tải Web trước xác nhận",
+        "Không trích điều khoản ngoài nguồn kỳ vọng"
+      ],
+      "acceptanceCriteria": [
+        "actualStatus=COMPLETED; outcome=ANSWERED; citation đúng tập dieu-88; mọi quote khớp source_snapshot; trừ đúng 1 lượt."
+      ],
+      "reviewer": null,
+      "verificationStatus": "source-checked-ai",
+      "corpusVersion": "road-traffic-seed-2026-11-12",
+      "notes": "Đối chiếu trực tiếp Điều/Khoản trong snapshot Luật 36/2024/QH15 có text layer."
+    },
+    {
+      "id": "C1-DEV-10",
+      "category": "C1_DIRECT_EVIDENCE",
+      "split": "dev",
+      "question": "Theo Điều 9 Luật 36/2024/QH15, hành vi nào bị nghiêm cấm khi điều khiển xe cơ giới?",
+      "asOfDate": "2026-11-12",
+      "expectedDecision": "ANSWER_LOCAL",
+      "expectedReasonCode": "SUFFICIENT",
+      "expectedSourceRefs": [
+        {
+          "documentKey": "luat-36-2024-qh15",
+          "documentNumber": "36/2024/QH15",
+          "articleCode": "dieu-9",
+          "locator": "Điều 9"
+        }
+      ],
+      "expectedAnswerPoints": [
+        "Điều khiển xe cơ giới, xe máy chuyên dùng mà trong máu hoặc hơi thở có nồng độ cồn"
+      ],
+      "forbiddenBehaviors": [
+        "Không gọi tìm kiếm/tải Web trước xác nhận",
+        "Không trích điều khoản ngoài nguồn kỳ vọng"
+      ],
+      "acceptanceCriteria": [
+        "actualStatus=COMPLETED; outcome=ANSWERED; citation đúng tập dieu-9; mọi quote khớp source_snapshot; trừ đúng 1 lượt."
+      ],
+      "reviewer": null,
+      "verificationStatus": "source-checked-ai",
+      "corpusVersion": "road-traffic-seed-2026-11-12",
+      "notes": "Đối chiếu trực tiếp Điều/Khoản trong snapshot Luật 36/2024/QH15 có text layer."
+    },
+    {
+      "id": "C1-HOLDOUT-01",
+      "category": "C1_DIRECT_EVIDENCE",
+      "split": "holdout",
+      "question": "Người tham gia giao thông phải đi bên phải hay bên trái theo chiều đi của mình?",
+      "asOfDate": "2026-11-12",
+      "expectedDecision": "ANSWER_LOCAL",
+      "expectedReasonCode": "SUFFICIENT",
+      "expectedSourceRefs": [
+        {
+          "documentKey": "luat-36-2024-qh15",
+          "documentNumber": "36/2024/QH15",
+          "articleCode": "dieu-10-khoan-1",
+          "locator": "Điều 10 khoản 1"
+        }
+      ],
+      "expectedAnswerPoints": [
+        "Đi bên phải theo chiều đi của mình",
+        "Đi đúng làn đường, phần đường quy định"
+      ],
+      "forbiddenBehaviors": [
+        "Không gọi tìm kiếm/tải Web trước xác nhận",
+        "Không trích điều khoản ngoài nguồn kỳ vọng"
+      ],
+      "acceptanceCriteria": [
+        "actualStatus=COMPLETED; outcome=ANSWERED; citation đúng tập dieu-10-khoan-1; mọi quote khớp source_snapshot; trừ đúng 1 lượt."
+      ],
+      "reviewer": null,
+      "verificationStatus": "source-checked-ai",
+      "corpusVersion": "road-traffic-seed-2026-11-12",
+      "notes": "Đối chiếu trực tiếp Điều/Khoản trong snapshot Luật 36/2024/QH15 có text layer."
+    },
+    {
+      "id": "C1-HOLDOUT-02",
+      "category": "C1_DIRECT_EVIDENCE",
+      "split": "holdout",
+      "question": "Người lái xe ô tô có trách nhiệm gì khi trẻ em ngồi cùng hàng ghế?",
+      "asOfDate": "2026-11-12",
+      "expectedDecision": "ANSWER_LOCAL",
+      "expectedReasonCode": "SUFFICIENT",
+      "expectedSourceRefs": [
+        {
+          "documentKey": "luat-36-2024-qh15",
+          "documentNumber": "36/2024/QH15",
+          "articleCode": "dieu-10-khoan-3",
+          "locator": "Điều 10 khoản 3"
+        }
+      ],
+      "expectedAnswerPoints": [
+        "Trẻ em dưới 10 tuổi và chiều cao dưới 1,35 mét không được ngồi cùng hàng ghế với người lái",
+        "Người lái xe có trách nhiệm bảo đảm an toàn cho trẻ em"
+      ],
+      "forbiddenBehaviors": [
+        "Không gọi tìm kiếm/tải Web trước xác nhận",
+        "Không trích điều khoản ngoài nguồn kỳ vọng"
+      ],
+      "acceptanceCriteria": [
+        "actualStatus=COMPLETED; outcome=ANSWERED; citation đúng tập dieu-10-khoan-3; mọi quote khớp source_snapshot; trừ đúng 1 lượt."
+      ],
+      "reviewer": null,
+      "verificationStatus": "source-checked-ai",
+      "corpusVersion": "road-traffic-seed-2026-11-12",
+      "notes": "Đối chiếu trực tiếp Điều/Khoản trong snapshot Luật 36/2024/QH15 có text layer."
+    },
+    {
+      "id": "C1-HOLDOUT-03",
+      "category": "C1_DIRECT_EVIDENCE",
+      "split": "holdout",
+      "question": "Người điều khiển xe đạp máy chở người bệnh đi cấp cứu có bị coi là chở quá số người không?",
+      "asOfDate": "2026-11-12",
+      "expectedDecision": "ANSWER_LOCAL",
+      "expectedReasonCode": "SUFFICIENT",
+      "expectedSourceRefs": [
+        {
+          "documentKey": "luat-36-2024-qh15",
+          "documentNumber": "36/2024/QH15",
+          "articleCode": "dieu-31-khoan-2",
+          "locator": "Điều 31 khoản 2"
+        }
+      ],
+      "expectedAnswerPoints": [
+        "Không bị coi là quá số người",
+        "Chở người bệnh đi cấp cứu là trường hợp ngoại lệ"
+      ],
+      "forbiddenBehaviors": [
+        "Không gọi tìm kiếm/tải Web trước xác nhận",
+        "Không trích điều khoản ngoài nguồn kỳ vọng"
+      ],
+      "acceptanceCriteria": [
+        "actualStatus=COMPLETED; outcome=ANSWERED; citation đúng tập dieu-31-khoan-2; mọi quote khớp source_snapshot; trừ đúng 1 lượt."
+      ],
+      "reviewer": null,
+      "verificationStatus": "source-checked-ai",
+      "corpusVersion": "road-traffic-seed-2026-11-12",
+      "notes": "Đối chiếu trực tiếp Điều/Khoản trong snapshot Luật 36/2024/QH15 có text layer."
+    },
+    {
+      "id": "C1-HOLDOUT-04",
+      "category": "C1_DIRECT_EVIDENCE",
+      "split": "holdout",
+      "question": "Xe mô tô ba bánh được chở tối đa mấy người?",
+      "asOfDate": "2026-11-12",
+      "expectedDecision": "ANSWER_LOCAL",
+      "expectedReasonCode": "SUFFICIENT",
+      "expectedSourceRefs": [
+        {
+          "documentKey": "luat-36-2024-qh15",
+          "documentNumber": "36/2024/QH15",
+          "articleCode": "dieu-33-khoan-1",
+          "locator": "Điều 33 khoản 1"
+        }
+      ],
+      "expectedAnswerPoints": [
+        "Tối đa một người",
+        "Có các trường hợp ngoại lệ theo điểm a, b, c, d"
+      ],
+      "forbiddenBehaviors": [
+        "Không gọi tìm kiếm/tải Web trước xác nhận",
+        "Không trích điều khoản ngoài nguồn kỳ vọng"
+      ],
+      "acceptanceCriteria": [
+        "actualStatus=COMPLETED; outcome=ANSWERED; citation đúng tập dieu-33-khoan-1; mọi quote khớp source_snapshot; trừ đúng 1 lượt."
+      ],
+      "reviewer": null,
+      "verificationStatus": "source-checked-ai",
+      "corpusVersion": "road-traffic-seed-2026-11-12",
+      "notes": "Đối chiếu trực tiếp Điều/Khoản trong snapshot Luật 36/2024/QH15 có text layer."
+    },
+    {
+      "id": "C1-HOLDOUT-05",
+      "category": "C1_DIRECT_EVIDENCE",
+      "split": "holdout",
+      "question": "Người ngồi sau xe máy có phải đội mũ bảo hiểm không?",
+      "asOfDate": "2026-11-12",
+      "expectedDecision": "ANSWER_LOCAL",
+      "expectedReasonCode": "SUFFICIENT",
+      "expectedSourceRefs": [
+        {
+          "documentKey": "luat-36-2024-qh15",
+          "documentNumber": "36/2024/QH15",
+          "articleCode": "dieu-33-khoan-2",
+          "locator": "Điều 33 khoản 2"
+        }
+      ],
+      "expectedAnswerPoints": [
+        "Người điều khiển và người được chở phải đội mũ bảo hiểm",
+        "Cài quai đúng quy cách"
+      ],
+      "forbiddenBehaviors": [
+        "Không gọi tìm kiếm/tải Web trước xác nhận",
+        "Không trích điều khoản ngoài nguồn kỳ vọng"
+      ],
+      "acceptanceCriteria": [
+        "actualStatus=COMPLETED; outcome=ANSWERED; citation đúng tập dieu-33-khoan-2; mọi quote khớp source_snapshot; trừ đúng 1 lượt."
+      ],
+      "reviewer": null,
+      "verificationStatus": "source-checked-ai",
+      "corpusVersion": "road-traffic-seed-2026-11-12",
+      "notes": "Đối chiếu trực tiếp Điều/Khoản trong snapshot Luật 36/2024/QH15 có text layer."
+    },
+    {
+      "id": "C1-HOLDOUT-06",
+      "category": "C1_DIRECT_EVIDENCE",
+      "split": "holdout",
+      "question": "Theo Điều 10 khoản 2 Luật 36/2024/QH15, ai phải thắt dây đai an toàn?",
+      "asOfDate": "2026-11-12",
+      "expectedDecision": "ANSWER_LOCAL",
+      "expectedReasonCode": "SUFFICIENT",
+      "expectedSourceRefs": [
+        {
+          "documentKey": "luat-36-2024-qh15",
+          "documentNumber": "36/2024/QH15",
+          "articleCode": "dieu-10-khoan-2",
+          "locator": "Điều 10 khoản 2"
+        }
+      ],
+      "expectedAnswerPoints": [
+        "Người lái xe ô tô",
+        "Người được chở trên xe ô tô"
+      ],
+      "forbiddenBehaviors": [
+        "Không gọi tìm kiếm/tải Web trước xác nhận",
+        "Không trích điều khoản ngoài nguồn kỳ vọng"
+      ],
+      "acceptanceCriteria": [
+        "actualStatus=COMPLETED; outcome=ANSWERED; citation đúng tập dieu-10-khoan-2; mọi quote khớp source_snapshot; trừ đúng 1 lượt."
+      ],
+      "reviewer": null,
+      "verificationStatus": "source-checked-ai",
+      "corpusVersion": "road-traffic-seed-2026-11-12",
+      "notes": "Đối chiếu trực tiếp Điều/Khoản trong snapshot Luật 36/2024/QH15 có text layer."
+    },
+    {
+      "id": "C1-HOLDOUT-07",
+      "category": "C1_DIRECT_EVIDENCE",
+      "split": "holdout",
+      "question": "Theo Điều 31 khoản 3 Luật 36/2024/QH15, mũ bảo hiểm phải được đội thế nào?",
+      "asOfDate": "2026-11-12",
+      "expectedDecision": "ANSWER_LOCAL",
+      "expectedReasonCode": "SUFFICIENT",
+      "expectedSourceRefs": [
+        {
+          "documentKey": "luat-36-2024-qh15",
+          "documentNumber": "36/2024/QH15",
+          "articleCode": "dieu-31-khoan-3",
+          "locator": "Điều 31 khoản 3"
+        }
+      ],
+      "expectedAnswerPoints": [
+        "Đúng quy chuẩn kỹ thuật quốc gia",
+        "Cài quai đúng quy cách"
+      ],
+      "forbiddenBehaviors": [
+        "Không gọi tìm kiếm/tải Web trước xác nhận",
+        "Không trích điều khoản ngoài nguồn kỳ vọng"
+      ],
+      "acceptanceCriteria": [
+        "actualStatus=COMPLETED; outcome=ANSWERED; citation đúng tập dieu-31-khoan-3; mọi quote khớp source_snapshot; trừ đúng 1 lượt."
+      ],
+      "reviewer": null,
+      "verificationStatus": "source-checked-ai",
+      "corpusVersion": "road-traffic-seed-2026-11-12",
+      "notes": "Đối chiếu trực tiếp Điều/Khoản trong snapshot Luật 36/2024/QH15 có text layer."
+    },
+    {
+      "id": "C1-HOLDOUT-08",
+      "category": "C1_DIRECT_EVIDENCE",
+      "split": "holdout",
+      "question": "Theo Điều 33 khoản 1 Luật 36/2024/QH15, các trường hợp ngoại lệ khi chở người là gì?",
+      "asOfDate": "2026-11-12",
+      "expectedDecision": "ANSWER_LOCAL",
+      "expectedReasonCode": "SUFFICIENT",
+      "expectedSourceRefs": [
+        {
+          "documentKey": "luat-36-2024-qh15",
+          "documentNumber": "36/2024/QH15",
+          "articleCode": "dieu-33-khoan-1",
+          "locator": "Điều 33 khoản 1"
+        }
+      ],
+      "expectedAnswerPoints": [
+        "Chở người bệnh đi cấp cứu",
+        "Áp giải người có hành vi vi phạm pháp luật",
+        "Trẻ em dưới 12 tuổi",
+        "Người già yếu hoặc người khuyết tật"
+      ],
+      "forbiddenBehaviors": [
+        "Không gọi tìm kiếm/tải Web trước xác nhận",
+        "Không trích điều khoản ngoài nguồn kỳ vọng"
+      ],
+      "acceptanceCriteria": [
+        "actualStatus=COMPLETED; outcome=ANSWERED; citation đúng tập dieu-33-khoan-1; mọi quote khớp source_snapshot; trừ đúng 1 lượt."
+      ],
+      "reviewer": null,
+      "verificationStatus": "source-checked-ai",
+      "corpusVersion": "road-traffic-seed-2026-11-12",
+      "notes": "Đối chiếu trực tiếp Điều/Khoản trong snapshot Luật 36/2024/QH15 có text layer."
+    },
+    {
+      "id": "C1-HOLDOUT-09",
+      "category": "C1_DIRECT_EVIDENCE",
+      "split": "holdout",
+      "question": "Theo Điều 89 Luật 36/2024/QH15, giấy phép lái xe cấp trước ngày luật có hiệu lực có còn được sử dụng không?",
+      "asOfDate": "2026-11-12",
+      "expectedDecision": "ANSWER_LOCAL",
+      "expectedReasonCode": "SUFFICIENT",
+      "expectedSourceRefs": [
+        {
+          "documentKey": "luat-36-2024-qh15",
+          "documentNumber": "36/2024/QH15",
+          "articleCode": "dieu-89",
+          "locator": "Điều 89"
+        }
+      ],
+      "expectedAnswerPoints": [
+        "Được tiếp tục sử dụng theo thời hạn ghi trên giấy tờ"
+      ],
+      "forbiddenBehaviors": [
+        "Không gọi tìm kiếm/tải Web trước xác nhận",
+        "Không trích điều khoản ngoài nguồn kỳ vọng"
+      ],
+      "acceptanceCriteria": [
+        "actualStatus=COMPLETED; outcome=ANSWERED; citation đúng tập dieu-89; mọi quote khớp source_snapshot; trừ đúng 1 lượt."
+      ],
+      "reviewer": null,
+      "verificationStatus": "source-checked-ai",
+      "corpusVersion": "road-traffic-seed-2026-11-12",
+      "notes": "Đối chiếu trực tiếp Điều/Khoản trong snapshot Luật 36/2024/QH15 có text layer."
+    },
+    {
+      "id": "C1-HOLDOUT-10",
+      "category": "C1_DIRECT_EVIDENCE",
+      "split": "holdout",
+      "question": "Theo Điều 10 khoản 1 Luật 36/2024/QH15, người tham gia giao thông phải tuân thủ những gì?",
+      "asOfDate": "2026-11-12",
+      "expectedDecision": "ANSWER_LOCAL",
+      "expectedReasonCode": "SUFFICIENT",
+      "expectedSourceRefs": [
+        {
+          "documentKey": "luat-36-2024-qh15",
+          "documentNumber": "36/2024/QH15",
+          "articleCode": "dieu-10-khoan-1",
+          "locator": "Điều 10 khoản 1"
+        }
+      ],
+      "expectedAnswerPoints": [
+        "Đi bên phải theo chiều đi của mình",
+        "Đi đúng làn đường, phần đường quy định",
+        "Chấp hành báo hiệu đường bộ và quy định khác"
+      ],
+      "forbiddenBehaviors": [
+        "Không gọi tìm kiếm/tải Web trước xác nhận",
+        "Không trích điều khoản ngoài nguồn kỳ vọng"
+      ],
+      "acceptanceCriteria": [
+        "actualStatus=COMPLETED; outcome=ANSWERED; citation đúng tập dieu-10-khoan-1; mọi quote khớp source_snapshot; trừ đúng 1 lượt."
+      ],
+      "reviewer": null,
+      "verificationStatus": "source-checked-ai",
+      "corpusVersion": "road-traffic-seed-2026-11-12",
+      "notes": "Đối chiếu trực tiếp Điều/Khoản trong snapshot Luật 36/2024/QH15 có text layer."
+    },
+    {
+      "id": "C2-DEV-01",
+      "category": "C2_MISSING_DOCUMENT",
+      "split": "dev",
+      "question": "Theo Thông tư 79/2024/TT-BCA, thủ tục cấp chứng nhận đăng ký xe và biển số xe lần đầu thực hiện như thế nào?",
+      "asOfDate": "2026-11-12",
+      "expectedDecision": "NEED_WEB_CONFIRM",
+      "expectedReasonCode": "NO_MATCH",
+      "expectedSourceRefs": [],
+      "expectedAnswerPoints": [],
+      "forbiddenBehaviors": [
+        "Không nêu mức phạt/con số khi chưa có nguồn READY",
+        "Không gọi Web trước xác nhận"
+      ],
+      "acceptanceCriteria": [
+        "actualStatus=AWAITING_WEB_CONFIRM; không citation; không job; không gọi search/fetch; không trừ lượt."
+      ],
+      "reviewer": null,
+      "verificationStatus": "design-verified",
+      "corpusVersion": "road-traffic-seed-2026-11-12",
+      "notes": "Văn bản được hỏi (Nghị định 238/2026/NĐ-CP hoặc thông tư/nghị định chuyên ngành ngoài kho) chưa có nguồn READY trong kho nội bộ."
+    },
+    {
+      "id": "C2-DEV-02",
+      "category": "C2_MISSING_DOCUMENT",
+      "split": "dev",
+      "question": "Theo Thông tư 35/2024/TT-BGTVT, thời gian đào tạo và sát hạch cấp giấy phép lái xe hạng B là bao lâu?",
+      "asOfDate": "2026-11-12",
+      "expectedDecision": "NEED_WEB_CONFIRM",
+      "expectedReasonCode": "NO_MATCH",
+      "expectedSourceRefs": [],
+      "expectedAnswerPoints": [],
+      "forbiddenBehaviors": [
+        "Không nêu mức phạt/con số khi chưa có nguồn READY",
+        "Không gọi Web trước xác nhận"
+      ],
+      "acceptanceCriteria": [
+        "actualStatus=AWAITING_WEB_CONFIRM; không citation; không job; không gọi search/fetch; không trừ lượt."
+      ],
+      "reviewer": null,
+      "verificationStatus": "design-verified",
+      "corpusVersion": "road-traffic-seed-2026-11-12",
+      "notes": "Văn bản được hỏi (Nghị định 238/2026/NĐ-CP hoặc thông tư/nghị định chuyên ngành ngoài kho) chưa có nguồn READY trong kho nội bộ."
+    },
+    {
+      "id": "C2-DEV-03",
+      "category": "C2_MISSING_DOCUMENT",
+      "split": "dev",
+      "question": "Theo Nghị định 67/2023/NĐ-CP, mức trách nhiệm bảo hiểm bắt buộc trách nhiệm dân sự của chủ xe máy là bao nhiêu?",
+      "asOfDate": "2026-11-12",
+      "expectedDecision": "NEED_WEB_CONFIRM",
+      "expectedReasonCode": "NO_MATCH",
+      "expectedSourceRefs": [],
+      "expectedAnswerPoints": [],
+      "forbiddenBehaviors": [
+        "Không nêu mức phạt/con số khi chưa có nguồn READY",
+        "Không gọi Web trước xác nhận"
+      ],
+      "acceptanceCriteria": [
+        "actualStatus=AWAITING_WEB_CONFIRM; không citation; không job; không gọi search/fetch; không trừ lượt."
+      ],
+      "reviewer": null,
+      "verificationStatus": "design-verified",
+      "corpusVersion": "road-traffic-seed-2026-11-12",
+      "notes": "Văn bản được hỏi (Nghị định 238/2026/NĐ-CP hoặc thông tư/nghị định chuyên ngành ngoài kho) chưa có nguồn READY trong kho nội bộ."
+    },
+    {
+      "id": "C2-DEV-04",
+      "category": "C2_MISSING_DOCUMENT",
+      "split": "dev",
+      "question": "Theo Thông tư 47/2024/TT-BGTVT, chu kỳ kiểm định xe ô tô chở người dưới 9 chỗ không kinh doanh vận tải là bao lâu?",
+      "asOfDate": "2026-11-12",
+      "expectedDecision": "NEED_WEB_CONFIRM",
+      "expectedReasonCode": "NO_MATCH",
+      "expectedSourceRefs": [],
+      "expectedAnswerPoints": [],
+      "forbiddenBehaviors": [
+        "Không nêu mức phạt/con số khi chưa có nguồn READY",
+        "Không gọi Web trước xác nhận"
+      ],
+      "acceptanceCriteria": [
+        "actualStatus=AWAITING_WEB_CONFIRM; không citation; không job; không gọi search/fetch; không trừ lượt."
+      ],
+      "reviewer": null,
+      "verificationStatus": "design-verified",
+      "corpusVersion": "road-traffic-seed-2026-11-12",
+      "notes": "Văn bản được hỏi (Nghị định 238/2026/NĐ-CP hoặc thông tư/nghị định chuyên ngành ngoài kho) chưa có nguồn READY trong kho nội bộ."
+    },
+    {
+      "id": "C2-DEV-05",
+      "category": "C2_MISSING_DOCUMENT",
+      "split": "dev",
+      "question": "Theo Thông tư 73/2024/TT-BCA, lực lượng Cảnh sát giao thông tuần tra kiểm soát được dừng phương tiện trong trường hợp nào?",
+      "asOfDate": "2026-11-12",
+      "expectedDecision": "NEED_WEB_CONFIRM",
+      "expectedReasonCode": "NO_MATCH",
+      "expectedSourceRefs": [],
+      "expectedAnswerPoints": [],
+      "forbiddenBehaviors": [
+        "Không nêu mức phạt/con số khi chưa có nguồn READY",
+        "Không gọi Web trước xác nhận"
+      ],
+      "acceptanceCriteria": [
+        "actualStatus=AWAITING_WEB_CONFIRM; không citation; không job; không gọi search/fetch; không trừ lượt."
+      ],
+      "reviewer": null,
+      "verificationStatus": "design-verified",
+      "corpusVersion": "road-traffic-seed-2026-11-12",
+      "notes": "Văn bản được hỏi (Nghị định 238/2026/NĐ-CP hoặc thông tư/nghị định chuyên ngành ngoài kho) chưa có nguồn READY trong kho nội bộ."
+    },
+    {
+      "id": "C2-DEV-06",
+      "category": "C2_MISSING_DOCUMENT",
+      "split": "dev",
+      "question": "Theo Nghị định 165/2024/NĐ-CP, quy định về đầu tư xây dựng và quản lý đường bộ được hướng dẫn thế nào?",
+      "asOfDate": "2026-11-12",
+      "expectedDecision": "NEED_WEB_CONFIRM",
+      "expectedReasonCode": "NO_MATCH",
+      "expectedSourceRefs": [],
+      "expectedAnswerPoints": [],
+      "forbiddenBehaviors": [
+        "Không nêu mức phạt/con số khi chưa có nguồn READY",
+        "Không gọi Web trước xác nhận"
+      ],
+      "acceptanceCriteria": [
+        "actualStatus=AWAITING_WEB_CONFIRM; không citation; không job; không gọi search/fetch; không trừ lượt."
+      ],
+      "reviewer": null,
+      "verificationStatus": "design-verified",
+      "corpusVersion": "road-traffic-seed-2026-11-12",
+      "notes": "Văn bản được hỏi (Nghị định 238/2026/NĐ-CP hoặc thông tư/nghị định chuyên ngành ngoài kho) chưa có nguồn READY trong kho nội bộ."
+    },
+    {
+      "id": "C2-DEV-07",
+      "category": "C2_MISSING_DOCUMENT",
+      "split": "dev",
+      "question": "Theo Nghị định 158/2024/NĐ-CP, điều kiện kinh doanh vận tải hành khách theo hợp đồng bằng xe ô tô gồm những gì?",
+      "asOfDate": "2026-11-12",
+      "expectedDecision": "NEED_WEB_CONFIRM",
+      "expectedReasonCode": "NO_MATCH",
+      "expectedSourceRefs": [],
+      "expectedAnswerPoints": [],
+      "forbiddenBehaviors": [
+        "Không nêu mức phạt/con số khi chưa có nguồn READY",
+        "Không gọi Web trước xác nhận"
+      ],
+      "acceptanceCriteria": [
+        "actualStatus=AWAITING_WEB_CONFIRM; không citation; không job; không gọi search/fetch; không trừ lượt."
+      ],
+      "reviewer": null,
+      "verificationStatus": "design-verified",
+      "corpusVersion": "road-traffic-seed-2026-11-12",
+      "notes": "Văn bản được hỏi (Nghị định 238/2026/NĐ-CP hoặc thông tư/nghị định chuyên ngành ngoài kho) chưa có nguồn READY trong kho nội bộ."
+    },
+    {
+      "id": "C2-DEV-08",
+      "category": "C2_MISSING_DOCUMENT",
+      "split": "dev",
+      "question": "Nghị định 238/2026/NĐ-CP quy định mức phạt vượt đèn đỏ đối với xe máy mới như thế nào?",
+      "asOfDate": "2026-11-12",
+      "expectedDecision": "NEED_WEB_CONFIRM",
+      "expectedReasonCode": "NO_MATCH",
+      "expectedSourceRefs": [],
+      "expectedAnswerPoints": [],
+      "forbiddenBehaviors": [
+        "Không nêu mức phạt/con số khi chưa có nguồn READY",
+        "Không gọi Web trước xác nhận"
+      ],
+      "acceptanceCriteria": [
+        "actualStatus=AWAITING_WEB_CONFIRM; không citation; không job; không gọi search/fetch; không trừ lượt."
+      ],
+      "reviewer": null,
+      "verificationStatus": "design-verified",
+      "corpusVersion": "road-traffic-seed-2026-11-12",
+      "notes": "Văn bản được hỏi (Nghị định 238/2026/NĐ-CP hoặc thông tư/nghị định chuyên ngành ngoài kho) chưa có nguồn READY trong kho nội bộ."
+    },
+    {
+      "id": "C2-DEV-09",
+      "category": "C2_MISSING_DOCUMENT",
+      "split": "dev",
+      "question": "Theo Thông tư 32/2024/TT-BCA, quy trình xử lý vi phạm hành chính giao thông qua hệ thống camera giám sát thực hiện thế nào?",
+      "asOfDate": "2026-11-12",
+      "expectedDecision": "NEED_WEB_CONFIRM",
+      "expectedReasonCode": "NO_MATCH",
+      "expectedSourceRefs": [],
+      "expectedAnswerPoints": [],
+      "forbiddenBehaviors": [
+        "Không nêu mức phạt/con số khi chưa có nguồn READY",
+        "Không gọi Web trước xác nhận"
+      ],
+      "acceptanceCriteria": [
+        "actualStatus=AWAITING_WEB_CONFIRM; không citation; không job; không gọi search/fetch; không trừ lượt."
+      ],
+      "reviewer": null,
+      "verificationStatus": "design-verified",
+      "corpusVersion": "road-traffic-seed-2026-11-12",
+      "notes": "Văn bản được hỏi (Nghị định 238/2026/NĐ-CP hoặc thông tư/nghị định chuyên ngành ngoài kho) chưa có nguồn READY trong kho nội bộ."
+    },
+    {
+      "id": "C2-DEV-10",
+      "category": "C2_MISSING_DOCUMENT",
+      "split": "dev",
+      "question": "Theo Thông tư 46/2024/TT-BGTVT, điều kiện hoạt động của trung tâm sát hạch lái xe cơ giới đường bộ gồm những tiêu chuẩn nào?",
+      "asOfDate": "2026-11-12",
+      "expectedDecision": "NEED_WEB_CONFIRM",
+      "expectedReasonCode": "NO_MATCH",
+      "expectedSourceRefs": [],
+      "expectedAnswerPoints": [],
+      "forbiddenBehaviors": [
+        "Không nêu mức phạt/con số khi chưa có nguồn READY",
+        "Không gọi Web trước xác nhận"
+      ],
+      "acceptanceCriteria": [
+        "actualStatus=AWAITING_WEB_CONFIRM; không citation; không job; không gọi search/fetch; không trừ lượt."
+      ],
+      "reviewer": null,
+      "verificationStatus": "design-verified",
+      "corpusVersion": "road-traffic-seed-2026-11-12",
+      "notes": "Văn bản được hỏi (Nghị định 238/2026/NĐ-CP hoặc thông tư/nghị định chuyên ngành ngoài kho) chưa có nguồn READY trong kho nội bộ."
+    },
+    {
+      "id": "C2-HOLDOUT-01",
+      "category": "C2_MISSING_DOCUMENT",
+      "split": "holdout",
+      "question": "Theo Thông tư 79/2024/TT-BCA, trường hợp thu hồi chứng nhận đăng ký xe và biển số xe định danh thực hiện ra sao?",
+      "asOfDate": "2026-11-12",
+      "expectedDecision": "NEED_WEB_CONFIRM",
+      "expectedReasonCode": "NO_MATCH",
+      "expectedSourceRefs": [],
+      "expectedAnswerPoints": [],
+      "forbiddenBehaviors": [
+        "Không nêu mức phạt/con số khi chưa có nguồn READY",
+        "Không gọi Web trước xác nhận"
+      ],
+      "acceptanceCriteria": [
+        "actualStatus=AWAITING_WEB_CONFIRM; không citation; không job; không gọi search/fetch; không trừ lượt."
+      ],
+      "reviewer": null,
+      "verificationStatus": "design-verified",
+      "corpusVersion": "road-traffic-seed-2026-11-12",
+      "notes": "Văn bản được hỏi (Nghị định 238/2026/NĐ-CP hoặc thông tư/nghị định chuyên ngành ngoài kho) chưa có nguồn READY trong kho nội bộ."
+    },
+    {
+      "id": "C2-HOLDOUT-02",
+      "category": "C2_MISSING_DOCUMENT",
+      "split": "holdout",
+      "question": "Theo Thông tư 35/2024/TT-BGTVT, nội dung sát hạch cấp giấy phép lái xe hạng A1 gồm những phần thi nào?",
+      "asOfDate": "2026-11-12",
+      "expectedDecision": "NEED_WEB_CONFIRM",
+      "expectedReasonCode": "NO_MATCH",
+      "expectedSourceRefs": [],
+      "expectedAnswerPoints": [],
+      "forbiddenBehaviors": [
+        "Không nêu mức phạt/con số khi chưa có nguồn READY",
+        "Không gọi Web trước xác nhận"
+      ],
+      "acceptanceCriteria": [
+        "actualStatus=AWAITING_WEB_CONFIRM; không citation; không job; không gọi search/fetch; không trừ lượt."
+      ],
+      "reviewer": null,
+      "verificationStatus": "design-verified",
+      "corpusVersion": "road-traffic-seed-2026-11-12",
+      "notes": "Văn bản được hỏi (Nghị định 238/2026/NĐ-CP hoặc thông tư/nghị định chuyên ngành ngoài kho) chưa có nguồn READY trong kho nội bộ."
+    },
+    {
+      "id": "C2-HOLDOUT-03",
+      "category": "C2_MISSING_DOCUMENT",
+      "split": "holdout",
+      "question": "Theo Nghị định 67/2023/NĐ-CP, thời hạn bảo hiểm bắt buộc trách nhiệm dân sự đối với xe ô tô tối thiểu là bao lâu?",
+      "asOfDate": "2026-11-12",
+      "expectedDecision": "NEED_WEB_CONFIRM",
+      "expectedReasonCode": "NO_MATCH",
+      "expectedSourceRefs": [],
+      "expectedAnswerPoints": [],
+      "forbiddenBehaviors": [
+        "Không nêu mức phạt/con số khi chưa có nguồn READY",
+        "Không gọi Web trước xác nhận"
+      ],
+      "acceptanceCriteria": [
+        "actualStatus=AWAITING_WEB_CONFIRM; không citation; không job; không gọi search/fetch; không trừ lượt."
+      ],
+      "reviewer": null,
+      "verificationStatus": "design-verified",
+      "corpusVersion": "road-traffic-seed-2026-11-12",
+      "notes": "Văn bản được hỏi (Nghị định 238/2026/NĐ-CP hoặc thông tư/nghị định chuyên ngành ngoài kho) chưa có nguồn READY trong kho nội bộ."
+    },
+    {
+      "id": "C2-HOLDOUT-04",
+      "category": "C2_MISSING_DOCUMENT",
+      "split": "holdout",
+      "question": "Theo Thông tư 47/2024/TT-BGTVT, thủ tục miễn kiểm định lần đầu đối với xe cơ giới mới mua chưa qua sử dụng như thế nào?",
+      "asOfDate": "2026-11-12",
+      "expectedDecision": "NEED_WEB_CONFIRM",
+      "expectedReasonCode": "NO_MATCH",
+      "expectedSourceRefs": [],
+      "expectedAnswerPoints": [],
+      "forbiddenBehaviors": [
+        "Không nêu mức phạt/con số khi chưa có nguồn READY",
+        "Không gọi Web trước xác nhận"
+      ],
+      "acceptanceCriteria": [
+        "actualStatus=AWAITING_WEB_CONFIRM; không citation; không job; không gọi search/fetch; không trừ lượt."
+      ],
+      "reviewer": null,
+      "verificationStatus": "design-verified",
+      "corpusVersion": "road-traffic-seed-2026-11-12",
+      "notes": "Văn bản được hỏi (Nghị định 238/2026/NĐ-CP hoặc thông tư/nghị định chuyên ngành ngoài kho) chưa có nguồn READY trong kho nội bộ."
+    },
+    {
+      "id": "C2-HOLDOUT-05",
+      "category": "C2_MISSING_DOCUMENT",
+      "split": "holdout",
+      "question": "Theo Nghị định 238/2026/NĐ-CP, mức phạt đối với xe đạp đi vào đường cao tốc được quy định ra sao?",
+      "asOfDate": "2026-11-12",
+      "expectedDecision": "NEED_WEB_CONFIRM",
+      "expectedReasonCode": "NO_MATCH",
+      "expectedSourceRefs": [],
+      "expectedAnswerPoints": [],
+      "forbiddenBehaviors": [
+        "Không nêu mức phạt/con số khi chưa có nguồn READY",
+        "Không gọi Web trước xác nhận"
+      ],
+      "acceptanceCriteria": [
+        "actualStatus=AWAITING_WEB_CONFIRM; không citation; không job; không gọi search/fetch; không trừ lượt."
+      ],
+      "reviewer": null,
+      "verificationStatus": "design-verified",
+      "corpusVersion": "road-traffic-seed-2026-11-12",
+      "notes": "Văn bản được hỏi (Nghị định 238/2026/NĐ-CP hoặc thông tư/nghị định chuyên ngành ngoài kho) chưa có nguồn READY trong kho nội bộ."
+    },
+    {
+      "id": "C2-HOLDOUT-06",
+      "category": "C2_MISSING_DOCUMENT",
+      "split": "holdout",
+      "question": "Theo Nghị định 238/2026/NĐ-CP, xe ô tô chở quá số người bị phạt thế nào?",
+      "asOfDate": "2026-11-12",
+      "expectedDecision": "NEED_WEB_CONFIRM",
+      "expectedReasonCode": "NO_MATCH",
+      "expectedSourceRefs": [],
+      "expectedAnswerPoints": [],
+      "forbiddenBehaviors": [
+        "Không nêu mức phạt/con số khi chưa có nguồn READY",
+        "Không gọi Web trước xác nhận"
+      ],
+      "acceptanceCriteria": [
+        "actualStatus=AWAITING_WEB_CONFIRM; không citation; không job; không gọi search/fetch; không trừ lượt."
+      ],
+      "reviewer": null,
+      "verificationStatus": "design-verified",
+      "corpusVersion": "road-traffic-seed-2026-11-12",
+      "notes": "Văn bản được hỏi (Nghị định 238/2026/NĐ-CP hoặc thông tư/nghị định chuyên ngành ngoài kho) chưa có nguồn READY trong kho nội bộ."
+    },
+    {
+      "id": "C2-HOLDOUT-07",
+      "category": "C2_MISSING_DOCUMENT",
+      "split": "holdout",
+      "question": "Theo Thông tư 73/2024/TT-BCA, việc xử lý vi phạm trật tự an toàn giao thông qua phản ánh của người dân được thực hiện thế nào?",
+      "asOfDate": "2026-11-12",
+      "expectedDecision": "NEED_WEB_CONFIRM",
+      "expectedReasonCode": "NO_MATCH",
+      "expectedSourceRefs": [],
+      "expectedAnswerPoints": [],
+      "forbiddenBehaviors": [
+        "Không nêu mức phạt/con số khi chưa có nguồn READY",
+        "Không gọi Web trước xác nhận"
+      ],
+      "acceptanceCriteria": [
+        "actualStatus=AWAITING_WEB_CONFIRM; không citation; không job; không gọi search/fetch; không trừ lượt."
+      ],
+      "reviewer": null,
+      "verificationStatus": "design-verified",
+      "corpusVersion": "road-traffic-seed-2026-11-12",
+      "notes": "Văn bản được hỏi (Nghị định 238/2026/NĐ-CP hoặc thông tư/nghị định chuyên ngành ngoài kho) chưa có nguồn READY trong kho nội bộ."
+    },
+    {
+      "id": "C2-HOLDOUT-08",
+      "category": "C2_MISSING_DOCUMENT",
+      "split": "holdout",
+      "question": "Theo Nghị định 158/2024/NĐ-CP, quy định về lắp thiết bị giám sát hành trình đối với xe ô tô kinh doanh vận tải thế nào?",
+      "asOfDate": "2026-11-12",
+      "expectedDecision": "NEED_WEB_CONFIRM",
+      "expectedReasonCode": "NO_MATCH",
+      "expectedSourceRefs": [],
+      "expectedAnswerPoints": [],
+      "forbiddenBehaviors": [
+        "Không nêu mức phạt/con số khi chưa có nguồn READY",
+        "Không gọi Web trước xác nhận"
+      ],
+      "acceptanceCriteria": [
+        "actualStatus=AWAITING_WEB_CONFIRM; không citation; không job; không gọi search/fetch; không trừ lượt."
+      ],
+      "reviewer": null,
+      "verificationStatus": "design-verified",
+      "corpusVersion": "road-traffic-seed-2026-11-12",
+      "notes": "Văn bản được hỏi (Nghị định 238/2026/NĐ-CP hoặc thông tư/nghị định chuyên ngành ngoài kho) chưa có nguồn READY trong kho nội bộ."
+    },
+    {
+      "id": "C2-HOLDOUT-09",
+      "category": "C2_MISSING_DOCUMENT",
+      "split": "holdout",
+      "question": "Theo Nghị định 165/2024/NĐ-CP, phạm vi hành lang an toàn đường bộ đối với đường cao tốc được xác định ra sao?",
+      "asOfDate": "2026-11-12",
+      "expectedDecision": "NEED_WEB_CONFIRM",
+      "expectedReasonCode": "NO_MATCH",
+      "expectedSourceRefs": [],
+      "expectedAnswerPoints": [],
+      "forbiddenBehaviors": [
+        "Không nêu mức phạt/con số khi chưa có nguồn READY",
+        "Không gọi Web trước xác nhận"
+      ],
+      "acceptanceCriteria": [
+        "actualStatus=AWAITING_WEB_CONFIRM; không citation; không job; không gọi search/fetch; không trừ lượt."
+      ],
+      "reviewer": null,
+      "verificationStatus": "design-verified",
+      "corpusVersion": "road-traffic-seed-2026-11-12",
+      "notes": "Văn bản được hỏi (Nghị định 238/2026/NĐ-CP hoặc thông tư/nghị định chuyên ngành ngoài kho) chưa có nguồn READY trong kho nội bộ."
+    },
+    {
+      "id": "C2-HOLDOUT-10",
+      "category": "C2_MISSING_DOCUMENT",
+      "split": "holdout",
+      "question": "Theo Nghị định 238/2026/NĐ-CP, mức phạt khi người điều khiển xe máy không có giấy chứng nhận bảo hiểm bắt buộc là bao nhiêu?",
+      "asOfDate": "2026-11-12",
+      "expectedDecision": "NEED_WEB_CONFIRM",
+      "expectedReasonCode": "NO_MATCH",
+      "expectedSourceRefs": [],
+      "expectedAnswerPoints": [],
+      "forbiddenBehaviors": [
+        "Không nêu mức phạt/con số khi chưa có nguồn READY",
+        "Không gọi Web trước xác nhận"
+      ],
+      "acceptanceCriteria": [
+        "actualStatus=AWAITING_WEB_CONFIRM; không citation; không job; không gọi search/fetch; không trừ lượt."
+      ],
+      "reviewer": null,
+      "verificationStatus": "design-verified",
+      "corpusVersion": "road-traffic-seed-2026-11-12",
+      "notes": "Văn bản được hỏi (Nghị định 238/2026/NĐ-CP hoặc thông tư/nghị định chuyên ngành ngoài kho) chưa có nguồn READY trong kho nội bộ."
+    },
+    {
+      "id": "C3-DEV-01",
+      "category": "C3_NEAR_SYNONYM_WRONG_SCOPE",
+      "split": "dev",
+      "question": "Người lái xe ô tô có phải đội mũ bảo hiểm không?",
+      "asOfDate": "2026-11-12",
+      "expectedDecision": "NEED_WEB_CONFIRM",
+      "expectedReasonCode": "WRONG_SCOPE",
+      "expectedSourceRefs": [],
+      "expectedAnswerPoints": [],
+      "forbiddenBehaviors": [
+        "Không áp điều khoản của đối tượng/phạm vi khác",
+        "Không trả lời khẳng định khi sai đối tượng"
+      ],
+      "acceptanceCriteria": [
+        "actualStatus=AWAITING_WEB_CONFIRM; không citation; không job; không gọi search/fetch; không trừ lượt."
+      ],
+      "reviewer": null,
+      "verificationStatus": "source-checked-ai",
+      "corpusVersion": "road-traffic-seed-2026-11-12",
+      "notes": "Cùng chủ đề nhưng khác đối tượng; kiểm tra grader không bị similarity đánh lừa."
+    },
+    {
+      "id": "C3-DEV-02",
+      "category": "C3_NEAR_SYNONYM_WRONG_SCOPE",
+      "split": "dev",
+      "question": "Người đi bộ có phải đội mũ bảo hiểm không?",
+      "asOfDate": "2026-11-12",
+      "expectedDecision": "NEED_WEB_CONFIRM",
+      "expectedReasonCode": "WRONG_SCOPE",
+      "expectedSourceRefs": [],
+      "expectedAnswerPoints": [],
+      "forbiddenBehaviors": [
+        "Không áp điều khoản của đối tượng/phạm vi khác",
+        "Không trả lời khẳng định khi sai đối tượng"
+      ],
+      "acceptanceCriteria": [
+        "actualStatus=AWAITING_WEB_CONFIRM; không citation; không job; không gọi search/fetch; không trừ lượt."
+      ],
+      "reviewer": null,
+      "verificationStatus": "source-checked-ai",
+      "corpusVersion": "road-traffic-seed-2026-11-12",
+      "notes": "Cùng chủ đề nhưng khác đối tượng; kiểm tra grader không bị similarity đánh lừa."
+    },
+    {
+      "id": "C3-DEV-03",
+      "category": "C3_NEAR_SYNONYM_WRONG_SCOPE",
+      "split": "dev",
+      "question": "Người điều khiển xe đạp có phải đội mũ bảo hiểm không?",
+      "asOfDate": "2026-11-12",
+      "expectedDecision": "NEED_WEB_CONFIRM",
+      "expectedReasonCode": "WRONG_SCOPE",
+      "expectedSourceRefs": [],
+      "expectedAnswerPoints": [],
+      "forbiddenBehaviors": [
+        "Không áp điều khoản của đối tượng/phạm vi khác",
+        "Không trả lời khẳng định khi sai đối tượng"
+      ],
+      "acceptanceCriteria": [
+        "actualStatus=AWAITING_WEB_CONFIRM; không citation; không job; không gọi search/fetch; không trừ lượt."
+      ],
+      "reviewer": null,
+      "verificationStatus": "source-checked-ai",
+      "corpusVersion": "road-traffic-seed-2026-11-12",
+      "notes": "Cùng chủ đề nhưng khác đối tượng; kiểm tra grader không bị similarity đánh lừa."
+    },
+    {
+      "id": "C3-DEV-04",
+      "category": "C3_NEAR_SYNONYM_WRONG_SCOPE",
+      "split": "dev",
+      "question": "Người lái xe ô tô có phải chở tối đa một người không?",
+      "asOfDate": "2026-11-12",
+      "expectedDecision": "NEED_WEB_CONFIRM",
+      "expectedReasonCode": "WRONG_SCOPE",
+      "expectedSourceRefs": [],
+      "expectedAnswerPoints": [],
+      "forbiddenBehaviors": [
+        "Không áp điều khoản của đối tượng/phạm vi khác",
+        "Không trả lời khẳng định khi sai đối tượng"
+      ],
+      "acceptanceCriteria": [
+        "actualStatus=AWAITING_WEB_CONFIRM; không citation; không job; không gọi search/fetch; không trừ lượt."
+      ],
+      "reviewer": null,
+      "verificationStatus": "source-checked-ai",
+      "corpusVersion": "road-traffic-seed-2026-11-12",
+      "notes": "Cùng chủ đề nhưng khác đối tượng; kiểm tra grader không bị similarity đánh lừa."
+    },
+    {
+      "id": "C3-DEV-05",
+      "category": "C3_NEAR_SYNONYM_WRONG_SCOPE",
+      "split": "dev",
+      "question": "Người đi bộ có được chở thêm người trên xe không?",
+      "asOfDate": "2026-11-12",
+      "expectedDecision": "NEED_WEB_CONFIRM",
+      "expectedReasonCode": "WRONG_SCOPE",
+      "expectedSourceRefs": [],
+      "expectedAnswerPoints": [],
+      "forbiddenBehaviors": [
+        "Không áp điều khoản của đối tượng/phạm vi khác",
+        "Không trả lời khẳng định khi sai đối tượng"
+      ],
+      "acceptanceCriteria": [
+        "actualStatus=AWAITING_WEB_CONFIRM; không citation; không job; không gọi search/fetch; không trừ lượt."
+      ],
+      "reviewer": null,
+      "verificationStatus": "source-checked-ai",
+      "corpusVersion": "road-traffic-seed-2026-11-12",
+      "notes": "Cùng chủ đề nhưng khác đối tượng; kiểm tra grader không bị similarity đánh lừa."
+    },
+    {
+      "id": "C3-DEV-06",
+      "category": "C3_NEAR_SYNONYM_WRONG_SCOPE",
+      "split": "dev",
+      "question": "Người điều khiển xe đạp có phải thắt dây đai an toàn không?",
+      "asOfDate": "2026-11-12",
+      "expectedDecision": "NEED_WEB_CONFIRM",
+      "expectedReasonCode": "WRONG_SCOPE",
+      "expectedSourceRefs": [],
+      "expectedAnswerPoints": [],
+      "forbiddenBehaviors": [
+        "Không áp điều khoản của đối tượng/phạm vi khác",
+        "Không trả lời khẳng định khi sai đối tượng"
+      ],
+      "acceptanceCriteria": [
+        "actualStatus=AWAITING_WEB_CONFIRM; không citation; không job; không gọi search/fetch; không trừ lượt."
+      ],
+      "reviewer": null,
+      "verificationStatus": "source-checked-ai",
+      "corpusVersion": "road-traffic-seed-2026-11-12",
+      "notes": "Cùng chủ đề nhưng khác đối tượng; kiểm tra grader không bị similarity đánh lừa."
+    },
+    {
+      "id": "C3-DEV-07",
+      "category": "C3_NEAR_SYNONYM_WRONG_SCOPE",
+      "split": "dev",
+      "question": "Người điều khiển xe máy có phải ngồi cùng hàng ghế với trẻ em không?",
+      "asOfDate": "2026-11-12",
+      "expectedDecision": "NEED_WEB_CONFIRM",
+      "expectedReasonCode": "WRONG_SCOPE",
+      "expectedSourceRefs": [],
+      "expectedAnswerPoints": [],
+      "forbiddenBehaviors": [
+        "Không áp điều khoản của đối tượng/phạm vi khác",
+        "Không trả lời khẳng định khi sai đối tượng"
+      ],
+      "acceptanceCriteria": [
+        "actualStatus=AWAITING_WEB_CONFIRM; không citation; không job; không gọi search/fetch; không trừ lượt."
+      ],
+      "reviewer": null,
+      "verificationStatus": "source-checked-ai",
+      "corpusVersion": "road-traffic-seed-2026-11-12",
+      "notes": "Cùng chủ đề nhưng khác đối tượng; kiểm tra grader không bị similarity đánh lừa."
+    },
+    {
+      "id": "C3-DEV-08",
+      "category": "C3_NEAR_SYNONYM_WRONG_SCOPE",
+      "split": "dev",
+      "question": "Người đi bộ có phải thắt dây đai an toàn không?",
+      "asOfDate": "2026-11-12",
+      "expectedDecision": "NEED_WEB_CONFIRM",
+      "expectedReasonCode": "WRONG_SCOPE",
+      "expectedSourceRefs": [],
+      "expectedAnswerPoints": [],
+      "forbiddenBehaviors": [
+        "Không áp điều khoản của đối tượng/phạm vi khác",
+        "Không trả lời khẳng định khi sai đối tượng"
+      ],
+      "acceptanceCriteria": [
+        "actualStatus=AWAITING_WEB_CONFIRM; không citation; không job; không gọi search/fetch; không trừ lượt."
+      ],
+      "reviewer": null,
+      "verificationStatus": "source-checked-ai",
+      "corpusVersion": "road-traffic-seed-2026-11-12",
+      "notes": "Cùng chủ đề nhưng khác đối tượng; kiểm tra grader không bị similarity đánh lừa."
+    },
+    {
+      "id": "C3-DEV-09",
+      "category": "C3_NEAR_SYNONYM_WRONG_SCOPE",
+      "split": "dev",
+      "question": "Người điều khiển xe đạp máy có phải thắt dây đai an toàn không?",
+      "asOfDate": "2026-11-12",
+      "expectedDecision": "NEED_WEB_CONFIRM",
+      "expectedReasonCode": "WRONG_SCOPE",
+      "expectedSourceRefs": [],
+      "expectedAnswerPoints": [],
+      "forbiddenBehaviors": [
+        "Không áp điều khoản của đối tượng/phạm vi khác",
+        "Không trả lời khẳng định khi sai đối tượng"
+      ],
+      "acceptanceCriteria": [
+        "actualStatus=AWAITING_WEB_CONFIRM; không citation; không job; không gọi search/fetch; không trừ lượt."
+      ],
+      "reviewer": null,
+      "verificationStatus": "source-checked-ai",
+      "corpusVersion": "road-traffic-seed-2026-11-12",
+      "notes": "Cùng chủ đề nhưng khác đối tượng; kiểm tra grader không bị similarity đánh lừa."
+    },
+    {
+      "id": "C3-DEV-10",
+      "category": "C3_NEAR_SYNONYM_WRONG_SCOPE",
+      "split": "dev",
+      "question": "Người ngồi trên xe đạp có phải đội mũ bảo hiểm không?",
+      "asOfDate": "2026-11-12",
+      "expectedDecision": "NEED_WEB_CONFIRM",
+      "expectedReasonCode": "WRONG_SCOPE",
+      "expectedSourceRefs": [],
+      "expectedAnswerPoints": [],
+      "forbiddenBehaviors": [
+        "Không áp điều khoản của đối tượng/phạm vi khác",
+        "Không trả lời khẳng định khi sai đối tượng"
+      ],
+      "acceptanceCriteria": [
+        "actualStatus=AWAITING_WEB_CONFIRM; không citation; không job; không gọi search/fetch; không trừ lượt."
+      ],
+      "reviewer": null,
+      "verificationStatus": "source-checked-ai",
+      "corpusVersion": "road-traffic-seed-2026-11-12",
+      "notes": "Cùng chủ đề nhưng khác đối tượng; kiểm tra grader không bị similarity đánh lừa."
+    },
+    {
+      "id": "C3-HOLDOUT-01",
+      "category": "C3_NEAR_SYNONYM_WRONG_SCOPE",
+      "split": "holdout",
+      "question": "Người lái xe ô tô có phải đội mũ bảo hiểm khi trời mưa không?",
+      "asOfDate": "2026-11-12",
+      "expectedDecision": "NEED_WEB_CONFIRM",
+      "expectedReasonCode": "WRONG_SCOPE",
+      "expectedSourceRefs": [],
+      "expectedAnswerPoints": [],
+      "forbiddenBehaviors": [
+        "Không áp điều khoản của đối tượng/phạm vi khác",
+        "Không trả lời khẳng định khi sai đối tượng"
+      ],
+      "acceptanceCriteria": [
+        "actualStatus=AWAITING_WEB_CONFIRM; không citation; không job; không gọi search/fetch; không trừ lượt."
+      ],
+      "reviewer": null,
+      "verificationStatus": "source-checked-ai",
+      "corpusVersion": "road-traffic-seed-2026-11-12",
+      "notes": "Cùng chủ đề nhưng khác đối tượng; kiểm tra grader không bị similarity đánh lừa."
+    },
+    {
+      "id": "C3-HOLDOUT-02",
+      "category": "C3_NEAR_SYNONYM_WRONG_SCOPE",
+      "split": "holdout",
+      "question": "Người đi bộ có phải ngồi cùng hàng ghế với trẻ em không?",
+      "asOfDate": "2026-11-12",
+      "expectedDecision": "NEED_WEB_CONFIRM",
+      "expectedReasonCode": "WRONG_SCOPE",
+      "expectedSourceRefs": [],
+      "expectedAnswerPoints": [],
+      "forbiddenBehaviors": [
+        "Không áp điều khoản của đối tượng/phạm vi khác",
+        "Không trả lời khẳng định khi sai đối tượng"
+      ],
+      "acceptanceCriteria": [
+        "actualStatus=AWAITING_WEB_CONFIRM; không citation; không job; không gọi search/fetch; không trừ lượt."
+      ],
+      "reviewer": null,
+      "verificationStatus": "source-checked-ai",
+      "corpusVersion": "road-traffic-seed-2026-11-12",
+      "notes": "Cùng chủ đề nhưng khác đối tượng; kiểm tra grader không bị similarity đánh lừa."
+    },
+    {
+      "id": "C3-HOLDOUT-03",
+      "category": "C3_NEAR_SYNONYM_WRONG_SCOPE",
+      "split": "holdout",
+      "question": "Người tham gia giao thông có phải đội mũ bảo hiểm không?",
+      "asOfDate": "2026-11-12",
+      "expectedDecision": "NEED_WEB_CONFIRM",
+      "expectedReasonCode": "WRONG_SCOPE",
+      "expectedSourceRefs": [],
+      "expectedAnswerPoints": [],
+      "forbiddenBehaviors": [
+        "Không áp điều khoản của đối tượng/phạm vi khác",
+        "Không trả lời khẳng định khi sai đối tượng"
+      ],
+      "acceptanceCriteria": [
+        "actualStatus=AWAITING_WEB_CONFIRM; không citation; không job; không gọi search/fetch; không trừ lượt."
+      ],
+      "reviewer": null,
+      "verificationStatus": "source-checked-ai",
+      "corpusVersion": "road-traffic-seed-2026-11-12",
+      "notes": "Cùng chủ đề nhưng khác đối tượng; kiểm tra grader không bị similarity đánh lừa."
+    },
+    {
+      "id": "C3-HOLDOUT-04",
+      "category": "C3_NEAR_SYNONYM_WRONG_SCOPE",
+      "split": "holdout",
+      "question": "Người điều khiển xe mô tô có phải thắt dây đai an toàn không?",
+      "asOfDate": "2026-11-12",
+      "expectedDecision": "NEED_WEB_CONFIRM",
+      "expectedReasonCode": "WRONG_SCOPE",
+      "expectedSourceRefs": [],
+      "expectedAnswerPoints": [],
+      "forbiddenBehaviors": [
+        "Không áp điều khoản của đối tượng/phạm vi khác",
+        "Không trả lời khẳng định khi sai đối tượng"
+      ],
+      "acceptanceCriteria": [
+        "actualStatus=AWAITING_WEB_CONFIRM; không citation; không job; không gọi search/fetch; không trừ lượt."
+      ],
+      "reviewer": null,
+      "verificationStatus": "source-checked-ai",
+      "corpusVersion": "road-traffic-seed-2026-11-12",
+      "notes": "Cùng chủ đề nhưng khác đối tượng; kiểm tra grader không bị similarity đánh lừa."
+    },
+    {
+      "id": "C3-HOLDOUT-05",
+      "category": "C3_NEAR_SYNONYM_WRONG_SCOPE",
+      "split": "holdout",
+      "question": "Người điều khiển xe đạp máy có phải ngồi cùng hàng ghế với trẻ em không?",
+      "asOfDate": "2026-11-12",
+      "expectedDecision": "NEED_WEB_CONFIRM",
+      "expectedReasonCode": "WRONG_SCOPE",
+      "expectedSourceRefs": [],
+      "expectedAnswerPoints": [],
+      "forbiddenBehaviors": [
+        "Không áp điều khoản của đối tượng/phạm vi khác",
+        "Không trả lời khẳng định khi sai đối tượng"
+      ],
+      "acceptanceCriteria": [
+        "actualStatus=AWAITING_WEB_CONFIRM; không citation; không job; không gọi search/fetch; không trừ lượt."
+      ],
+      "reviewer": null,
+      "verificationStatus": "source-checked-ai",
+      "corpusVersion": "road-traffic-seed-2026-11-12",
+      "notes": "Cùng chủ đề nhưng khác đối tượng; kiểm tra grader không bị similarity đánh lừa."
+    },
+    {
+      "id": "C3-HOLDOUT-06",
+      "category": "C3_NEAR_SYNONYM_WRONG_SCOPE",
+      "split": "holdout",
+      "question": "Người lái xe ô tô có phải đi đúng làn đường dành cho xe thô sơ không?",
+      "asOfDate": "2026-11-12",
+      "expectedDecision": "NEED_WEB_CONFIRM",
+      "expectedReasonCode": "WRONG_SCOPE",
+      "expectedSourceRefs": [],
+      "expectedAnswerPoints": [],
+      "forbiddenBehaviors": [
+        "Không áp điều khoản của đối tượng/phạm vi khác",
+        "Không trả lời khẳng định khi sai đối tượng"
+      ],
+      "acceptanceCriteria": [
+        "actualStatus=AWAITING_WEB_CONFIRM; không citation; không job; không gọi search/fetch; không trừ lượt."
+      ],
+      "reviewer": null,
+      "verificationStatus": "source-checked-ai",
+      "corpusVersion": "road-traffic-seed-2026-11-12",
+      "notes": "Cùng chủ đề nhưng khác đối tượng; kiểm tra grader không bị similarity đánh lừa."
+    },
+    {
+      "id": "C3-HOLDOUT-07",
+      "category": "C3_NEAR_SYNONYM_WRONG_SCOPE",
+      "split": "holdout",
+      "question": "Người đi bộ có phải đi đúng làn đường dành cho xe thô sơ không?",
+      "asOfDate": "2026-11-12",
+      "expectedDecision": "NEED_WEB_CONFIRM",
+      "expectedReasonCode": "WRONG_SCOPE",
+      "expectedSourceRefs": [],
+      "expectedAnswerPoints": [],
+      "forbiddenBehaviors": [
+        "Không áp điều khoản của đối tượng/phạm vi khác",
+        "Không trả lời khẳng định khi sai đối tượng"
+      ],
+      "acceptanceCriteria": [
+        "actualStatus=AWAITING_WEB_CONFIRM; không citation; không job; không gọi search/fetch; không trừ lượt."
+      ],
+      "reviewer": null,
+      "verificationStatus": "source-checked-ai",
+      "corpusVersion": "road-traffic-seed-2026-11-12",
+      "notes": "Cùng chủ đề nhưng khác đối tượng; kiểm tra grader không bị similarity đánh lừa."
+    },
+    {
+      "id": "C3-HOLDOUT-08",
+      "category": "C3_NEAR_SYNONYM_WRONG_SCOPE",
+      "split": "holdout",
+      "question": "Người điều khiển xe mô tô có phải ngồi cùng hàng ghế với trẻ em không?",
+      "asOfDate": "2026-11-12",
+      "expectedDecision": "NEED_WEB_CONFIRM",
+      "expectedReasonCode": "WRONG_SCOPE",
+      "expectedSourceRefs": [],
+      "expectedAnswerPoints": [],
+      "forbiddenBehaviors": [
+        "Không áp điều khoản của đối tượng/phạm vi khác",
+        "Không trả lời khẳng định khi sai đối tượng"
+      ],
+      "acceptanceCriteria": [
+        "actualStatus=AWAITING_WEB_CONFIRM; không citation; không job; không gọi search/fetch; không trừ lượt."
+      ],
+      "reviewer": null,
+      "verificationStatus": "source-checked-ai",
+      "corpusVersion": "road-traffic-seed-2026-11-12",
+      "notes": "Cùng chủ đề nhưng khác đối tượng; kiểm tra grader không bị similarity đánh lừa."
+    },
+    {
+      "id": "C3-HOLDOUT-09",
+      "category": "C3_NEAR_SYNONYM_WRONG_SCOPE",
+      "split": "holdout",
+      "question": "Người lái xe ô tô có phải chở tối đa hai người không?",
+      "asOfDate": "2026-11-12",
+      "expectedDecision": "NEED_WEB_CONFIRM",
+      "expectedReasonCode": "WRONG_SCOPE",
+      "expectedSourceRefs": [],
+      "expectedAnswerPoints": [],
+      "forbiddenBehaviors": [
+        "Không áp điều khoản của đối tượng/phạm vi khác",
+        "Không trả lời khẳng định khi sai đối tượng"
+      ],
+      "acceptanceCriteria": [
+        "actualStatus=AWAITING_WEB_CONFIRM; không citation; không job; không gọi search/fetch; không trừ lượt."
+      ],
+      "reviewer": null,
+      "verificationStatus": "source-checked-ai",
+      "corpusVersion": "road-traffic-seed-2026-11-12",
+      "notes": "Cùng chủ đề nhưng khác đối tượng; kiểm tra grader không bị similarity đánh lừa."
+    },
+    {
+      "id": "C3-HOLDOUT-10",
+      "category": "C3_NEAR_SYNONYM_WRONG_SCOPE",
+      "split": "holdout",
+      "question": "Người đi bộ có bị cấm khi trong máu có nồng độ cồn không?",
+      "asOfDate": "2026-11-12",
+      "expectedDecision": "NEED_WEB_CONFIRM",
+      "expectedReasonCode": "WRONG_SCOPE",
+      "expectedSourceRefs": [],
+      "expectedAnswerPoints": [],
+      "forbiddenBehaviors": [
+        "Không áp điều khoản của đối tượng/phạm vi khác",
+        "Không trả lời khẳng định khi sai đối tượng"
+      ],
+      "acceptanceCriteria": [
+        "actualStatus=AWAITING_WEB_CONFIRM; không citation; không job; không gọi search/fetch; không trừ lượt."
+      ],
+      "reviewer": null,
+      "verificationStatus": "source-checked-ai",
+      "corpusVersion": "road-traffic-seed-2026-11-12",
+      "notes": "Cùng chủ đề nhưng khác đối tượng; kiểm tra grader không bị similarity đánh lừa."
+    },
+    {
+      "id": "C4-DEV-01",
+      "category": "C4_TEMPORAL_VERSION",
+      "split": "dev",
+      "question": "Ngày 01/06/2024, người ngồi trên xe máy có phải đội mũ bảo hiểm không?",
+      "asOfDate": "2024-06-01",
+      "expectedDecision": "ANSWER_LOCAL",
+      "expectedReasonCode": "SUFFICIENT",
+      "expectedSourceRefs": [
+        {
+          "documentKey": "luat-23-2008-qh12",
+          "documentNumber": "23/2008/QH12",
+          "articleCode": "dieu-30-khoan-2",
+          "locator": "Điều 30 khoản 2"
+        }
+      ],
+      "expectedAnswerPoints": [
+        "Phải đội mũ bảo hiểm có cài quai đúng quy cách"
+      ],
+      "forbiddenBehaviors": [
+        "Không dùng văn bản hiện hành cho câu hỏi lịch sử",
+        "Không trích khoản chưa có hiệu lực"
+      ],
+      "acceptanceCriteria": [
+        "actualStatus=COMPLETED; outcome=ANSWERED; citation đúng tập dieu-30-khoan-2; mọi quote khớp source_snapshot; trừ đúng 1 lượt."
+      ],
+      "reviewer": null,
+      "verificationStatus": "source-checked-ai",
+      "corpusVersion": "road-traffic-seed-2026-11-12",
+      "notes": "Đối chiếu hiệu lực cấp văn bản và cấp khoản (Điều 10 khoản 3 từ 01/01/2026)."
+    },
+    {
+      "id": "C4-DEV-02",
+      "category": "C4_TEMPORAL_VERSION",
+      "split": "dev",
+      "question": "Ngày 01/06/2025, người ngồi trên xe máy có phải đội mũ bảo hiểm không?",
+      "asOfDate": "2025-06-01",
+      "expectedDecision": "ANSWER_LOCAL",
+      "expectedReasonCode": "SUFFICIENT",
+      "expectedSourceRefs": [
+        {
+          "documentKey": "luat-36-2024-qh15",
+          "documentNumber": "36/2024/QH15",
+          "articleCode": "dieu-33-khoan-2",
+          "locator": "Điều 33 khoản 2"
+        }
+      ],
+      "expectedAnswerPoints": [
+        "Phải đội mũ bảo hiểm đúng quy chuẩn kỹ thuật quốc gia",
+        "Cài quai đúng quy cách"
+      ],
+      "forbiddenBehaviors": [
+        "Không dùng văn bản hiện hành cho câu hỏi lịch sử",
+        "Không trích khoản chưa có hiệu lực"
+      ],
+      "acceptanceCriteria": [
+        "actualStatus=COMPLETED; outcome=ANSWERED; citation đúng tập dieu-33-khoan-2; mọi quote khớp source_snapshot; trừ đúng 1 lượt."
+      ],
+      "reviewer": null,
+      "verificationStatus": "source-checked-ai",
+      "corpusVersion": "road-traffic-seed-2026-11-12",
+      "notes": "Đối chiếu hiệu lực cấp văn bản và cấp khoản (Điều 10 khoản 3 từ 01/01/2026)."
+    },
+    {
+      "id": "C4-DEV-03",
+      "category": "C4_TEMPORAL_VERSION",
+      "split": "dev",
+      "question": "Theo Điều 10 khoản 3 Luật 36/2024/QH15, ngày 01/06/2025 trẻ em dưới 10 tuổi ngồi cùng hàng ghế với người lái xe ô tô có vi phạm không?",
+      "asOfDate": "2025-06-01",
+      "expectedDecision": "NEED_WEB_CONFIRM",
+      "expectedReasonCode": "TEMPORAL_UNCERTAINTY",
+      "expectedSourceRefs": [],
+      "expectedAnswerPoints": [],
+      "forbiddenBehaviors": [
+        "Không dùng văn bản hiện hành cho câu hỏi lịch sử",
+        "Không trích khoản chưa có hiệu lực"
+      ],
+      "acceptanceCriteria": [
+        "actualStatus=AWAITING_WEB_CONFIRM; không citation; không job; không gọi search/fetch; không trừ lượt."
+      ],
+      "reviewer": null,
+      "verificationStatus": "source-checked-ai",
+      "corpusVersion": "road-traffic-seed-2026-11-12",
+      "notes": "Đối chiếu hiệu lực cấp văn bản và cấp khoản (Điều 10 khoản 3 từ 01/01/2026)."
+    },
+    {
+      "id": "C4-DEV-04",
+      "category": "C4_TEMPORAL_VERSION",
+      "split": "dev",
+      "question": "Theo Điều 10 khoản 3 Luật 36/2024/QH15, ngày 01/02/2026 trẻ em dưới 10 tuổi ngồi cùng hàng ghế với người lái xe ô tô có vi phạm không?",
+      "asOfDate": "2026-02-01",
+      "expectedDecision": "ANSWER_LOCAL",
+      "expectedReasonCode": "SUFFICIENT",
+      "expectedSourceRefs": [
+        {
+          "documentKey": "luat-36-2024-qh15",
+          "documentNumber": "36/2024/QH15",
+          "articleCode": "dieu-10-khoan-3",
+          "locator": "Điều 10 khoản 3"
+        }
+      ],
+      "expectedAnswerPoints": [
+        "Không được ngồi cùng hàng ghế với người lái xe",
+        "Trừ trường hợp xe chỉ có một hàng ghế"
+      ],
+      "forbiddenBehaviors": [
+        "Không dùng văn bản hiện hành cho câu hỏi lịch sử",
+        "Không trích khoản chưa có hiệu lực"
+      ],
+      "acceptanceCriteria": [
+        "actualStatus=COMPLETED; outcome=ANSWERED; citation đúng tập dieu-10-khoan-3; mọi quote khớp source_snapshot; trừ đúng 1 lượt."
+      ],
+      "reviewer": null,
+      "verificationStatus": "source-checked-ai",
+      "corpusVersion": "road-traffic-seed-2026-11-12",
+      "notes": "Đối chiếu hiệu lực cấp văn bản và cấp khoản (Điều 10 khoản 3 từ 01/01/2026)."
+    },
+    {
+      "id": "C4-DEV-05",
+      "category": "C4_TEMPORAL_VERSION",
+      "split": "dev",
+      "question": "Ngày 01/06/2024, người điều khiển xe máy chở tối đa mấy người?",
+      "asOfDate": "2024-06-01",
+      "expectedDecision": "ANSWER_LOCAL",
+      "expectedReasonCode": "SUFFICIENT",
+      "expectedSourceRefs": [
+        {
+          "documentKey": "luat-23-2008-qh12",
+          "documentNumber": "23/2008/QH12",
+          "articleCode": "dieu-30-khoan-1",
+          "locator": "Điều 30 khoản 1"
+        }
+      ],
+      "expectedAnswerPoints": [
+        "Tối đa một người",
+        "Ngoại lệ: cấp cứu, áp giải, trẻ em dưới 14 tuổi, người già yếu hoặc khuyết tật"
+      ],
+      "forbiddenBehaviors": [
+        "Không dùng văn bản hiện hành cho câu hỏi lịch sử",
+        "Không trích khoản chưa có hiệu lực"
+      ],
+      "acceptanceCriteria": [
+        "actualStatus=COMPLETED; outcome=ANSWERED; citation đúng tập dieu-30-khoan-1; mọi quote khớp source_snapshot; trừ đúng 1 lượt."
+      ],
+      "reviewer": null,
+      "verificationStatus": "source-checked-ai",
+      "corpusVersion": "road-traffic-seed-2026-11-12",
+      "notes": "Đối chiếu hiệu lực cấp văn bản và cấp khoản (Điều 10 khoản 3 từ 01/01/2026)."
+    },
+    {
+      "id": "C4-DEV-06",
+      "category": "C4_TEMPORAL_VERSION",
+      "split": "dev",
+      "question": "Ngày 01/06/2025, người điều khiển xe máy chở tối đa mấy người?",
+      "asOfDate": "2025-06-01",
+      "expectedDecision": "ANSWER_LOCAL",
+      "expectedReasonCode": "SUFFICIENT",
+      "expectedSourceRefs": [
+        {
+          "documentKey": "luat-36-2024-qh15",
+          "documentNumber": "36/2024/QH15",
+          "articleCode": "dieu-33-khoan-1",
+          "locator": "Điều 33 khoản 1"
+        }
+      ],
+      "expectedAnswerPoints": [
+        "Tối đa một người",
+        "Ngoại lệ: cấp cứu, áp giải, trẻ em dưới 12 tuổi, người già yếu hoặc khuyết tật"
+      ],
+      "forbiddenBehaviors": [
+        "Không dùng văn bản hiện hành cho câu hỏi lịch sử",
+        "Không trích khoản chưa có hiệu lực"
+      ],
+      "acceptanceCriteria": [
+        "actualStatus=COMPLETED; outcome=ANSWERED; citation đúng tập dieu-33-khoan-1; mọi quote khớp source_snapshot; trừ đúng 1 lượt."
+      ],
+      "reviewer": null,
+      "verificationStatus": "source-checked-ai",
+      "corpusVersion": "road-traffic-seed-2026-11-12",
+      "notes": "Đối chiếu hiệu lực cấp văn bản và cấp khoản (Điều 10 khoản 3 từ 01/01/2026)."
+    },
+    {
+      "id": "C4-DEV-07",
+      "category": "C4_TEMPORAL_VERSION",
+      "split": "dev",
+      "question": "Ngày 01/06/2024, theo Điều 33 khoản 2 Luật 36/2024/QH15, người ngồi trên xe máy có phải đội mũ bảo hiểm không?",
+      "asOfDate": "2024-06-01",
+      "expectedDecision": "NEED_WEB_CONFIRM",
+      "expectedReasonCode": "TEMPORAL_UNCERTAINTY",
+      "expectedSourceRefs": [],
+      "expectedAnswerPoints": [],
+      "forbiddenBehaviors": [
+        "Không dùng văn bản hiện hành cho câu hỏi lịch sử",
+        "Không trích khoản chưa có hiệu lực"
+      ],
+      "acceptanceCriteria": [
+        "actualStatus=AWAITING_WEB_CONFIRM; không citation; không job; không gọi search/fetch; không trừ lượt."
+      ],
+      "reviewer": null,
+      "verificationStatus": "source-checked-ai",
+      "corpusVersion": "road-traffic-seed-2026-11-12",
+      "notes": "Đối chiếu hiệu lực cấp văn bản và cấp khoản (Điều 10 khoản 3 từ 01/01/2026)."
+    },
+    {
+      "id": "C4-DEV-08",
+      "category": "C4_TEMPORAL_VERSION",
+      "split": "dev",
+      "question": "Ngày 01/06/2024, Luật 23/2008/QH12 quy định người ngồi trên xe máy phải đội mũ bảo hiểm thế nào?",
+      "asOfDate": "2024-06-01",
+      "expectedDecision": "ANSWER_LOCAL",
+      "expectedReasonCode": "SUFFICIENT",
+      "expectedSourceRefs": [
+        {
+          "documentKey": "luat-23-2008-qh12",
+          "documentNumber": "23/2008/QH12",
+          "articleCode": "dieu-30-khoan-2",
+          "locator": "Điều 30 khoản 2"
+        }
+      ],
+      "expectedAnswerPoints": [
+        "Phải đội mũ bảo hiểm có cài quai đúng quy cách"
+      ],
+      "forbiddenBehaviors": [
+        "Không dùng văn bản hiện hành cho câu hỏi lịch sử",
+        "Không trích khoản chưa có hiệu lực"
+      ],
+      "acceptanceCriteria": [
+        "actualStatus=COMPLETED; outcome=ANSWERED; citation đúng tập dieu-30-khoan-2; mọi quote khớp source_snapshot; trừ đúng 1 lượt."
+      ],
+      "reviewer": null,
+      "verificationStatus": "source-checked-ai",
+      "corpusVersion": "road-traffic-seed-2026-11-12",
+      "notes": "Đối chiếu hiệu lực cấp văn bản và cấp khoản (Điều 10 khoản 3 từ 01/01/2026)."
+    },
+    {
+      "id": "C4-DEV-09",
+      "category": "C4_TEMPORAL_VERSION",
+      "split": "dev",
+      "question": "Ngày 01/06/2025, theo Điều 30 khoản 2 Luật 23/2008/QH12, người ngồi trên xe máy có phải đội mũ bảo hiểm không?",
+      "asOfDate": "2025-06-01",
+      "expectedDecision": "NEED_WEB_CONFIRM",
+      "expectedReasonCode": "TEMPORAL_UNCERTAINTY",
+      "expectedSourceRefs": [],
+      "expectedAnswerPoints": [],
+      "forbiddenBehaviors": [
+        "Không dùng văn bản hiện hành cho câu hỏi lịch sử",
+        "Không trích khoản chưa có hiệu lực"
+      ],
+      "acceptanceCriteria": [
+        "actualStatus=AWAITING_WEB_CONFIRM; không citation; không job; không gọi search/fetch; không trừ lượt."
+      ],
+      "reviewer": null,
+      "verificationStatus": "source-checked-ai",
+      "corpusVersion": "road-traffic-seed-2026-11-12",
+      "notes": "Đối chiếu hiệu lực cấp văn bản và cấp khoản (Điều 10 khoản 3 từ 01/01/2026)."
+    },
+    {
+      "id": "C4-DEV-10",
+      "category": "C4_TEMPORAL_VERSION",
+      "split": "dev",
+      "question": "Ngày 01/01/2026, theo Điều 10 khoản 3 Luật 36/2024/QH15, trẻ em dưới 10 tuổi có được ngồi cùng hàng ghế với người lái xe ô tô không?",
+      "asOfDate": "2026-01-01",
+      "expectedDecision": "ANSWER_LOCAL",
+      "expectedReasonCode": "SUFFICIENT",
+      "expectedSourceRefs": [
+        {
+          "documentKey": "luat-36-2024-qh15",
+          "documentNumber": "36/2024/QH15",
+          "articleCode": "dieu-10-khoan-3",
+          "locator": "Điều 10 khoản 3"
+        }
+      ],
+      "expectedAnswerPoints": [
+        "Không được ngồi cùng hàng ghế với người lái xe",
+        "Trừ trường hợp xe chỉ có một hàng ghế"
+      ],
+      "forbiddenBehaviors": [
+        "Không dùng văn bản hiện hành cho câu hỏi lịch sử",
+        "Không trích khoản chưa có hiệu lực"
+      ],
+      "acceptanceCriteria": [
+        "actualStatus=COMPLETED; outcome=ANSWERED; citation đúng tập dieu-10-khoan-3; mọi quote khớp source_snapshot; trừ đúng 1 lượt."
+      ],
+      "reviewer": null,
+      "verificationStatus": "source-checked-ai",
+      "corpusVersion": "road-traffic-seed-2026-11-12",
+      "notes": "Đối chiếu hiệu lực cấp văn bản và cấp khoản (Điều 10 khoản 3 từ 01/01/2026)."
+    },
+    {
+      "id": "C4-HOLDOUT-01",
+      "category": "C4_TEMPORAL_VERSION",
+      "split": "holdout",
+      "question": "Ngày 15/03/2024, người điều khiển xe máy có phải đội mũ bảo hiểm không?",
+      "asOfDate": "2024-03-15",
+      "expectedDecision": "ANSWER_LOCAL",
+      "expectedReasonCode": "SUFFICIENT",
+      "expectedSourceRefs": [
+        {
+          "documentKey": "luat-23-2008-qh12",
+          "documentNumber": "23/2008/QH12",
+          "articleCode": "dieu-30-khoan-2",
+          "locator": "Điều 30 khoản 2"
+        }
+      ],
+      "expectedAnswerPoints": [
+        "Phải đội mũ bảo hiểm có cài quai đúng quy cách"
+      ],
+      "forbiddenBehaviors": [
+        "Không dùng văn bản hiện hành cho câu hỏi lịch sử",
+        "Không trích khoản chưa có hiệu lực"
+      ],
+      "acceptanceCriteria": [
+        "actualStatus=COMPLETED; outcome=ANSWERED; citation đúng tập dieu-30-khoan-2; mọi quote khớp source_snapshot; trừ đúng 1 lượt."
+      ],
+      "reviewer": null,
+      "verificationStatus": "source-checked-ai",
+      "corpusVersion": "road-traffic-seed-2026-11-12",
+      "notes": "Đối chiếu hiệu lực cấp văn bản và cấp khoản (Điều 10 khoản 3 từ 01/01/2026)."
+    },
+    {
+      "id": "C4-HOLDOUT-02",
+      "category": "C4_TEMPORAL_VERSION",
+      "split": "holdout",
+      "question": "Ngày 15/03/2025, người điều khiển xe máy có phải đội mũ bảo hiểm không?",
+      "asOfDate": "2025-03-15",
+      "expectedDecision": "ANSWER_LOCAL",
+      "expectedReasonCode": "SUFFICIENT",
+      "expectedSourceRefs": [
+        {
+          "documentKey": "luat-36-2024-qh15",
+          "documentNumber": "36/2024/QH15",
+          "articleCode": "dieu-33-khoan-2",
+          "locator": "Điều 33 khoản 2"
+        }
+      ],
+      "expectedAnswerPoints": [
+        "Phải đội mũ bảo hiểm đúng quy chuẩn kỹ thuật quốc gia",
+        "Cài quai đúng quy cách"
+      ],
+      "forbiddenBehaviors": [
+        "Không dùng văn bản hiện hành cho câu hỏi lịch sử",
+        "Không trích khoản chưa có hiệu lực"
+      ],
+      "acceptanceCriteria": [
+        "actualStatus=COMPLETED; outcome=ANSWERED; citation đúng tập dieu-33-khoan-2; mọi quote khớp source_snapshot; trừ đúng 1 lượt."
+      ],
+      "reviewer": null,
+      "verificationStatus": "source-checked-ai",
+      "corpusVersion": "road-traffic-seed-2026-11-12",
+      "notes": "Đối chiếu hiệu lực cấp văn bản và cấp khoản (Điều 10 khoản 3 từ 01/01/2026)."
+    },
+    {
+      "id": "C4-HOLDOUT-03",
+      "category": "C4_TEMPORAL_VERSION",
+      "split": "holdout",
+      "question": "Ngày 31/12/2025, trẻ em dưới 10 tuổi ngồi cùng hàng ghế người lái ô tô có bị coi là vi phạm khoản 3 Điều 10 Luật 36/2024/QH15 không?",
+      "asOfDate": "2025-12-31",
+      "expectedDecision": "NEED_WEB_CONFIRM",
+      "expectedReasonCode": "TEMPORAL_UNCERTAINTY",
+      "expectedSourceRefs": [],
+      "expectedAnswerPoints": [],
+      "forbiddenBehaviors": [
+        "Không dùng văn bản hiện hành cho câu hỏi lịch sử",
+        "Không trích khoản chưa có hiệu lực"
+      ],
+      "acceptanceCriteria": [
+        "actualStatus=AWAITING_WEB_CONFIRM; không citation; không job; không gọi search/fetch; không trừ lượt."
+      ],
+      "reviewer": null,
+      "verificationStatus": "source-checked-ai",
+      "corpusVersion": "road-traffic-seed-2026-11-12",
+      "notes": "Đối chiếu hiệu lực cấp văn bản và cấp khoản (Điều 10 khoản 3 từ 01/01/2026)."
+    },
+    {
+      "id": "C4-HOLDOUT-04",
+      "category": "C4_TEMPORAL_VERSION",
+      "split": "holdout",
+      "question": "Ngày 02/01/2026, trẻ em dưới 10 tuổi ngồi cùng hàng ghế người lái ô tô có vi phạm khoản 3 Điều 10 Luật 36/2024/QH15 không?",
+      "asOfDate": "2026-01-02",
+      "expectedDecision": "ANSWER_LOCAL",
+      "expectedReasonCode": "SUFFICIENT",
+      "expectedSourceRefs": [
+        {
+          "documentKey": "luat-36-2024-qh15",
+          "documentNumber": "36/2024/QH15",
+          "articleCode": "dieu-10-khoan-3",
+          "locator": "Điều 10 khoản 3"
+        }
+      ],
+      "expectedAnswerPoints": [
+        "Không được ngồi cùng hàng ghế với người lái xe",
+        "Trừ trường hợp xe chỉ có một hàng ghế"
+      ],
+      "forbiddenBehaviors": [
+        "Không dùng văn bản hiện hành cho câu hỏi lịch sử",
+        "Không trích khoản chưa có hiệu lực"
+      ],
+      "acceptanceCriteria": [
+        "actualStatus=COMPLETED; outcome=ANSWERED; citation đúng tập dieu-10-khoan-3; mọi quote khớp source_snapshot; trừ đúng 1 lượt."
+      ],
+      "reviewer": null,
+      "verificationStatus": "source-checked-ai",
+      "corpusVersion": "road-traffic-seed-2026-11-12",
+      "notes": "Đối chiếu hiệu lực cấp văn bản và cấp khoản (Điều 10 khoản 3 từ 01/01/2026)."
+    },
+    {
+      "id": "C4-HOLDOUT-05",
+      "category": "C4_TEMPORAL_VERSION",
+      "split": "holdout",
+      "question": "Năm 2024, người điều khiển xe mô tô được chở tối đa mấy người?",
+      "asOfDate": "2024-01-01",
+      "expectedDecision": "ANSWER_LOCAL",
+      "expectedReasonCode": "SUFFICIENT",
+      "expectedSourceRefs": [
+        {
+          "documentKey": "luat-23-2008-qh12",
+          "documentNumber": "23/2008/QH12",
+          "articleCode": "dieu-30-khoan-1",
+          "locator": "Điều 30 khoản 1"
+        }
+      ],
+      "expectedAnswerPoints": [
+        "Tối đa một người",
+        "Ngoại lệ theo luật cũ: trẻ em dưới 14 tuổi"
+      ],
+      "forbiddenBehaviors": [
+        "Không dùng văn bản hiện hành cho câu hỏi lịch sử",
+        "Không trích khoản chưa có hiệu lực"
+      ],
+      "acceptanceCriteria": [
+        "actualStatus=COMPLETED; outcome=ANSWERED; citation đúng tập dieu-30-khoan-1; mọi quote khớp source_snapshot; trừ đúng 1 lượt."
+      ],
+      "reviewer": null,
+      "verificationStatus": "source-checked-ai",
+      "corpusVersion": "road-traffic-seed-2026-11-12",
+      "notes": "Đối chiếu hiệu lực cấp văn bản và cấp khoản (Điều 10 khoản 3 từ 01/01/2026)."
+    },
+    {
+      "id": "C4-HOLDOUT-06",
+      "category": "C4_TEMPORAL_VERSION",
+      "split": "holdout",
+      "question": "Năm 2025, người điều khiển xe mô tô được chở tối đa mấy người?",
+      "asOfDate": "2025-01-01",
+      "expectedDecision": "ANSWER_LOCAL",
+      "expectedReasonCode": "SUFFICIENT",
+      "expectedSourceRefs": [
+        {
+          "documentKey": "luat-36-2024-qh15",
+          "documentNumber": "36/2024/QH15",
+          "articleCode": "dieu-33-khoan-1",
+          "locator": "Điều 33 khoản 1"
+        }
+      ],
+      "expectedAnswerPoints": [
+        "Tối đa một người",
+        "Ngoại lệ theo luật mới: trẻ em dưới 12 tuổi"
+      ],
+      "forbiddenBehaviors": [
+        "Không dùng văn bản hiện hành cho câu hỏi lịch sử",
+        "Không trích khoản chưa có hiệu lực"
+      ],
+      "acceptanceCriteria": [
+        "actualStatus=COMPLETED; outcome=ANSWERED; citation đúng tập dieu-33-khoan-1; mọi quote khớp source_snapshot; trừ đúng 1 lượt."
+      ],
+      "reviewer": null,
+      "verificationStatus": "source-checked-ai",
+      "corpusVersion": "road-traffic-seed-2026-11-12",
+      "notes": "Đối chiếu hiệu lực cấp văn bản và cấp khoản (Điều 10 khoản 3 từ 01/01/2026)."
+    },
+    {
+      "id": "C4-HOLDOUT-07",
+      "category": "C4_TEMPORAL_VERSION",
+      "split": "holdout",
+      "question": "Ngày 01/06/2024, theo Điều 31 khoản 2 Luật 36/2024/QH15, xe đạp máy được chở tối đa mấy người?",
+      "asOfDate": "2024-06-01",
+      "expectedDecision": "NEED_WEB_CONFIRM",
+      "expectedReasonCode": "TEMPORAL_UNCERTAINTY",
+      "expectedSourceRefs": [],
+      "expectedAnswerPoints": [],
+      "forbiddenBehaviors": [
+        "Không dùng văn bản hiện hành cho câu hỏi lịch sử",
+        "Không trích khoản chưa có hiệu lực"
+      ],
+      "acceptanceCriteria": [
+        "actualStatus=AWAITING_WEB_CONFIRM; không citation; không job; không gọi search/fetch; không trừ lượt."
+      ],
+      "reviewer": null,
+      "verificationStatus": "source-checked-ai",
+      "corpusVersion": "road-traffic-seed-2026-11-12",
+      "notes": "Đối chiếu hiệu lực cấp văn bản và cấp khoản (Điều 10 khoản 3 từ 01/01/2026)."
+    },
+    {
+      "id": "C4-HOLDOUT-08",
+      "category": "C4_TEMPORAL_VERSION",
+      "split": "holdout",
+      "question": "Ngày 01/06/2025, theo Điều 30 khoản 1 Luật 23/2008/QH12, xe máy chở tối đa mấy người?",
+      "asOfDate": "2025-06-01",
+      "expectedDecision": "NEED_WEB_CONFIRM",
+      "expectedReasonCode": "TEMPORAL_UNCERTAINTY",
+      "expectedSourceRefs": [],
+      "expectedAnswerPoints": [],
+      "forbiddenBehaviors": [
+        "Không dùng văn bản hiện hành cho câu hỏi lịch sử",
+        "Không trích khoản chưa có hiệu lực"
+      ],
+      "acceptanceCriteria": [
+        "actualStatus=AWAITING_WEB_CONFIRM; không citation; không job; không gọi search/fetch; không trừ lượt."
+      ],
+      "reviewer": null,
+      "verificationStatus": "source-checked-ai",
+      "corpusVersion": "road-traffic-seed-2026-11-12",
+      "notes": "Đối chiếu hiệu lực cấp văn bản và cấp khoản (Điều 10 khoản 3 từ 01/01/2026)."
+    },
+    {
+      "id": "C4-HOLDOUT-09",
+      "category": "C4_TEMPORAL_VERSION",
+      "split": "holdout",
+      "question": "Ngày 01/06/2024, theo Điều 31 khoản 3 Luật 36/2024/QH15, người điều khiển xe đạp máy có phải đội mũ bảo hiểm không?",
+      "asOfDate": "2024-06-01",
+      "expectedDecision": "NEED_WEB_CONFIRM",
+      "expectedReasonCode": "TEMPORAL_UNCERTAINTY",
+      "expectedSourceRefs": [],
+      "expectedAnswerPoints": [],
+      "forbiddenBehaviors": [
+        "Không dùng văn bản hiện hành cho câu hỏi lịch sử",
+        "Không trích khoản chưa có hiệu lực"
+      ],
+      "acceptanceCriteria": [
+        "actualStatus=AWAITING_WEB_CONFIRM; không citation; không job; không gọi search/fetch; không trừ lượt."
+      ],
+      "reviewer": null,
+      "verificationStatus": "source-checked-ai",
+      "corpusVersion": "road-traffic-seed-2026-11-12",
+      "notes": "Đối chiếu hiệu lực cấp văn bản và cấp khoản (Điều 10 khoản 3 từ 01/01/2026)."
+    },
+    {
+      "id": "C4-HOLDOUT-10",
+      "category": "C4_TEMPORAL_VERSION",
+      "split": "holdout",
+      "question": "Ngày 01/07/2026, theo Điều 10 khoản 3 Luật 36/2024/QH15, trẻ em dưới 10 tuổi có được ngồi cùng hàng ghế với người lái xe ô tô không?",
+      "asOfDate": "2026-07-01",
+      "expectedDecision": "ANSWER_LOCAL",
+      "expectedReasonCode": "SUFFICIENT",
+      "expectedSourceRefs": [
+        {
+          "documentKey": "luat-36-2024-qh15",
+          "documentNumber": "36/2024/QH15",
+          "articleCode": "dieu-10-khoan-3",
+          "locator": "Điều 10 khoản 3"
+        }
+      ],
+      "expectedAnswerPoints": [
+        "Không được ngồi cùng hàng ghế với người lái xe",
+        "Trừ trường hợp xe chỉ có một hàng ghế"
+      ],
+      "forbiddenBehaviors": [
+        "Không dùng văn bản hiện hành cho câu hỏi lịch sử",
+        "Không trích khoản chưa có hiệu lực"
+      ],
+      "acceptanceCriteria": [
+        "actualStatus=COMPLETED; outcome=ANSWERED; citation đúng tập dieu-10-khoan-3; mọi quote khớp source_snapshot; trừ đúng 1 lượt."
+      ],
+      "reviewer": null,
+      "verificationStatus": "source-checked-ai",
+      "corpusVersion": "road-traffic-seed-2026-11-12",
+      "notes": "Đối chiếu hiệu lực cấp văn bản và cấp khoản (Điều 10 khoản 3 từ 01/01/2026)."
+    },
+    {
+      "id": "C5-DEV-01",
+      "category": "C5_MISSING_FACTS",
+      "split": "dev",
+      "question": "Tôi bị phạt bao nhiêu tiền?",
+      "asOfDate": "2026-11-12",
+      "expectedDecision": "NEED_CLARIFICATION",
+      "expectedReasonCode": "MISSING_FACTS",
+      "expectedSourceRefs": [],
+      "expectedAnswerPoints": [],
+      "forbiddenBehaviors": [
+        "Không đoán dữ kiện còn thiếu",
+        "Không bỏ qua điều kiện ngoại lệ"
+      ],
+      "acceptanceCriteria": [
+        "actualStatus=NEEDS_CLARIFICATION; câu hỏi làm rõ dữ kiện; không citation; không gọi Web; không trừ lượt."
+      ],
+      "reviewer": null,
+      "verificationStatus": "design-verified",
+      "corpusVersion": "road-traffic-seed-2026-11-12",
+      "notes": "Kiểm tra hỏi lại khi thiếu dữ kiện quyết định và trả lời khi đủ dữ kiện cần kết hợp nhiều khoản."
+    },
+    {
+      "id": "C5-DEV-02",
+      "category": "C5_MISSING_FACTS",
+      "split": "dev",
+      "question": "Tôi có được chở thêm người trên xe không?",
+      "asOfDate": "2026-11-12",
+      "expectedDecision": "NEED_CLARIFICATION",
+      "expectedReasonCode": "MISSING_FACTS",
+      "expectedSourceRefs": [],
+      "expectedAnswerPoints": [],
+      "forbiddenBehaviors": [
+        "Không đoán dữ kiện còn thiếu",
+        "Không bỏ qua điều kiện ngoại lệ"
+      ],
+      "acceptanceCriteria": [
+        "actualStatus=NEEDS_CLARIFICATION; câu hỏi làm rõ dữ kiện; không citation; không gọi Web; không trừ lượt."
+      ],
+      "reviewer": null,
+      "verificationStatus": "design-verified",
+      "corpusVersion": "road-traffic-seed-2026-11-12",
+      "notes": "Kiểm tra hỏi lại khi thiếu dữ kiện quyết định và trả lời khi đủ dữ kiện cần kết hợp nhiều khoản."
+    },
+    {
+      "id": "C5-DEV-03",
+      "category": "C5_MISSING_FACTS",
+      "split": "dev",
+      "question": "Tôi có phải đội mũ bảo hiểm không?",
+      "asOfDate": "2026-11-12",
+      "expectedDecision": "NEED_CLARIFICATION",
+      "expectedReasonCode": "MISSING_FACTS",
+      "expectedSourceRefs": [],
+      "expectedAnswerPoints": [],
+      "forbiddenBehaviors": [
+        "Không đoán dữ kiện còn thiếu",
+        "Không bỏ qua điều kiện ngoại lệ"
+      ],
+      "acceptanceCriteria": [
+        "actualStatus=NEEDS_CLARIFICATION; câu hỏi làm rõ dữ kiện; không citation; không gọi Web; không trừ lượt."
+      ],
+      "reviewer": null,
+      "verificationStatus": "design-verified",
+      "corpusVersion": "road-traffic-seed-2026-11-12",
+      "notes": "Kiểm tra hỏi lại khi thiếu dữ kiện quyết định và trả lời khi đủ dữ kiện cần kết hợp nhiều khoản."
+    },
+    {
+      "id": "C5-DEV-04",
+      "category": "C5_MISSING_FACTS",
+      "split": "dev",
+      "question": "Năm ngoái tôi không đội mũ bảo hiểm, có sao không?",
+      "asOfDate": "2026-11-12",
+      "expectedDecision": "NEED_CLARIFICATION",
+      "expectedReasonCode": "MISSING_FACTS",
+      "expectedSourceRefs": [],
+      "expectedAnswerPoints": [],
+      "forbiddenBehaviors": [
+        "Không đoán dữ kiện còn thiếu",
+        "Không bỏ qua điều kiện ngoại lệ"
+      ],
+      "acceptanceCriteria": [
+        "actualStatus=NEEDS_CLARIFICATION; câu hỏi làm rõ dữ kiện; không citation; không gọi Web; không trừ lượt."
+      ],
+      "reviewer": null,
+      "verificationStatus": "design-verified",
+      "corpusVersion": "road-traffic-seed-2026-11-12",
+      "notes": "Kiểm tra hỏi lại khi thiếu dữ kiện quyết định và trả lời khi đủ dữ kiện cần kết hợp nhiều khoản."
+    },
+    {
+      "id": "C5-DEV-05",
+      "category": "C5_MISSING_FACTS",
+      "split": "dev",
+      "question": "Ngày 31/02/2025 tôi đi xe máy có phải đội mũ bảo hiểm không?",
+      "asOfDate": "2026-11-12",
+      "expectedDecision": "NEED_CLARIFICATION",
+      "expectedReasonCode": "MISSING_FACTS",
+      "expectedSourceRefs": [],
+      "expectedAnswerPoints": [],
+      "forbiddenBehaviors": [
+        "Không đoán dữ kiện còn thiếu",
+        "Không bỏ qua điều kiện ngoại lệ"
+      ],
+      "acceptanceCriteria": [
+        "actualStatus=NEEDS_CLARIFICATION; câu hỏi làm rõ dữ kiện; không citation; không gọi Web; không trừ lượt."
+      ],
+      "reviewer": null,
+      "verificationStatus": "design-verified",
+      "corpusVersion": "road-traffic-seed-2026-11-12",
+      "notes": "Kiểm tra hỏi lại khi thiếu dữ kiện quyết định và trả lời khi đủ dữ kiện cần kết hợp nhiều khoản."
+    },
+    {
+      "id": "C5-DEV-06",
+      "category": "C5_MISSING_FACTS",
+      "split": "dev",
+      "question": "Tôi đi xe máy, có phải đội mũ bảo hiểm không?",
+      "asOfDate": "2026-11-12",
+      "expectedDecision": "ANSWER_LOCAL",
+      "expectedReasonCode": "SUFFICIENT",
+      "expectedSourceRefs": [
+        {
+          "documentKey": "luat-36-2024-qh15",
+          "documentNumber": "36/2024/QH15",
+          "articleCode": "dieu-33-khoan-2",
+          "locator": "Điều 33 khoản 2"
+        }
+      ],
+      "expectedAnswerPoints": [
+        "Phải đội mũ bảo hiểm đúng quy chuẩn kỹ thuật quốc gia",
+        "Cài quai đúng quy cách"
+      ],
+      "forbiddenBehaviors": [
+        "Không đoán dữ kiện còn thiếu",
+        "Không bỏ qua điều kiện ngoại lệ"
+      ],
+      "acceptanceCriteria": [
+        "actualStatus=COMPLETED; outcome=ANSWERED; citation đúng tập dieu-33-khoan-2; mọi quote khớp source_snapshot; trừ đúng 1 lượt."
+      ],
+      "reviewer": null,
+      "verificationStatus": "design-verified",
+      "corpusVersion": "road-traffic-seed-2026-11-12",
+      "notes": "Kiểm tra hỏi lại khi thiếu dữ kiện quyết định và trả lời khi đủ dữ kiện cần kết hợp nhiều khoản."
+    },
+    {
+      "id": "C5-DEV-07",
+      "category": "C5_MISSING_FACTS",
+      "split": "dev",
+      "question": "Người điều khiển xe mô tô chở tối đa một người và phải đội mũ bảo hiểm không?",
+      "asOfDate": "2026-11-12",
+      "expectedDecision": "ANSWER_LOCAL",
+      "expectedReasonCode": "SUFFICIENT",
+      "expectedSourceRefs": [
+        {
+          "documentKey": "luat-36-2024-qh15",
+          "documentNumber": "36/2024/QH15",
+          "articleCode": "dieu-33",
+          "locator": "Điều 33"
+        }
+      ],
+      "expectedAnswerPoints": [
+        "Chỉ được chở tối đa một người",
+        "Phải đội mũ bảo hiểm đúng quy cách"
+      ],
+      "forbiddenBehaviors": [
+        "Không đoán dữ kiện còn thiếu",
+        "Không bỏ qua điều kiện ngoại lệ"
+      ],
+      "acceptanceCriteria": [
+        "actualStatus=COMPLETED; outcome=ANSWERED; citation đúng tập dieu-33-khoan-1, dieu-33-khoan-2; mọi quote khớp source_snapshot; trừ đúng 1 lượt."
+      ],
+      "reviewer": null,
+      "verificationStatus": "design-verified",
+      "corpusVersion": "road-traffic-seed-2026-11-12",
+      "notes": "Kiểm tra hỏi lại khi thiếu dữ kiện quyết định và trả lời khi đủ dữ kiện cần kết hợp nhiều khoản."
+    },
+    {
+      "id": "C5-DEV-08",
+      "category": "C5_MISSING_FACTS",
+      "split": "dev",
+      "question": "Người điều khiển xe đạp máy được chở tối đa mấy người và có phải đội mũ bảo hiểm không?",
+      "asOfDate": "2026-11-12",
+      "expectedDecision": "ANSWER_LOCAL",
+      "expectedReasonCode": "SUFFICIENT",
+      "expectedSourceRefs": [
+        {
+          "documentKey": "luat-36-2024-qh15",
+          "documentNumber": "36/2024/QH15",
+          "articleCode": "dieu-31",
+          "locator": "Điều 31"
+        }
+      ],
+      "expectedAnswerPoints": [
+        "Tối đa một người",
+        "Phải đội mũ bảo hiểm đúng quy cách"
+      ],
+      "forbiddenBehaviors": [
+        "Không đoán dữ kiện còn thiếu",
+        "Không bỏ qua điều kiện ngoại lệ"
+      ],
+      "acceptanceCriteria": [
+        "actualStatus=COMPLETED; outcome=ANSWERED; citation đúng tập dieu-31-khoan-2, dieu-31-khoan-3; mọi quote khớp source_snapshot; trừ đúng 1 lượt."
+      ],
+      "reviewer": null,
+      "verificationStatus": "design-verified",
+      "corpusVersion": "road-traffic-seed-2026-11-12",
+      "notes": "Kiểm tra hỏi lại khi thiếu dữ kiện quyết định và trả lời khi đủ dữ kiện cần kết hợp nhiều khoản."
+    },
+    {
+      "id": "C5-DEV-09",
+      "category": "C5_MISSING_FACTS",
+      "split": "dev",
+      "question": "Người lái xe ô tô có phải thắt dây đai an toàn và đảm bảo trẻ em ngồi đúng hàng ghế không?",
+      "asOfDate": "2026-11-12",
+      "expectedDecision": "ANSWER_LOCAL",
+      "expectedReasonCode": "SUFFICIENT",
+      "expectedSourceRefs": [
+        {
+          "documentKey": "luat-36-2024-qh15",
+          "documentNumber": "36/2024/QH15",
+          "articleCode": "dieu-10",
+          "locator": "Điều 10"
+        }
+      ],
+      "expectedAnswerPoints": [
+        "Phải thắt dây đai an toàn",
+        "Trẻ em dưới 10 tuổi, dưới 1,35 mét không được ngồi cùng hàng ghế với người lái"
+      ],
+      "forbiddenBehaviors": [
+        "Không đoán dữ kiện còn thiếu",
+        "Không bỏ qua điều kiện ngoại lệ"
+      ],
+      "acceptanceCriteria": [
+        "actualStatus=COMPLETED; outcome=ANSWERED; citation đúng tập dieu-10-khoan-2, dieu-10-khoan-3; mọi quote khớp source_snapshot; trừ đúng 1 lượt."
+      ],
+      "reviewer": null,
+      "verificationStatus": "design-verified",
+      "corpusVersion": "road-traffic-seed-2026-11-12",
+      "notes": "Kiểm tra hỏi lại khi thiếu dữ kiện quyết định và trả lời khi đủ dữ kiện cần kết hợp nhiều khoản."
+    },
+    {
+      "id": "C5-DEV-10",
+      "category": "C5_MISSING_FACTS",
+      "split": "dev",
+      "question": "Người tham gia giao thông phải đi đúng làn đường và chấp hành báo hiệu đường bộ gì?",
+      "asOfDate": "2026-11-12",
+      "expectedDecision": "ANSWER_LOCAL",
+      "expectedReasonCode": "SUFFICIENT",
+      "expectedSourceRefs": [
+        {
+          "documentKey": "luat-36-2024-qh15",
+          "documentNumber": "36/2024/QH15",
+          "articleCode": "dieu-10-khoan-1",
+          "locator": "Điều 10 khoản 1"
+        }
+      ],
+      "expectedAnswerPoints": [
+        "Đi đúng làn đường, phần đường quy định",
+        "Chấp hành báo hiệu đường bộ"
+      ],
+      "forbiddenBehaviors": [
+        "Không đoán dữ kiện còn thiếu",
+        "Không bỏ qua điều kiện ngoại lệ"
+      ],
+      "acceptanceCriteria": [
+        "actualStatus=COMPLETED; outcome=ANSWERED; citation đúng tập dieu-10-khoan-1; mọi quote khớp source_snapshot; trừ đúng 1 lượt."
+      ],
+      "reviewer": null,
+      "verificationStatus": "design-verified",
+      "corpusVersion": "road-traffic-seed-2026-11-12",
+      "notes": "Kiểm tra hỏi lại khi thiếu dữ kiện quyết định và trả lời khi đủ dữ kiện cần kết hợp nhiều khoản."
+    },
+    {
+      "id": "C5-HOLDOUT-01",
+      "category": "C5_MISSING_FACTS",
+      "split": "holdout",
+      "question": "Mức phạt là bao nhiêu?",
+      "asOfDate": "2026-11-12",
+      "expectedDecision": "NEED_CLARIFICATION",
+      "expectedReasonCode": "MISSING_FACTS",
+      "expectedSourceRefs": [],
+      "expectedAnswerPoints": [],
+      "forbiddenBehaviors": [
+        "Không đoán dữ kiện còn thiếu",
+        "Không bỏ qua điều kiện ngoại lệ"
+      ],
+      "acceptanceCriteria": [
+        "actualStatus=NEEDS_CLARIFICATION; câu hỏi làm rõ dữ kiện; không citation; không gọi Web; không trừ lượt."
+      ],
+      "reviewer": null,
+      "verificationStatus": "design-verified",
+      "corpusVersion": "road-traffic-seed-2026-11-12",
+      "notes": "Kiểm tra hỏi lại khi thiếu dữ kiện quyết định và trả lời khi đủ dữ kiện cần kết hợp nhiều khoản."
+    },
+    {
+      "id": "C5-HOLDOUT-02",
+      "category": "C5_MISSING_FACTS",
+      "split": "holdout",
+      "question": "Tôi có được chở người không?",
+      "asOfDate": "2026-11-12",
+      "expectedDecision": "NEED_CLARIFICATION",
+      "expectedReasonCode": "MISSING_FACTS",
+      "expectedSourceRefs": [],
+      "expectedAnswerPoints": [],
+      "forbiddenBehaviors": [
+        "Không đoán dữ kiện còn thiếu",
+        "Không bỏ qua điều kiện ngoại lệ"
+      ],
+      "acceptanceCriteria": [
+        "actualStatus=NEEDS_CLARIFICATION; câu hỏi làm rõ dữ kiện; không citation; không gọi Web; không trừ lượt."
+      ],
+      "reviewer": null,
+      "verificationStatus": "design-verified",
+      "corpusVersion": "road-traffic-seed-2026-11-12",
+      "notes": "Kiểm tra hỏi lại khi thiếu dữ kiện quyết định và trả lời khi đủ dữ kiện cần kết hợp nhiều khoản."
+    },
+    {
+      "id": "C5-HOLDOUT-03",
+      "category": "C5_MISSING_FACTS",
+      "split": "holdout",
+      "question": "Đội mũ bảo hiểm thế nào là đúng?",
+      "asOfDate": "2026-11-12",
+      "expectedDecision": "NEED_CLARIFICATION",
+      "expectedReasonCode": "MISSING_FACTS",
+      "expectedSourceRefs": [],
+      "expectedAnswerPoints": [],
+      "forbiddenBehaviors": [
+        "Không đoán dữ kiện còn thiếu",
+        "Không bỏ qua điều kiện ngoại lệ"
+      ],
+      "acceptanceCriteria": [
+        "actualStatus=NEEDS_CLARIFICATION; câu hỏi làm rõ dữ kiện; không citation; không gọi Web; không trừ lượt."
+      ],
+      "reviewer": null,
+      "verificationStatus": "design-verified",
+      "corpusVersion": "road-traffic-seed-2026-11-12",
+      "notes": "Kiểm tra hỏi lại khi thiếu dữ kiện quyết định và trả lời khi đủ dữ kiện cần kết hợp nhiều khoản."
+    },
+    {
+      "id": "C5-HOLDOUT-04",
+      "category": "C5_MISSING_FACTS",
+      "split": "holdout",
+      "question": "Trước đây tôi đi xe máy không đội mũ, giờ có bị phạt không?",
+      "asOfDate": "2026-11-12",
+      "expectedDecision": "NEED_CLARIFICATION",
+      "expectedReasonCode": "MISSING_FACTS",
+      "expectedSourceRefs": [],
+      "expectedAnswerPoints": [],
+      "forbiddenBehaviors": [
+        "Không đoán dữ kiện còn thiếu",
+        "Không bỏ qua điều kiện ngoại lệ"
+      ],
+      "acceptanceCriteria": [
+        "actualStatus=NEEDS_CLARIFICATION; câu hỏi làm rõ dữ kiện; không citation; không gọi Web; không trừ lượt."
+      ],
+      "reviewer": null,
+      "verificationStatus": "design-verified",
+      "corpusVersion": "road-traffic-seed-2026-11-12",
+      "notes": "Kiểm tra hỏi lại khi thiếu dữ kiện quyết định và trả lời khi đủ dữ kiện cần kết hợp nhiều khoản."
+    },
+    {
+      "id": "C5-HOLDOUT-05",
+      "category": "C5_MISSING_FACTS",
+      "split": "holdout",
+      "question": "Ngày 30/02/2026 tôi đi xe đạp máy có phải đội mũ bảo hiểm không?",
+      "asOfDate": "2026-11-12",
+      "expectedDecision": "NEED_CLARIFICATION",
+      "expectedReasonCode": "MISSING_FACTS",
+      "expectedSourceRefs": [],
+      "expectedAnswerPoints": [],
+      "forbiddenBehaviors": [
+        "Không đoán dữ kiện còn thiếu",
+        "Không bỏ qua điều kiện ngoại lệ"
+      ],
+      "acceptanceCriteria": [
+        "actualStatus=NEEDS_CLARIFICATION; câu hỏi làm rõ dữ kiện; không citation; không gọi Web; không trừ lượt."
+      ],
+      "reviewer": null,
+      "verificationStatus": "design-verified",
+      "corpusVersion": "road-traffic-seed-2026-11-12",
+      "notes": "Kiểm tra hỏi lại khi thiếu dữ kiện quyết định và trả lời khi đủ dữ kiện cần kết hợp nhiều khoản."
+    },
+    {
+      "id": "C5-HOLDOUT-06",
+      "category": "C5_MISSING_FACTS",
+      "split": "holdout",
+      "question": "Tôi đi xe đạp máy có phải đội mũ bảo hiểm không?",
+      "asOfDate": "2026-11-12",
+      "expectedDecision": "ANSWER_LOCAL",
+      "expectedReasonCode": "SUFFICIENT",
+      "expectedSourceRefs": [
+        {
+          "documentKey": "luat-36-2024-qh15",
+          "documentNumber": "36/2024/QH15",
+          "articleCode": "dieu-31-khoan-3",
+          "locator": "Điều 31 khoản 3"
+        }
+      ],
+      "expectedAnswerPoints": [
+        "Phải đội mũ bảo hiểm đúng quy chuẩn kỹ thuật quốc gia",
+        "Cài quai đúng quy cách"
+      ],
+      "forbiddenBehaviors": [
+        "Không đoán dữ kiện còn thiếu",
+        "Không bỏ qua điều kiện ngoại lệ"
+      ],
+      "acceptanceCriteria": [
+        "actualStatus=COMPLETED; outcome=ANSWERED; citation đúng tập dieu-31-khoan-3; mọi quote khớp source_snapshot; trừ đúng 1 lượt."
+      ],
+      "reviewer": null,
+      "verificationStatus": "design-verified",
+      "corpusVersion": "road-traffic-seed-2026-11-12",
+      "notes": "Kiểm tra hỏi lại khi thiếu dữ kiện quyết định và trả lời khi đủ dữ kiện cần kết hợp nhiều khoản."
+    },
+    {
+      "id": "C5-HOLDOUT-07",
+      "category": "C5_MISSING_FACTS",
+      "split": "holdout",
+      "question": "Người điều khiển xe mô tô chở tối đa một người và phải đội mũ bảo hiểm đúng quy cách không?",
+      "asOfDate": "2026-11-12",
+      "expectedDecision": "ANSWER_LOCAL",
+      "expectedReasonCode": "SUFFICIENT",
+      "expectedSourceRefs": [
+        {
+          "documentKey": "luat-36-2024-qh15",
+          "documentNumber": "36/2024/QH15",
+          "articleCode": "dieu-33",
+          "locator": "Điều 33"
+        }
+      ],
+      "expectedAnswerPoints": [
+        "Chỉ được chở tối đa một người",
+        "Phải đội mũ bảo hiểm đúng quy cách"
+      ],
+      "forbiddenBehaviors": [
+        "Không đoán dữ kiện còn thiếu",
+        "Không bỏ qua điều kiện ngoại lệ"
+      ],
+      "acceptanceCriteria": [
+        "actualStatus=COMPLETED; outcome=ANSWERED; citation đúng tập dieu-33-khoan-1, dieu-33-khoan-2; mọi quote khớp source_snapshot; trừ đúng 1 lượt."
+      ],
+      "reviewer": null,
+      "verificationStatus": "design-verified",
+      "corpusVersion": "road-traffic-seed-2026-11-12",
+      "notes": "Kiểm tra hỏi lại khi thiếu dữ kiện quyết định và trả lời khi đủ dữ kiện cần kết hợp nhiều khoản."
+    },
+    {
+      "id": "C5-HOLDOUT-08",
+      "category": "C5_MISSING_FACTS",
+      "split": "holdout",
+      "question": "Xe đạp máy được chở tối đa một người và người ngồi sau có phải đội mũ bảo hiểm không?",
+      "asOfDate": "2026-11-12",
+      "expectedDecision": "ANSWER_LOCAL",
+      "expectedReasonCode": "SUFFICIENT",
+      "expectedSourceRefs": [
+        {
+          "documentKey": "luat-36-2024-qh15",
+          "documentNumber": "36/2024/QH15",
+          "articleCode": "dieu-31",
+          "locator": "Điều 31"
+        }
+      ],
+      "expectedAnswerPoints": [
+        "Tối đa một người",
+        "Phải đội mũ bảo hiểm đúng quy cách"
+      ],
+      "forbiddenBehaviors": [
+        "Không đoán dữ kiện còn thiếu",
+        "Không bỏ qua điều kiện ngoại lệ"
+      ],
+      "acceptanceCriteria": [
+        "actualStatus=COMPLETED; outcome=ANSWERED; citation đúng tập dieu-31-khoan-2, dieu-31-khoan-3; mọi quote khớp source_snapshot; trừ đúng 1 lượt."
+      ],
+      "reviewer": null,
+      "verificationStatus": "design-verified",
+      "corpusVersion": "road-traffic-seed-2026-11-12",
+      "notes": "Kiểm tra hỏi lại khi thiếu dữ kiện quyết định và trả lời khi đủ dữ kiện cần kết hợp nhiều khoản."
+    },
+    {
+      "id": "C5-HOLDOUT-09",
+      "category": "C5_MISSING_FACTS",
+      "split": "holdout",
+      "question": "Người lái xe ô tô phải thắt dây đai an toàn và trẻ em dưới 10 tuổi có được ngồi cùng hàng ghế không?",
+      "asOfDate": "2026-11-12",
+      "expectedDecision": "ANSWER_LOCAL",
+      "expectedReasonCode": "SUFFICIENT",
+      "expectedSourceRefs": [
+        {
+          "documentKey": "luat-36-2024-qh15",
+          "documentNumber": "36/2024/QH15",
+          "articleCode": "dieu-10",
+          "locator": "Điều 10"
+        }
+      ],
+      "expectedAnswerPoints": [
+        "Phải thắt dây đai an toàn",
+        "Trẻ em dưới 10 tuổi không được ngồi cùng hàng ghế với người lái"
+      ],
+      "forbiddenBehaviors": [
+        "Không đoán dữ kiện còn thiếu",
+        "Không bỏ qua điều kiện ngoại lệ"
+      ],
+      "acceptanceCriteria": [
+        "actualStatus=COMPLETED; outcome=ANSWERED; citation đúng tập dieu-10-khoan-2, dieu-10-khoan-3; mọi quote khớp source_snapshot; trừ đúng 1 lượt."
+      ],
+      "reviewer": null,
+      "verificationStatus": "design-verified",
+      "corpusVersion": "road-traffic-seed-2026-11-12",
+      "notes": "Kiểm tra hỏi lại khi thiếu dữ kiện quyết định và trả lời khi đủ dữ kiện cần kết hợp nhiều khoản."
+    },
+    {
+      "id": "C5-HOLDOUT-10",
+      "category": "C5_MISSING_FACTS",
+      "split": "holdout",
+      "question": "Người tham gia giao thông phải đi bên phải, đúng làn đường và chấp hành báo hiệu đường bộ không?",
+      "asOfDate": "2026-11-12",
+      "expectedDecision": "ANSWER_LOCAL",
+      "expectedReasonCode": "SUFFICIENT",
+      "expectedSourceRefs": [
+        {
+          "documentKey": "luat-36-2024-qh15",
+          "documentNumber": "36/2024/QH15",
+          "articleCode": "dieu-10-khoan-1",
+          "locator": "Điều 10 khoản 1"
+        }
+      ],
+      "expectedAnswerPoints": [
+        "Đi bên phải theo chiều đi của mình",
+        "Đi đúng làn đường, phần đường quy định",
+        "Chấp hành báo hiệu đường bộ"
+      ],
+      "forbiddenBehaviors": [
+        "Không đoán dữ kiện còn thiếu",
+        "Không bỏ qua điều kiện ngoại lệ"
+      ],
+      "acceptanceCriteria": [
+        "actualStatus=COMPLETED; outcome=ANSWERED; citation đúng tập dieu-10-khoan-1; mọi quote khớp source_snapshot; trừ đúng 1 lượt."
+      ],
+      "reviewer": null,
+      "verificationStatus": "design-verified",
+      "corpusVersion": "road-traffic-seed-2026-11-12",
+      "notes": "Kiểm tra hỏi lại khi thiếu dữ kiện quyết định và trả lời khi đủ dữ kiện cần kết hợp nhiều khoản."
+    },
+    {
+      "id": "C6-DEV-01",
+      "category": "C6_OUT_OF_SCOPE",
+      "split": "dev",
+      "question": "Thủ tục ly hôn đơn phương cần những giấy tờ gì?",
+      "asOfDate": "2026-11-12",
+      "expectedDecision": "OUT_OF_SCOPE",
+      "expectedReasonCode": "OUT_OF_SCOPE",
+      "expectedSourceRefs": [],
+      "expectedAnswerPoints": [],
+      "forbiddenBehaviors": [
+        "Không tự mở rộng corpus",
+        "Không bịa căn cứ ngoài lĩnh vực giao thông đường bộ"
+      ],
+      "acceptanceCriteria": [
+        "actualStatus=COMPLETED; outcome=OUT_OF_SCOPE; không citation; không job; không mở rộng corpus; không trừ lượt."
+      ],
+      "reviewer": null,
+      "verificationStatus": "design-verified",
+      "corpusVersion": "road-traffic-seed-2026-11-12",
+      "notes": "Kiểm tra giới hạn phạm vi; câu hỏi thuộc lĩnh vực khác không được tự mở rộng corpus."
+    },
+    {
+      "id": "C6-DEV-02",
+      "category": "C6_OUT_OF_SCOPE",
+      "split": "dev",
+      "question": "Mức thuế thu nhập cá nhân khi bán nhà là bao nhiêu?",
+      "asOfDate": "2026-11-12",
+      "expectedDecision": "OUT_OF_SCOPE",
+      "expectedReasonCode": "OUT_OF_SCOPE",
+      "expectedSourceRefs": [],
+      "expectedAnswerPoints": [],
+      "forbiddenBehaviors": [
+        "Không tự mở rộng corpus",
+        "Không bịa căn cứ ngoài lĩnh vực giao thông đường bộ"
+      ],
+      "acceptanceCriteria": [
+        "actualStatus=COMPLETED; outcome=OUT_OF_SCOPE; không citation; không job; không mở rộng corpus; không trừ lượt."
+      ],
+      "reviewer": null,
+      "verificationStatus": "design-verified",
+      "corpusVersion": "road-traffic-seed-2026-11-12",
+      "notes": "Kiểm tra giới hạn phạm vi; câu hỏi thuộc lĩnh vực khác không được tự mở rộng corpus."
+    },
+    {
+      "id": "C6-DEV-03",
+      "category": "C6_OUT_OF_SCOPE",
+      "split": "dev",
+      "question": "Đất ở nông thôn có được cấp sổ đỏ không?",
+      "asOfDate": "2026-11-12",
+      "expectedDecision": "OUT_OF_SCOPE",
+      "expectedReasonCode": "OUT_OF_SCOPE",
+      "expectedSourceRefs": [],
+      "expectedAnswerPoints": [],
+      "forbiddenBehaviors": [
+        "Không tự mở rộng corpus",
+        "Không bịa căn cứ ngoài lĩnh vực giao thông đường bộ"
+      ],
+      "acceptanceCriteria": [
+        "actualStatus=COMPLETED; outcome=OUT_OF_SCOPE; không citation; không job; không mở rộng corpus; không trừ lượt."
+      ],
+      "reviewer": null,
+      "verificationStatus": "design-verified",
+      "corpusVersion": "road-traffic-seed-2026-11-12",
+      "notes": "Kiểm tra giới hạn phạm vi; câu hỏi thuộc lĩnh vực khác không được tự mở rộng corpus."
+    },
+    {
+      "id": "C6-DEV-04",
+      "category": "C6_OUT_OF_SCOPE",
+      "split": "dev",
+      "question": "Người lao động nghỉ việc có được hưởng trợ cấp thất nghiệp không?",
+      "asOfDate": "2026-11-12",
+      "expectedDecision": "OUT_OF_SCOPE",
+      "expectedReasonCode": "OUT_OF_SCOPE",
+      "expectedSourceRefs": [],
+      "expectedAnswerPoints": [],
+      "forbiddenBehaviors": [
+        "Không tự mở rộng corpus",
+        "Không bịa căn cứ ngoài lĩnh vực giao thông đường bộ"
+      ],
+      "acceptanceCriteria": [
+        "actualStatus=COMPLETED; outcome=OUT_OF_SCOPE; không citation; không job; không mở rộng corpus; không trừ lượt."
+      ],
+      "reviewer": null,
+      "verificationStatus": "design-verified",
+      "corpusVersion": "road-traffic-seed-2026-11-12",
+      "notes": "Kiểm tra giới hạn phạm vi; câu hỏi thuộc lĩnh vực khác không được tự mở rộng corpus."
+    },
+    {
+      "id": "C6-DEV-05",
+      "category": "C6_OUT_OF_SCOPE",
+      "split": "dev",
+      "question": "Tội trộm cắp tài sản bị phạt tù bao nhiêu năm?",
+      "asOfDate": "2026-11-12",
+      "expectedDecision": "OUT_OF_SCOPE",
+      "expectedReasonCode": "OUT_OF_SCOPE",
+      "expectedSourceRefs": [],
+      "expectedAnswerPoints": [],
+      "forbiddenBehaviors": [
+        "Không tự mở rộng corpus",
+        "Không bịa căn cứ ngoài lĩnh vực giao thông đường bộ"
+      ],
+      "acceptanceCriteria": [
+        "actualStatus=COMPLETED; outcome=OUT_OF_SCOPE; không citation; không job; không mở rộng corpus; không trừ lượt."
+      ],
+      "reviewer": null,
+      "verificationStatus": "design-verified",
+      "corpusVersion": "road-traffic-seed-2026-11-12",
+      "notes": "Kiểm tra giới hạn phạm vi; câu hỏi thuộc lĩnh vực khác không được tự mở rộng corpus."
+    },
+    {
+      "id": "C6-DEV-06",
+      "category": "C6_OUT_OF_SCOPE",
+      "split": "dev",
+      "question": "Thủ tục đăng ký kết hôn ở xã cần gì?",
+      "asOfDate": "2026-11-12",
+      "expectedDecision": "OUT_OF_SCOPE",
+      "expectedReasonCode": "OUT_OF_SCOPE",
+      "expectedSourceRefs": [],
+      "expectedAnswerPoints": [],
+      "forbiddenBehaviors": [
+        "Không tự mở rộng corpus",
+        "Không bịa căn cứ ngoài lĩnh vực giao thông đường bộ"
+      ],
+      "acceptanceCriteria": [
+        "actualStatus=COMPLETED; outcome=OUT_OF_SCOPE; không citation; không job; không mở rộng corpus; không trừ lượt."
+      ],
+      "reviewer": null,
+      "verificationStatus": "design-verified",
+      "corpusVersion": "road-traffic-seed-2026-11-12",
+      "notes": "Kiểm tra giới hạn phạm vi; câu hỏi thuộc lĩnh vực khác không được tự mở rộng corpus."
+    },
+    {
+      "id": "C6-DEV-07",
+      "category": "C6_OUT_OF_SCOPE",
+      "split": "dev",
+      "question": "Thuế giá trị gia tăng khi mua xe ô tô là bao nhiêu?",
+      "asOfDate": "2026-11-12",
+      "expectedDecision": "OUT_OF_SCOPE",
+      "expectedReasonCode": "OUT_OF_SCOPE",
+      "expectedSourceRefs": [],
+      "expectedAnswerPoints": [],
+      "forbiddenBehaviors": [
+        "Không tự mở rộng corpus",
+        "Không bịa căn cứ ngoài lĩnh vực giao thông đường bộ"
+      ],
+      "acceptanceCriteria": [
+        "actualStatus=COMPLETED; outcome=OUT_OF_SCOPE; không citation; không job; không mở rộng corpus; không trừ lượt."
+      ],
+      "reviewer": null,
+      "verificationStatus": "design-verified",
+      "corpusVersion": "road-traffic-seed-2026-11-12",
+      "notes": "Kiểm tra giới hạn phạm vi; câu hỏi thuộc lĩnh vực khác không được tự mở rộng corpus."
+    },
+    {
+      "id": "C6-DEV-08",
+      "category": "C6_OUT_OF_SCOPE",
+      "split": "dev",
+      "question": "Quyền sử dụng đất khi ly hôn được chia thế nào?",
+      "asOfDate": "2026-11-12",
+      "expectedDecision": "OUT_OF_SCOPE",
+      "expectedReasonCode": "OUT_OF_SCOPE",
+      "expectedSourceRefs": [],
+      "expectedAnswerPoints": [],
+      "forbiddenBehaviors": [
+        "Không tự mở rộng corpus",
+        "Không bịa căn cứ ngoài lĩnh vực giao thông đường bộ"
+      ],
+      "acceptanceCriteria": [
+        "actualStatus=COMPLETED; outcome=OUT_OF_SCOPE; không citation; không job; không mở rộng corpus; không trừ lượt."
+      ],
+      "reviewer": null,
+      "verificationStatus": "design-verified",
+      "corpusVersion": "road-traffic-seed-2026-11-12",
+      "notes": "Kiểm tra giới hạn phạm vi; câu hỏi thuộc lĩnh vực khác không được tự mở rộng corpus."
+    },
+    {
+      "id": "C6-DEV-09",
+      "category": "C6_OUT_OF_SCOPE",
+      "split": "dev",
+      "question": "Hợp đồng lao động có thời hạn tối đa bao lâu?",
+      "asOfDate": "2026-11-12",
+      "expectedDecision": "OUT_OF_SCOPE",
+      "expectedReasonCode": "OUT_OF_SCOPE",
+      "expectedSourceRefs": [],
+      "expectedAnswerPoints": [],
+      "forbiddenBehaviors": [
+        "Không tự mở rộng corpus",
+        "Không bịa căn cứ ngoài lĩnh vực giao thông đường bộ"
+      ],
+      "acceptanceCriteria": [
+        "actualStatus=COMPLETED; outcome=OUT_OF_SCOPE; không citation; không job; không mở rộng corpus; không trừ lượt."
+      ],
+      "reviewer": null,
+      "verificationStatus": "design-verified",
+      "corpusVersion": "road-traffic-seed-2026-11-12",
+      "notes": "Kiểm tra giới hạn phạm vi; câu hỏi thuộc lĩnh vực khác không được tự mở rộng corpus."
+    },
+    {
+      "id": "C6-DEV-10",
+      "category": "C6_OUT_OF_SCOPE",
+      "split": "dev",
+      "question": "Người bị truy tố tội đánh người gây thương tích thì bị xử lý thế nào?",
+      "asOfDate": "2026-11-12",
+      "expectedDecision": "OUT_OF_SCOPE",
+      "expectedReasonCode": "OUT_OF_SCOPE",
+      "expectedSourceRefs": [],
+      "expectedAnswerPoints": [],
+      "forbiddenBehaviors": [
+        "Không tự mở rộng corpus",
+        "Không bịa căn cứ ngoài lĩnh vực giao thông đường bộ"
+      ],
+      "acceptanceCriteria": [
+        "actualStatus=COMPLETED; outcome=OUT_OF_SCOPE; không citation; không job; không mở rộng corpus; không trừ lượt."
+      ],
+      "reviewer": null,
+      "verificationStatus": "design-verified",
+      "corpusVersion": "road-traffic-seed-2026-11-12",
+      "notes": "Kiểm tra giới hạn phạm vi; câu hỏi thuộc lĩnh vực khác không được tự mở rộng corpus."
+    },
+    {
+      "id": "C6-HOLDOUT-01",
+      "category": "C6_OUT_OF_SCOPE",
+      "split": "holdout",
+      "question": "Ly hôn có cần hòa giải không?",
+      "asOfDate": "2026-11-12",
+      "expectedDecision": "OUT_OF_SCOPE",
+      "expectedReasonCode": "OUT_OF_SCOPE",
+      "expectedSourceRefs": [],
+      "expectedAnswerPoints": [],
+      "forbiddenBehaviors": [
+        "Không tự mở rộng corpus",
+        "Không bịa căn cứ ngoài lĩnh vực giao thông đường bộ"
+      ],
+      "acceptanceCriteria": [
+        "actualStatus=COMPLETED; outcome=OUT_OF_SCOPE; không citation; không job; không mở rộng corpus; không trừ lượt."
+      ],
+      "reviewer": null,
+      "verificationStatus": "design-verified",
+      "corpusVersion": "road-traffic-seed-2026-11-12",
+      "notes": "Kiểm tra giới hạn phạm vi; câu hỏi thuộc lĩnh vực khác không được tự mở rộng corpus."
+    },
+    {
+      "id": "C6-HOLDOUT-02",
+      "category": "C6_OUT_OF_SCOPE",
+      "split": "holdout",
+      "question": "Thuế môn bài phải nộp khi nào?",
+      "asOfDate": "2026-11-12",
+      "expectedDecision": "OUT_OF_SCOPE",
+      "expectedReasonCode": "OUT_OF_SCOPE",
+      "expectedSourceRefs": [],
+      "expectedAnswerPoints": [],
+      "forbiddenBehaviors": [
+        "Không tự mở rộng corpus",
+        "Không bịa căn cứ ngoài lĩnh vực giao thông đường bộ"
+      ],
+      "acceptanceCriteria": [
+        "actualStatus=COMPLETED; outcome=OUT_OF_SCOPE; không citation; không job; không mở rộng corpus; không trừ lượt."
+      ],
+      "reviewer": null,
+      "verificationStatus": "design-verified",
+      "corpusVersion": "road-traffic-seed-2026-11-12",
+      "notes": "Kiểm tra giới hạn phạm vi; câu hỏi thuộc lĩnh vực khác không được tự mở rộng corpus."
+    },
+    {
+      "id": "C6-HOLDOUT-03",
+      "category": "C6_OUT_OF_SCOPE",
+      "split": "holdout",
+      "question": "Chuyển nhượng đất cần những giấy tờ gì?",
+      "asOfDate": "2026-11-12",
+      "expectedDecision": "OUT_OF_SCOPE",
+      "expectedReasonCode": "OUT_OF_SCOPE",
+      "expectedSourceRefs": [],
+      "expectedAnswerPoints": [],
+      "forbiddenBehaviors": [
+        "Không tự mở rộng corpus",
+        "Không bịa căn cứ ngoài lĩnh vực giao thông đường bộ"
+      ],
+      "acceptanceCriteria": [
+        "actualStatus=COMPLETED; outcome=OUT_OF_SCOPE; không citation; không job; không mở rộng corpus; không trừ lượt."
+      ],
+      "reviewer": null,
+      "verificationStatus": "design-verified",
+      "corpusVersion": "road-traffic-seed-2026-11-12",
+      "notes": "Kiểm tra giới hạn phạm vi; câu hỏi thuộc lĩnh vực khác không được tự mở rộng corpus."
+    },
+    {
+      "id": "C6-HOLDOUT-04",
+      "category": "C6_OUT_OF_SCOPE",
+      "split": "holdout",
+      "question": "Thời gian thử việc tối đa theo luật lao động là bao lâu?",
+      "asOfDate": "2026-11-12",
+      "expectedDecision": "OUT_OF_SCOPE",
+      "expectedReasonCode": "OUT_OF_SCOPE",
+      "expectedSourceRefs": [],
+      "expectedAnswerPoints": [],
+      "forbiddenBehaviors": [
+        "Không tự mở rộng corpus",
+        "Không bịa căn cứ ngoài lĩnh vực giao thông đường bộ"
+      ],
+      "acceptanceCriteria": [
+        "actualStatus=COMPLETED; outcome=OUT_OF_SCOPE; không citation; không job; không mở rộng corpus; không trừ lượt."
+      ],
+      "reviewer": null,
+      "verificationStatus": "design-verified",
+      "corpusVersion": "road-traffic-seed-2026-11-12",
+      "notes": "Kiểm tra giới hạn phạm vi; câu hỏi thuộc lĩnh vực khác không được tự mở rộng corpus."
+    },
+    {
+      "id": "C6-HOLDOUT-05",
+      "category": "C6_OUT_OF_SCOPE",
+      "split": "holdout",
+      "question": "Tàng trữ ma túy bị phạt tù bao nhiêu năm?",
+      "asOfDate": "2026-11-12",
+      "expectedDecision": "OUT_OF_SCOPE",
+      "expectedReasonCode": "OUT_OF_SCOPE",
+      "expectedSourceRefs": [],
+      "expectedAnswerPoints": [],
+      "forbiddenBehaviors": [
+        "Không tự mở rộng corpus",
+        "Không bịa căn cứ ngoài lĩnh vực giao thông đường bộ"
+      ],
+      "acceptanceCriteria": [
+        "actualStatus=COMPLETED; outcome=OUT_OF_SCOPE; không citation; không job; không mở rộng corpus; không trừ lượt."
+      ],
+      "reviewer": null,
+      "verificationStatus": "design-verified",
+      "corpusVersion": "road-traffic-seed-2026-11-12",
+      "notes": "Kiểm tra giới hạn phạm vi; câu hỏi thuộc lĩnh vực khác không được tự mở rộng corpus."
+    },
+    {
+      "id": "C6-HOLDOUT-06",
+      "category": "C6_OUT_OF_SCOPE",
+      "split": "holdout",
+      "question": "Đăng ký khai sinh cho con ở đâu?",
+      "asOfDate": "2026-11-12",
+      "expectedDecision": "OUT_OF_SCOPE",
+      "expectedReasonCode": "OUT_OF_SCOPE",
+      "expectedSourceRefs": [],
+      "expectedAnswerPoints": [],
+      "forbiddenBehaviors": [
+        "Không tự mở rộng corpus",
+        "Không bịa căn cứ ngoài lĩnh vực giao thông đường bộ"
+      ],
+      "acceptanceCriteria": [
+        "actualStatus=COMPLETED; outcome=OUT_OF_SCOPE; không citation; không job; không mở rộng corpus; không trừ lượt."
+      ],
+      "reviewer": null,
+      "verificationStatus": "design-verified",
+      "corpusVersion": "road-traffic-seed-2026-11-12",
+      "notes": "Kiểm tra giới hạn phạm vi; câu hỏi thuộc lĩnh vực khác không được tự mở rộng corpus."
+    },
+    {
+      "id": "C6-HOLDOUT-07",
+      "category": "C6_OUT_OF_SCOPE",
+      "split": "holdout",
+      "question": "Thuế trước bạ nhà đất tính thế nào?",
+      "asOfDate": "2026-11-12",
+      "expectedDecision": "OUT_OF_SCOPE",
+      "expectedReasonCode": "OUT_OF_SCOPE",
+      "expectedSourceRefs": [],
+      "expectedAnswerPoints": [],
+      "forbiddenBehaviors": [
+        "Không tự mở rộng corpus",
+        "Không bịa căn cứ ngoài lĩnh vực giao thông đường bộ"
+      ],
+      "acceptanceCriteria": [
+        "actualStatus=COMPLETED; outcome=OUT_OF_SCOPE; không citation; không job; không mở rộng corpus; không trừ lượt."
+      ],
+      "reviewer": null,
+      "verificationStatus": "design-verified",
+      "corpusVersion": "road-traffic-seed-2026-11-12",
+      "notes": "Kiểm tra giới hạn phạm vi; câu hỏi thuộc lĩnh vực khác không được tự mở rộng corpus."
+    },
+    {
+      "id": "C6-HOLDOUT-08",
+      "category": "C6_OUT_OF_SCOPE",
+      "split": "holdout",
+      "question": "Tranh chấp đất đai giải quyết ở tòa án nào?",
+      "asOfDate": "2026-11-12",
+      "expectedDecision": "OUT_OF_SCOPE",
+      "expectedReasonCode": "OUT_OF_SCOPE",
+      "expectedSourceRefs": [],
+      "expectedAnswerPoints": [],
+      "forbiddenBehaviors": [
+        "Không tự mở rộng corpus",
+        "Không bịa căn cứ ngoài lĩnh vực giao thông đường bộ"
+      ],
+      "acceptanceCriteria": [
+        "actualStatus=COMPLETED; outcome=OUT_OF_SCOPE; không citation; không job; không mở rộng corpus; không trừ lượt."
+      ],
+      "reviewer": null,
+      "verificationStatus": "design-verified",
+      "corpusVersion": "road-traffic-seed-2026-11-12",
+      "notes": "Kiểm tra giới hạn phạm vi; câu hỏi thuộc lĩnh vực khác không được tự mở rộng corpus."
+    },
+    {
+      "id": "C6-HOLDOUT-09",
+      "category": "C6_OUT_OF_SCOPE",
+      "split": "holdout",
+      "question": "Bảo hiểm xã hội bắt buộc gồm những chế độ gì?",
+      "asOfDate": "2026-11-12",
+      "expectedDecision": "OUT_OF_SCOPE",
+      "expectedReasonCode": "OUT_OF_SCOPE",
+      "expectedSourceRefs": [],
+      "expectedAnswerPoints": [],
+      "forbiddenBehaviors": [
+        "Không tự mở rộng corpus",
+        "Không bịa căn cứ ngoài lĩnh vực giao thông đường bộ"
+      ],
+      "acceptanceCriteria": [
+        "actualStatus=COMPLETED; outcome=OUT_OF_SCOPE; không citation; không job; không mở rộng corpus; không trừ lượt."
+      ],
+      "reviewer": null,
+      "verificationStatus": "design-verified",
+      "corpusVersion": "road-traffic-seed-2026-11-12",
+      "notes": "Kiểm tra giới hạn phạm vi; câu hỏi thuộc lĩnh vực khác không được tự mở rộng corpus."
+    },
+    {
+      "id": "C6-HOLDOUT-10",
+      "category": "C6_OUT_OF_SCOPE",
+      "split": "holdout",
+      "question": "Người chưa thành niên phạm tội bị xử lý ra sao?",
+      "asOfDate": "2026-11-12",
+      "expectedDecision": "OUT_OF_SCOPE",
+      "expectedReasonCode": "OUT_OF_SCOPE",
+      "expectedSourceRefs": [],
+      "expectedAnswerPoints": [],
+      "forbiddenBehaviors": [
+        "Không tự mở rộng corpus",
+        "Không bịa căn cứ ngoài lĩnh vực giao thông đường bộ"
+      ],
+      "acceptanceCriteria": [
+        "actualStatus=COMPLETED; outcome=OUT_OF_SCOPE; không citation; không job; không mở rộng corpus; không trừ lượt."
+      ],
+      "reviewer": null,
+      "verificationStatus": "design-verified",
+      "corpusVersion": "road-traffic-seed-2026-11-12",
+      "notes": "Kiểm tra giới hạn phạm vi; câu hỏi thuộc lĩnh vực khác không được tự mở rộng corpus."
+    }
+  ]
+}
