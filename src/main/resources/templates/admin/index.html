@@ -13,181 +13,86 @@
 
 <div th:replace="~{fragments/layout :: topbar('admin')}"></div>
 
-<main id="main" class="page">
+<main id="main" class="page page-admin">
+    <div class="admin-workspace">
 
-    <section class="admin-hero card">
-        <div class="admin-hero-top">
-            <div>
-                <p class="eyebrow">Khu vực hạn chế · ROLE_ADMIN</p>
-                <h1>Quản trị hệ thống</h1>
-                <p class="lead">
-                    Theo dõi trạng thái job tìm Web, rà soát văn bản đang cách ly và duyệt xuất bản sau khi kiểm tra metadata pháp lý.
-                </p>
-            </div>
-            <nav class="admin-nav" aria-label="Điều hướng quản trị">
-                <a th:href="@{/admin/web-search-jobs}">Job tìm Web</a>
-                <a href="#users-heading">Quản lý tài khoản</a>
-                <a th:href="@{/admin}">Tổng quan quản trị</a>
-                <a th:href="@{/chat}">Về trang chat</a>
-            </nav>
-        </div>
+        <aside th:replace="~{fragments/admin-nav :: header('overview', 'Quản trị hệ thống', 'Tổng quan vận hành hệ thống LawRAG: người dùng, hàng đợi phản hồi diễn đàn, ngân sách API, tài liệu PDF RAG và cấu hình tính cách AI.')}"></aside>
 
-        <div class="kpi-grid" aria-label="Thống kê nhanh">
-            <div class="kpi-card">
-                <span class="kpi-label">Job tìm Web</span>
-                <strong class="kpi-value" th:text="${#lists.size(jobs)}">0</strong>
-            </div>
-            <div class="kpi-card kpi-warn">
+        <div class="admin-main">
+            <div th:replace="~{fragments/admin-nav :: alerts}"></div>
+
+            <section class="admin-section" aria-label="Thống kê nhanh">
+                <div class="kpi-grid kpi-grid-wide">
+            <a class="kpi-card kpi-link" th:href="@{/admin/forum(requestStatus='OPEN')}"
+               th:classappend="${stats.openPosts > 0} ? ' kpi-warn'">
+                <span class="kpi-label">Bài diễn đàn chờ phản hồi</span>
+                <strong class="kpi-value" th:text="${stats.openPosts}">0</strong>
+                <span class="kpi-sub" th:text="|Hiển thị: ${stats.publishedPosts} · Đã gỡ: ${stats.removedPosts}|">0</span>
+            </a>
+            <a class="kpi-card kpi-link" th:href="@{/admin/web-search-jobs}"
+               th:classappend="${stats.quarantinedDocuments > 0} ? ' kpi-warn'">
                 <span class="kpi-label">Văn bản đang cách ly</span>
-                <strong class="kpi-value" th:text="${#lists.size(quarantinedDocuments)}">0</strong>
-            </div>
-            <div class="kpi-card">
-                <span class="kpi-label">Tài khoản</span>
-                <strong class="kpi-value" th:text="${#lists.size(users)}">0</strong>
-            </div>
-            <div class="kpi-card">
-                <span class="kpi-label">Bản ghi Audit gần đây</span>
-                <strong class="kpi-value" th:text="${#lists.size(auditRows)}">0</strong>
-            </div>
+                <strong class="kpi-value" th:text="${stats.quarantinedDocuments}">0</strong>
+                <span class="kpi-sub" th:text="|Sẵn sàng (READY): ${stats.readyDocuments}|">0</span>
+            </a>
+            <a class="kpi-card kpi-link" th:href="@{/admin/web-search-jobs}">
+                <span class="kpi-label">Tài liệu PDF (RAG)</span>
+                <strong class="kpi-value" th:text="${stats.readyDocuments}">0</strong>
+                <span class="kpi-sub" th:text="|Điều: ${stats.totalArticles} · Vectors: ${stats.totalEmbeddings}|">0</span>
+            </a>
+            <a class="kpi-card kpi-link" th:href="@{/admin/users}">
+                <span class="kpi-label">Tài khoản hệ thống</span>
+                <strong class="kpi-value" th:text="${stats.totalUsers}">0</strong>
+                <span class="kpi-sub" th:text="|Admin: ${stats.adminUsers} · Đã khóa: ${stats.disabledUsers}|">0</span>
+            </a>
+            <a class="kpi-card kpi-link" th:href="@{/admin/logs(tab='rag')}">
+                <span class="kpi-label">Hỏi đáp Chat RAG</span>
+                <strong class="kpi-value" th:text="${stats.totalQuestions}">0</strong>
+                <span class="kpi-sub" th:text="|Hoàn tất: ${stats.answeredQuestions} · Lỗi: ${stats.failedQuestions}|">0</span>
+            </a>
+            <a class="kpi-card kpi-link" th:href="@{/admin/llm}">
+                <span class="kpi-label">Tính cách LLM mặc định</span>
+                <strong class="kpi-value kpi-value-sm" th:text="${stats.defaultPersonaName}">Chuyên nghiệp</strong>
+                <span class="kpi-sub" th:text="|Đang kích hoạt: ${stats.activePersonas}|">3</span>
+            </a>
         </div>
     </section>
 
-    <div class="alert alert-ok admin-flash" th:if="${message}" role="status">
-        <p th:text="${message}">Đã duyệt.</p>
-    </div>
-    <div class="alert alert-error admin-flash" th:if="${error}" role="alert">
-        <p th:text="${error}">Không thể duyệt.</p>
-    </div>
-
-    <section class="admin-section" aria-labelledby="jobs-heading">
+    <section class="admin-section card admin-panel" aria-labelledby="budget-heading">
         <div class="section-head">
-            <h2 id="jobs-heading">
-                Job tìm Web
-                <span class="count-pill" th:text="${#lists.size(jobs)}">0</span>
-            </h2>
+            <h2 id="budget-heading">Ngân sách API &amp; Trạng thái AI hôm nay</h2>
+            <div class="forum-post-badges">
+                <span class="badge"
+                      th:classappend="${stats.geminiEnabled} ? ' badge-ok' : ' badge-warn'"
+                      th:text="${stats.geminiEnabled} ? 'Gemini API: ĐANG BẬT' : 'Gemini API: TẠM TẮT (Offline)'">
+                    Gemini API
+                </span>
+                <span class="badge"
+                      th:classappend="${stats.crawlerEnabled} ? ' badge-ok' : ' badge-warn'"
+                      th:text="${stats.crawlerEnabled} ? 'Web Crawler: ĐANG BẬT' : 'Web Crawler: TẠM TẮT'">
+                    Crawler
+                </span>
+                <a class="btn btn-secondary btn-sm" th:href="@{/admin/logs(tab='usage')}">Chi tiết chi phí API →</a>
+            </div>
         </div>
-        <div class="empty-state" th:if="${#lists.isEmpty(jobs)}">
-            <p class="muted">Chưa có job tìm Web nào.</p>
+        <div class="budget-grid">
+            <div class="budget-item">
+                <span class="kpi-label">Gemini Grounding Calls</span>
+                <strong th:text="|${stats.todayUsage.groundingCalls} / ${stats.maxGeminiCallsPerDay}|">0 / 200</strong>
+            </div>
+            <div class="budget-item">
+                <span class="kpi-label">Embedding Calls</span>
+                <strong th:text="|${stats.todayUsage.embeddingCalls} / ${stats.maxEmbeddingCallsPerDay}|">0 / 2000</strong>
+            </div>
+            <div class="budget-item">
+                <span class="kpi-label">Web Search Jobs hôm nay</span>
+                <strong th:text="|${stats.todayUsage.webJobs} / ${stats.maxWebJobsPerDay}|">0 / 20</strong>
+            </div>
+            <div class="budget-item">
+                <span class="kpi-label">Web Fetches / Bytes tải về</span>
+                <strong th:text="|${stats.todayUsage.fetchedUrls} URL · ${stats.todayUsage.downloadedBytes} B|">0 URL</strong>
+            </div>
         </div>
-        <div class="table-wrap" th:unless="${#lists.isEmpty(jobs)}">
-            <table class="admin-table">
-                <thead>
-                <tr>
-                    <th>Job</th>
-                    <th>Trạng thái / giai đoạn</th>
-                    <th>Lần thử</th>
-                    <th>Lease</th>
-                    <th>Lỗi</th>
-                    <th>URL ứng viên</th>
-                </tr>
-                </thead>
-                <tbody>
-                <tr th:each="job : ${jobs}">
-                    <td>
-                        <code class="mono-cell" th:text="${job.id}">job</code><br>
-                        <small>message <code class="mono-cell" th:text="${job.messageId}">message</code></small>
-                    </td>
-                    <td>
-                        <span class="badge"
-                              th:classappend="${job.status == 'SUCCEEDED'} ? ' badge-ok'
-                                              : (${job.status == 'FAILED'} ? ' badge-danger' : ' badge-info')"
-                              th:text="${job.status}">QUEUED</span>
-                        <div class="stage-track" th:if="${job.stage != null}">
-                            <span class="stage-chip is-current" th:text="${job.stage}">SEARCH</span>
-                        </div>
-                    </td>
-                    <td th:text="${job.attemptCount}">1</td>
-                    <td>
-                        <small th:if="${job.leaseOwner != null}">
-                            <span class="mono-cell" th:text="${job.leaseOwner}">worker</span><br>
-                            hết hạn: <span th:text="${job.leaseExpiresAt}">…</span>
-                        </small>
-                        <small th:if="${job.leaseOwner == null}">Không giữ lease</small>
-                    </td>
-                    <td>
-                        <code class="mono-cell" th:if="${job.errorCode != null}" th:text="${job.errorCode}">ERROR</code>
-                        <span class="muted" th:if="${job.errorCode == null}">—</span>
-                    </td>
-                    <td>
-                        <ul class="candidate-list" th:if="${!#lists.isEmpty(job.candidates)}">
-                            <li th:each="candidate : ${job.candidates}">
-                                <span class="count-pill" th:text="${candidate.rank}">1</span>
-                                <a th:href="${candidate.url}" target="_blank" rel="noopener noreferrer"
-                                   th:text="${candidate.url}">url</a>
-                                <span class="badge"
-                                      th:classappend="${candidate.accepted} ? ' badge-ok' : ' badge-warn'"
-                                      th:text="${candidate.accepted ? 'NHẬN' : candidate.rejectionReason}">NHẬN</span>
-                                <small class="mono-cell" th:if="${candidate.resultCode != null}"
-                                       th:text="${candidate.resultCode}">READY</small>
-                            </li>
-                        </ul>
-                    </td>
-                </tr>
-                </tbody>
-            </table>
-        </div>
-    </section>
-
-    <section class="admin-section" aria-labelledby="quarantine-heading">
-        <div class="section-head">
-            <h2 id="quarantine-heading">
-                Văn bản đang cách ly
-                <span class="count-pill" th:text="${#lists.size(quarantinedDocuments)}">0</span>
-            </h2>
-        </div>
-        <div class="empty-state" th:if="${#lists.isEmpty(quarantinedDocuments)}">
-            <p class="muted">Không có văn bản cách ly.</p>
-        </div>
-        <section class="quarantine-list" th:unless="${#lists.isEmpty(quarantinedDocuments)}">
-            <article class="quarantine-card" th:each="doc : ${quarantinedDocuments}">
-                <div class="quarantine-card-head">
-                    <h3 th:text="${doc.title}">Văn bản</h3>
-                    <span class="badge badge-warn">QUARANTINED</span>
-                </div>
-                <p class="meta">
-                    <span th:text="${doc.sourceUrl}">url</span><br>
-                    SHA-256: <code th:text="${doc.contentSha256}">hash</code><br>
-                    Số hiệu: <strong th:text="${doc.docNumber ?: 'chưa xác minh'}">…</strong>
-                    · Cơ quan: <strong th:text="${doc.issuingBody ?: 'chưa xác minh'}">…</strong>
-                    · Điều: <strong th:text="${doc.articleCount}">0</strong>
-                </p>
-                <p class="notice" th:if="${doc.verificationNotes != null}" th:text="${doc.verificationNotes}">Lý do cách ly</p>
-
-                <form method="post"
-                      th:action="@{/admin/legal-documents/{id}/approve(id=${doc.id})}">
-                    <div class="approval-grid">
-                        <label>Số hiệu
-                            <input type="text" name="docNumber" th:value="${doc.docNumber}" required>
-                        </label>
-                        <label>Cơ quan ban hành
-                            <input type="text" name="issuingBody" th:value="${doc.issuingBody}" required>
-                        </label>
-                        <label>Ngày ban hành
-                            <input type="date" name="issueDate" th:value="${doc.issueDate}" required>
-                        </label>
-                        <label>Hiệu lực từ
-                            <input type="date" name="effectiveFrom" th:value="${doc.effectiveFrom}" required>
-                        </label>
-                        <label>Hiệu lực đến
-                            <input type="date" name="effectiveTo" th:value="${doc.effectiveTo}">
-                        </label>
-                        <label>Trạng thái hiệu lực
-                            <select name="effectiveStatus" required>
-                                <option value="EFFECTIVE" th:selected="${doc.effectiveStatus == 'EFFECTIVE'}">EFFECTIVE</option>
-                                <option value="UPCOMING" th:selected="${doc.effectiveStatus == 'UPCOMING'}">UPCOMING</option>
-                                <option value="EXPIRED" th:selected="${doc.effectiveStatus == 'EXPIRED'}">EXPIRED</option>
-                            </select>
-                        </label>
-                        <label class="approval-reason">Lý do / ghi chú
-                            <input type="text" name="reason" maxlength="500" required>
-                        </label>
-                    </div>
-                    <div class="approval-actions">
-                        <button type="submit" class="btn">Duyệt sang READY</button>
-                    </div>
-                </form>
-            </article>
-        </section>
     </section>
 
     <section class="admin-section" aria-labelledby="users-heading">
@@ -196,6 +101,7 @@
                 Quản lý tài khoản
                 <span class="count-pill" th:text="${#lists.size(users)}">0</span>
             </h2>
+            <a class="btn btn-secondary btn-sm" th:href="@{/admin/users}">Mở trang tìm kiếm tài khoản →</a>
         </div>
         <div class="empty-state" th:if="${#lists.isEmpty(users)}">
             <p class="muted">Chưa có tài khoản nào.</p>
@@ -265,6 +171,7 @@
                 Audit gần đây
                 <span class="count-pill" th:text="${#lists.size(auditRows)}">0</span>
             </h2>
+            <a class="btn btn-secondary btn-sm" th:href="@{/admin/logs(tab='audit')}">Xem toàn bộ nhật ký →</a>
         </div>
         <div class="empty-state" th:if="${#lists.isEmpty(auditRows)}">
             <p class="muted">Chưa có bản ghi audit.</p>
@@ -282,20 +189,22 @@
                 </thead>
                 <tbody>
                 <tr th:each="row : ${auditRows}">
-                    <td th:text="${row.createdAt}">…</td>
+                    <td th:text="${row.createdAtDisplay()}">…</td>
                     <td th:text="${row.actor}">admin</td>
                     <td><span class="badge badge-info" th:text="${row.action}">APPROVE</span></td>
                     <td>
                         <span th:text="${row.entityType}">LEGAL_DOCUMENT</span><br>
                         <code class="mono-cell" th:text="${row.entityId}">id</code>
                     </td>
-                    <td th:text="${row.details}">…</td>
+                    <td><code class="mono-cell" th:text="${row.details}">…</code></td>
                 </tr>
                 </tbody>
             </table>
         </div>
     </section>
 
+        </div>
+    </div>
 </main>
 
 <div th:replace="~{fragments/layout :: footer}"></div>

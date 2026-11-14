@@ -39,15 +39,36 @@ public class RetrievalTraceRepository {
                        List<RetrievalCandidate> candidates,
                        List<String> selectedArticleIds,
                        List<TemporalIssue> temporalIssues) {
+        record(messageId, question, applicableDate, modelId, promptVersion, corpusVersion,
+                embeddingSpaceId, gatePassed, maxCosine, decision, reasonCode,
+                candidates, selectedArticleIds, temporalIssues, null);
+    }
+
+    public void record(UUID messageId,
+                       String question,
+                       LocalDate applicableDate,
+                       String modelId,
+                       String promptVersion,
+                       String corpusVersion,
+                       String embeddingSpaceId,
+                       boolean gatePassed,
+                       double maxCosine,
+                       String decision,
+                       String reasonCode,
+                       List<RetrievalCandidate> candidates,
+                       List<String> selectedArticleIds,
+                       List<TemporalIssue> temporalIssues,
+                       String personaCode) {
         jdbcTemplate.update("""
                 insert into retrieval_traces
                     (message_id, question, applicable_date, model_id, prompt_version, corpus_version,
-                     embedding_space_id, gate_passed, max_cosine, decision, reason_code, candidate_scores)
-                values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                     embedding_space_id, gate_passed, max_cosine, decision, reason_code, candidate_scores, persona_code)
+                values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 """,
                 messageId, question, applicableDate, modelId, promptVersion, corpusVersion,
                 embeddingSpaceId, gatePassed, maxCosine, decision, reasonCode,
-                serialize(candidates, selectedArticleIds, temporalIssues));
+                serialize(candidates, selectedArticleIds, temporalIssues),
+                personaCode);
     }
 
     private String serialize(List<RetrievalCandidate> candidates,

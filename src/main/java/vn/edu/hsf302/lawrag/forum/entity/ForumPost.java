@@ -43,6 +43,26 @@ public class ForumPost {
     @Column(name = "pinned", nullable = false)
     private boolean pinned = false;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "status", nullable = false, length = 32)
+    private ForumPostStatus status = ForumPostStatus.PUBLISHED;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "request_status", nullable = false, length = 32)
+    private ForumRequestStatus requestStatus = ForumRequestStatus.OPEN;
+
+    @Column(name = "removed_reason", columnDefinition = "text")
+    private String removedReason;
+
+    @Column(name = "removed_by", length = 64)
+    private String removedBy;
+
+    @Column(name = "removed_at")
+    private Instant removedAt;
+
+    @Column(name = "edited_at")
+    private Instant editedAt;
+
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)
     private Instant createdAt;
@@ -73,12 +93,26 @@ public class ForumPost {
         return title;
     }
 
+    public void setTitle(String title) {
+        this.title = title;
+    }
+
     public ForumCategory getCategory() {
         return category;
     }
 
+    public void setCategory(ForumCategory category) {
+        if (category != null) {
+            this.category = category;
+        }
+    }
+
     public String getContent() {
         return content;
+    }
+
+    public void setContent(String content) {
+        this.content = content;
     }
 
     public boolean isPinned() {
@@ -87,6 +121,56 @@ public class ForumPost {
 
     public void setPinned(boolean pinned) {
         this.pinned = pinned;
+    }
+
+    public ForumPostStatus getStatus() {
+        return status;
+    }
+
+    public void setStatus(ForumPostStatus status) {
+        this.status = status == null ? ForumPostStatus.PUBLISHED : status;
+    }
+
+    public ForumRequestStatus getRequestStatus() {
+        return requestStatus;
+    }
+
+    public void setRequestStatus(ForumRequestStatus requestStatus) {
+        this.requestStatus = requestStatus == null ? ForumRequestStatus.OPEN : requestStatus;
+    }
+
+    public String getRemovedReason() {
+        return removedReason;
+    }
+
+    public String getRemovedBy() {
+        return removedBy;
+    }
+
+    public Instant getRemovedAt() {
+        return removedAt;
+    }
+
+    public Instant getEditedAt() {
+        return editedAt;
+    }
+
+    public void setEditedAt(Instant editedAt) {
+        this.editedAt = editedAt;
+    }
+
+    public void markRemoved(String actor, String reason, Instant when) {
+        this.status = ForumPostStatus.REMOVED;
+        this.removedBy = actor;
+        this.removedReason = reason;
+        this.removedAt = when;
+    }
+
+    public void restore() {
+        this.status = ForumPostStatus.PUBLISHED;
+        this.removedBy = null;
+        this.removedReason = null;
+        this.removedAt = null;
     }
 
     public Instant getCreatedAt() {

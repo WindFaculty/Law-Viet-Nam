@@ -16,6 +16,7 @@ import vn.edu.hsf302.lawrag.chat.entity.ChatSession;
 import vn.edu.hsf302.lawrag.chat.entity.Sender;
 import vn.edu.hsf302.lawrag.chat.dto.SessionOwner;
 import vn.edu.hsf302.lawrag.chat.dto.SubmittedQuestion;
+import vn.edu.hsf302.lawrag.llm.service.LlmPersonaService;
 
 /**
  * Submits a question and its AI placeholder exactly once per
@@ -34,22 +35,31 @@ public class MessageSubmissionService {
     private final ChatSessionService sessions;
     private final ChatMessageRepository messages;
     private final QuotaReservationService quota;
+    private final LlmPersonaService personas;
     private final Clock clock;
 
     public MessageSubmissionService(PlatformTransactionManager transactionManager,
                                     ChatSessionService sessions,
                                     ChatMessageRepository messages,
                                     QuotaReservationService quota,
+                                    LlmPersonaService personas,
                                     Clock clock) {
         this.transactions = new TransactionTemplate(transactionManager);
         this.sessions = sessions;
         this.messages = messages;
         this.quota = quota;
+        this.personas = personas;
         this.clock = clock;
     }
 
     public SubmittedQuestion submitQuestion(UUID sessionId, SessionOwner owner,
                                             String idempotencyKey, String question) {
+        return submitQuestion(sessionId, owner, idempotencyKey, question, null);
+    }
+
+    public SubmittedQuestion submitQuestion(UUID sessionId, SessionOwner owner,
+                                            String idempotencyKey, String question,
+                                            String requestedPersonaCode) {
         String normalizedQuestion = normalizeQuestion(question);
         String key = normalizeKey(idempotencyKey);
         LocalDate applicableDate = LocalDate.now(clock);
@@ -57,7 +67,8 @@ public class MessageSubmissionService {
 
         try {
             return transactions.execute(status -> createOrReplay(
-                    sessionId, owner, key, normalizedQuestion, applicableDate, questionHash));
+                    sessionId, owner, key, normalizedQuestion, applicableDate, questionHash,
+                    requestedPersonaCode));
         } catch (DataIntegrityViolationException duplicate) {
             // Two identical requests raced past the initial lookup; the unique
             // (session_id, idempotency_key) row wins and this request replays it.
@@ -72,7 +83,7 @@ public class MessageSubmissionService {
 
     private SubmittedQuestion createOrReplay(UUID sessionId, SessionOwner owner, String key,
                                              String question, LocalDate applicableDate,
-                                             String questionHash) {
+                                             String questionHash, String requestedPersonaCode) {
         ChatSession session = sessions.requireOwnedSession(sessionId, owner);
 
         Optional<SubmittedQuestion> existing = findExisting(session, key);
@@ -80,16 +91,29 @@ public class MessageSubmissionService {
             return existing.get();
         }
 
-        ChatMessage userMessage = messages.save(
-                ChatMessage.userQuestion(session, key, question, applicableDate, questionHash));
-        ChatMessage aiMessage = messages.saveAndFlush(
-                ChatMessage.aiProcessing(session, userMessage, applicableDate, questionHash));
+        String personaCode = resolveEffectivePersonaCode(session, requestedPersonaCode);
+        session.setPersonaCode(personaCode);
+
+        ChatMessage userMessage = ChatMessage.userQuestion(session, key, question, applicableDate, questionHash);
+        userMessage.setPersonaCode(personaCode);
+        userMessage = messages.save(userMessage);
+
+        ChatMessage aiMessage = ChatMessage.aiProcessing(session, userMessage, applicableDate, questionHash);
+        aiMessage.setPersonaCode(personaCode);
+        aiMessage = messages.saveAndFlush(aiMessage);
 
         // The reservation is part of the same short transaction: if quota is
         // exhausted, both message rows are rolled back.
         quota.reserve(owner, aiMessage.getId(), key);
         session.touch(clock.instant());
         return new SubmittedQuestion(userMessage, aiMessage, false);
+    }
+
+    private String resolveEffectivePersonaCode(ChatSession session, String requestedPersonaCode) {
+        if (requestedPersonaCode != null && !requestedPersonaCode.isBlank()) {
+            return personas.resolveForSelection(requestedPersonaCode).getCode();
+        }
+        return personas.resolveOrDefault(session.getPersonaCode()).getCode();
     }
 
     private Optional<SubmittedQuestion> findExisting(UUID sessionId, SessionOwner owner, String key) {

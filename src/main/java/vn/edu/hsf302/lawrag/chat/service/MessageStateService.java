@@ -14,7 +14,10 @@ import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.EnumSet;
+import java.util.List;
 import java.util.UUID;
 import vn.edu.hsf302.lawrag.chat.exception.ChatAccessDeniedException;
 import vn.edu.hsf302.lawrag.chat.entity.ChatMessage;
@@ -26,6 +29,8 @@ import vn.edu.hsf302.lawrag.chat.entity.MessageStatus;
 import vn.edu.hsf302.lawrag.chat.exception.MessageTransitionConflictException;
 import vn.edu.hsf302.lawrag.chat.dto.SessionOwner;
 import vn.edu.hsf302.lawrag.chat.exception.WebSearchJobLimitExceededException;
+import vn.edu.hsf302.lawrag.retrieval.dto.ClarificationContext;
+import vn.edu.hsf302.lawrag.retrieval.dto.ClarificationTurn;
 
 /**
  * Owns every AI-message state change.
@@ -46,6 +51,8 @@ public class MessageStateService {
     public static final int DAILY_WEB_JOB_LIMIT = 3;
     public static final int MAX_WEB_JOBS_PER_MESSAGE = 2;
     private static final int MAX_SUGGESTED_QUERY_LENGTH = 1_000;
+    private static final int MAX_CLARIFICATION_CHAIN_TURNS = 6;
+    private static final int MAX_EFFECTIVE_QUESTION_LENGTH = 4_000;
     private static final EnumSet<WebSearchJobStatus> ACTIVE_JOB_STATUSES = EnumSet.of(
             WebSearchJobStatus.QUEUED,
             WebSearchJobStatus.CLAIMED,
@@ -74,6 +81,87 @@ public class MessageStateService {
     @Transactional(readOnly = true)
     public ChatMessage getOwnedMessage(UUID messageId, SessionOwner actor) {
         return loadOwned(messageId, actor);
+    }
+
+    /**
+     * Resolve contiguous preceding {@link MessageStatus#NEEDS_CLARIFICATION}
+     * turns in the same session so follow-up answers preserve the original
+     * question's facts instead of re-prompting in a loop.
+     */
+    @Transactional(readOnly = true)
+    public ClarificationContext resolveClarificationContext(UUID aiMessageId) {
+        ChatMessage currentAi = messages.findById(aiMessageId).orElse(null);
+        if (currentAi == null || currentAi.getInReplyTo() == null) {
+            return ClarificationContext.singleTurn(null);
+        }
+        String currentQuestion = currentAi.getInReplyTo().getContent();
+        if (currentQuestion == null || currentQuestion.isBlank()) {
+            return ClarificationContext.singleTurn(currentQuestion);
+        }
+
+        List<ChatMessage> conversation = messages.findConversation(currentAi.getSession().getId());
+        List<ChatMessage> aiTurns = conversation.stream()
+                .filter(message -> message.isAi() && message.getInReplyTo() != null)
+                .toList();
+
+        int currentIndex = -1;
+        for (int index = 0; index < aiTurns.size(); index++) {
+            if (aiTurns.get(index).getId().equals(aiMessageId)) {
+                currentIndex = index;
+                break;
+            }
+        }
+        if (currentIndex <= 0) {
+            return ClarificationContext.singleTurn(currentQuestion);
+        }
+
+        List<ClarificationTurn> reversed = new ArrayList<>();
+        int lowerBound = Math.max(0, currentIndex - MAX_CLARIFICATION_CHAIN_TURNS);
+        for (int index = currentIndex - 1; index >= lowerBound; index--) {
+            ChatMessage previousAi = aiTurns.get(index);
+            if (previousAi.getMessageStatus() != MessageStatus.NEEDS_CLARIFICATION) {
+                break;
+            }
+            String previousUserQuestion = previousAi.getInReplyTo().getContent();
+            if (previousUserQuestion == null || previousUserQuestion.isBlank()) {
+                continue;
+            }
+            reversed.add(new ClarificationTurn(previousUserQuestion.strip(), previousAi.getContent()));
+        }
+        if (reversed.isEmpty()) {
+            return ClarificationContext.singleTurn(currentQuestion);
+        }
+
+        Collections.reverse(reversed);
+        List<ClarificationTurn> history = List.copyOf(reversed);
+        String effectiveQuestion = combineQuestions(history, currentQuestion);
+        return new ClarificationContext(currentQuestion, effectiveQuestion, history);
+    }
+
+    private static String combineQuestions(List<ClarificationTurn> history, String currentQuestion) {
+        List<String> segments = new ArrayList<>();
+        String lastAdded = null;
+        for (ClarificationTurn turn : history) {
+            String segment = turn.userQuestion() == null ? "" : turn.userQuestion().strip();
+            if (!segment.isEmpty() && !segment.equals(lastAdded)) {
+                segments.add(segment);
+                lastAdded = segment;
+            }
+        }
+        String current = currentQuestion == null ? "" : currentQuestion.strip();
+        if (!current.isEmpty() && !current.equals(lastAdded)) {
+            segments.add(current);
+        }
+        if (segments.isEmpty()) {
+            return current;
+        }
+        while (segments.size() > 1 && String.join(" — ", segments).length() > MAX_EFFECTIVE_QUESTION_LENGTH) {
+            segments.remove(0);
+        }
+        String combined = String.join(" — ", segments);
+        return combined.length() <= MAX_EFFECTIVE_QUESTION_LENGTH
+                ? combined
+                : combined.substring(0, MAX_EFFECTIVE_QUESTION_LENGTH);
     }
 
     /**

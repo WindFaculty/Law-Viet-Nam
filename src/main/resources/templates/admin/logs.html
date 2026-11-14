@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Nhật ký hệ thống — Quản trị LawRAG</title>
+    <link rel="icon" type="image/svg+xml" th:href="@{/images/favicon.svg}">
+    <link rel="stylesheet" th:href="@{/css/ui.css}">
+    <script th:src="@{/js/app.js}" defer></script>
+</head>
+<body>
+<a class="skip-link" href="#main">Bỏ qua điều hướng</a>
+
+<div th:replace="~{fragments/layout :: topbar('admin')}"></div>
+
+<main id="main" class="page page-admin">
+    <div class="admin-workspace">
+
+        <aside th:replace="~{fragments/admin-nav :: header('logs', 'Nhật ký hệ thống', 'Theo dõi đầy đủ hành động quản trị (Audit Log), lịch sử truy vết quyết định RAG/LLM và mức sử dụng chi phí API hằng ngày.')}"></aside>
+
+        <div class="admin-main">
+            <div th:replace="~{fragments/admin-nav :: alerts}"></div>
+
+    <section class="admin-section">
+        <div class="log-subtabs" role="tablist" aria-label="Loại nhật ký">
+            <a class="filter-chip"
+               th:href="@{/admin/logs(tab='audit')}"
+               th:classappend="${logTab == 'audit'} ? ' is-active'">
+                Nhật ký quản trị (Audit Log)
+            </a>
+            <a class="filter-chip"
+               th:href="@{/admin/logs(tab='rag')}"
+               th:classappend="${logTab == 'rag'} ? ' is-active'">
+                Truy vết &amp; Lỗi RAG / LLM
+            </a>
+            <a class="filter-chip"
+               th:href="@{/admin/logs(tab='usage')}"
+               th:classappend="${logTab == 'usage'} ? ' is-active'">
+                Chi phí &amp; Token API hằng ngày
+            </a>
+        </div>
+    </section>
+
+    <!-- Tab 1: Admin Audit Log -->
+    <section class="admin-section" th:if="${logTab == 'audit'}" aria-labelledby="log-audit-heading">
+        <form class="admin-filter-bar card" th:action="@{/admin/logs}" method="get">
+            <input type="hidden" name="tab" value="audit">
+            <label class="form-field">
+                <span>Người thực hiện</span>
+                <input type="text" name="actor" th:value="${actor}" placeholder="Ví dụ: admin">
+            </label>
+            <label class="form-field">
+                <span>Hành động</span>
+                <select name="action">
+                    <option value="">Tất cả hành động</option>
+                    <option th:each="act : ${auditActions}"
+                            th:value="${act}" th:text="${act}"
+                            th:selected="${act == action}">ACTION</option>
+                </select>
+            </label>
+            <label class="form-field">
+                <span>Loại đối tượng</span>
+                <select name="entityType">
+                    <option value="">Tất cả đối tượng</option>
+                    <option th:each="ent : ${auditEntityTypes}"
+                            th:value="${ent}" th:text="${ent}"
+                            th:selected="${ent == entityType}">ENTITY</option>
+                </select>
+            </label>
+            <div class="filter-actions">
+                <button type="submit" class="btn btn-sm">Lọc Audit</button>
+                <a class="btn btn-secondary btn-sm" th:href="@{/admin/logs(tab='audit')}">Đặt lại</a>
+            </div>
+        </form>
+
+        <div class="section-head">
+            <h2 id="log-audit-heading">
+                Bản ghi Audit
+                <span class="count-pill" th:text="${auditPage.totalItems}">0</span>
+            </h2>
+        </div>
+        <div class="empty-state" th:if="${#lists.isEmpty(auditRows)}">
+            <p class="muted">Không có bản ghi audit nào.</p>
+        </div>
+        <div class="table-wrap" th:unless="${#lists.isEmpty(auditRows)}">
+            <table class="admin-table">
+                <thead>
+                <tr>
+                    <th>Thời điểm</th>
+                    <th>Actor</th>
+                    <th>Hành động</th>
+                    <th>Đối tượng</th>
+                    <th>Chi tiết</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="row : ${auditRows}">
+                    <td th:text="${row.createdAtDisplay()}">…</td>
+                    <td><strong th:text="${row.actor}">admin</strong></td>
+                    <td><span class="badge badge-info" th:text="${row.action}">ACTION</span></td>
+                    <td>
+                        <span th:text="${row.entityType}">ENTITY</span><br>
+                        <code class="mono-cell" th:text="${row.entityId}">uuid</code>
+                    </td>
+                    <td><code class="mono-cell" th:text="${row.details}">{}</code></td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <nav class="card forum-pagination" th:if="${auditPage.totalPages > 1}" aria-label="Phân trang Audit">
+            <span class="forum-pagination-info muted">
+                Trang <strong th:text="${auditPage.page}">1</strong> / <strong th:text="${auditPage.totalPages}">1</strong>
+            </span>
+            <div class="forum-pagination-links">
+                <a class="filter-chip" th:if="${auditPage.hasPrevious()}"
+                   th:href="@{/admin/logs(tab='audit',actor=${actor},action=${action},entityType=${entityType},page=${auditPage.page - 1})}">← Trước</a>
+                <a class="filter-chip" th:each="p : ${#numbers.sequence(1, auditPage.totalPages)}"
+                   th:href="@{/admin/logs(tab='audit',actor=${actor},action=${action},entityType=${entityType},page=${p})}"
+                   th:text="${p}" th:classappend="${p == auditPage.page} ? ' is-active'">1</a>
+                <a class="filter-chip" th:if="${auditPage.hasNext()}"
+                   th:href="@{/admin/logs(tab='audit',actor=${actor},action=${action},entityType=${entityType},page=${auditPage.page + 1})}">Sau →</a>
+            </div>
+        </nav>
+    </section>
+
+    <!-- Tab 2: Retrieval Traces & RAG Decisions -->
+    <section class="admin-section" th:if="${logTab == 'rag'}" aria-labelledby="log-rag-heading">
+        <form class="admin-filter-bar card" th:action="@{/admin/logs}" method="get">
+            <input type="hidden" name="tab" value="rag">
+            <label class="form-field">
+                <span>Quyết định RAG</span>
+                <select name="decision">
+                    <option value="">Tất cả quyết định</option>
+                    <option value="ANSWER" th:selected="${decision == 'ANSWER'}">ANSWER</option>
+                    <option value="NEED_WEB_SEARCH" th:selected="${decision == 'NEED_WEB_SEARCH'}">NEED_WEB_SEARCH</option>
+                    <option value="NEED_CLARIFICATION" th:selected="${decision == 'NEED_CLARIFICATION'}">NEED_CLARIFICATION</option>
+                    <option value="OUT_OF_SCOPE" th:selected="${decision == 'OUT_OF_SCOPE'}">OUT_OF_SCOPE</option>
+                    <option value="FAILED_ONLY" th:selected="${decision == 'FAILED_ONLY'}">Chỉ lỗi (FAILED / WEB_FAILED)</option>
+                </select>
+            </label>
+            <label class="form-field filter-grow">
+                <span>Tìm theo câu hỏi, reasonCode, personaCode</span>
+                <input type="search" name="q" th:value="${query}" placeholder="Nhập từ khóa truy vết...">
+            </label>
+            <div class="filter-actions">
+                <button type="submit" class="btn btn-sm">Lọc RAG Traces</button>
+                <a class="btn btn-secondary btn-sm" th:href="@{/admin/logs(tab='rag')}">Đặt lại</a>
+            </div>
+        </form>
+
+        <div class="section-head">
+            <h2 id="log-rag-heading">
+                Truy vết quyết định RAG / LLM
+                <span class="count-pill" th:text="${ragPage.totalItems}">0</span>
+            </h2>
+        </div>
+        <div class="empty-state" th:if="${#lists.isEmpty(ragRows)}">
+            <p class="muted">Chưa có bản ghi truy vết RAG nào khớp bộ lọc.</p>
+        </div>
+        <div class="table-wrap" th:unless="${#lists.isEmpty(ragRows)}">
+            <table class="admin-table">
+                <thead>
+                <tr>
+                    <th>Thời điểm</th>
+                    <th>Câu hỏi / Persona</th>
+                    <th>Quyết định / Trạng thái</th>
+                    <th>Cosine / Gate</th>
+                    <th>Model &amp; Prompt</th>
+                    <th>Ứng viên</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="row : ${ragRows}">
+                    <td th:text="${row.createdAtDisplay}">…</td>
+                    <td>
+                        <strong th:text="${row.question}">Câu hỏi</strong><br>
+                        <span class="badge badge-persona" th:if="${row.personaCode != null}" th:text="${row.personaCode}">CHUYEN_NGHIEP</span>
+                        <small class="muted" th:text="|Ngày áp dụng: ${row.applicableDate}|">2026-01-01</small>
+                    </td>
+                    <td>
+                        <span class="badge"
+                              th:classappend="${row.decision == 'ANSWER'} ? ' badge-ok'
+                                              : (${row.decision == 'FAILED' or row.messageStatus == 'FAILED' or row.messageStatus == 'WEB_FAILED'} ? ' badge-danger' : ' badge-warn')"
+                              th:text="${row.decision}">ANSWER</span><br>
+                        <small><code class="mono-cell" th:text="${row.reasonCode}">SUFFICIENT</code></small><br>
+                        <small class="muted" th:if="${row.messageStatus != null}" th:text="|Msg: ${row.messageStatus}|">COMPLETED</small>
+                    </td>
+                    <td>
+                        <strong th:text="${#numbers.formatDecimal(row.maxCosine, 1, 3)}">0.000</strong><br>
+                        <span class="badge"
+                              th:classappend="${row.gatePassed} ? ' badge-ok' : ' badge-warn'"
+                              th:text="${row.gatePassed} ? 'Gate PASS' : 'Gate MISS'">Gate</span>
+                    </td>
+                    <td>
+                        <code class="mono-cell" th:text="${row.modelId}">model</code><br>
+                        <small class="muted" th:text="${row.promptVersion}">v1</small>
+                    </td>
+                    <td>
+                        <details>
+                            <summary>Xem JSON</summary>
+                            <pre class="json-pre" th:text="${row.candidateScoresJson}">{}</pre>
+                        </details>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <nav class="card forum-pagination" th:if="${ragPage.totalPages > 1}" aria-label="Phân trang RAG Traces">
+            <span class="forum-pagination-info muted">
+                Trang <strong th:text="${ragPage.page}">1</strong> / <strong th:text="${ragPage.totalPages}">1</strong>
+            </span>
+            <div class="forum-pagination-links">
+                <a class="filter-chip" th:if="${ragPage.hasPrevious()}"
+                   th:href="@{/admin/logs(tab='rag',decision=${decision},q=${query},page=${ragPage.page - 1})}">← Trước</a>
+                <a class="filter-chip" th:each="p : ${#numbers.sequence(1, ragPage.totalPages)}"
+                   th:href="@{/admin/logs(tab='rag',decision=${decision},q=${query},page=${p})}"
+                   th:text="${p}" th:classappend="${p == ragPage.page} ? ' is-active'">1</a>
+                <a class="filter-chip" th:if="${ragPage.hasNext()}"
+                   th:href="@{/admin/logs(tab='rag',decision=${decision},q=${query},page=${ragPage.page + 1})}">Sau →</a>
+            </div>
+        </nav>
+    </section>
+
+    <!-- Tab 3: Daily Cost & Usage -->
+    <section class="admin-section" th:if="${logTab == 'usage'}" aria-labelledby="log-usage-heading">
+        <form class="admin-filter-bar card" th:action="@{/admin/logs}" method="get">
+            <input type="hidden" name="tab" value="usage">
+            <label class="form-field">
+                <span>Từ ngày</span>
+                <input type="date" name="fromDate" th:value="${fromDate}">
+            </label>
+            <label class="form-field">
+                <span>Đến ngày</span>
+                <input type="date" name="toDate" th:value="${toDate}">
+            </label>
+            <label class="form-field">
+                <span>Phân loại lượt</span>
+                <select name="category">
+                    <option value="">Tất cả phân loại</option>
+                    <option th:each="cat : ${usageCategories}"
+                            th:value="${cat}" th:text="${cat}"
+                            th:selected="${cat == category}">CATEGORY</option>
+                </select>
+            </label>
+            <div class="filter-actions">
+                <button type="submit" class="btn btn-sm">Lọc thống kê</button>
+                <a class="btn btn-secondary btn-sm" th:href="@{/admin/logs(tab='usage')}">Đặt lại</a>
+            </div>
+        </form>
+
+        <div class="kpi-grid kpi-grid-wide usage-kpi-grid" th:if="${usageSummary != null}" aria-label="Tổng hợp sử dụng API">
+            <div class="kpi-card">
+                <span class="kpi-label">Embedding API</span>
+                <strong class="kpi-value" th:text="${#numbers.formatInteger(usageSummary.totalEmbeddingCalls, 1, 'COMMA')}">0</strong>
+                <span class="kpi-sub" th:text="|${#numbers.formatInteger(usageSummary.totalEmbeddingInputChars, 1, 'COMMA')} ký tự · ${usageSummary.totalEmbeddingCacheHits} cache hit|">0 ký tự</span>
+            </div>
+            <div class="kpi-card">
+                <span class="kpi-label">Gemini Grounding</span>
+                <strong class="kpi-value" th:text="${#numbers.formatInteger(usageSummary.totalGroundingCalls, 1, 'COMMA')}">0</strong>
+                <span class="kpi-sub" th:text="|In: ${#numbers.formatInteger(usageSummary.totalInputTokens, 1, 'COMMA')} · Out: ${#numbers.formatInteger(usageSummary.totalOutputTokens, 1, 'COMMA')}|">0</span>
+            </div>
+            <div class="kpi-card">
+                <span class="kpi-label">Tổng Token Gemini</span>
+                <strong class="kpi-value" th:text="${#numbers.formatInteger(usageSummary.totalTokens(), 1, 'COMMA')}">0</strong>
+                <span class="kpi-sub">Input + Output token</span>
+            </div>
+            <div class="kpi-card">
+                <span class="kpi-label">Tìm kiếm Web</span>
+                <strong class="kpi-value" th:text="${#numbers.formatInteger(usageSummary.totalWebSearchCalls, 1, 'COMMA')}">0</strong>
+                <span class="kpi-sub" th:text="|${usageSummary.totalFetchedUrls} URL · ${usageSummary.downloadedSizeDisplay()}|">0 URL</span>
+            </div>
+        </div>
+
+        <div class="section-head">
+            <h2 id="log-usage-heading">
+                Chi phí API &amp; Token theo ngày
+                <span class="count-pill" th:text="${#lists.size(usageRows)}">0</span>
+            </h2>
+        </div>
+        <div class="empty-state" th:if="${#lists.isEmpty(usageRows)}">
+            <p class="muted">Chưa có dữ liệu sử dụng API nào được ghi nhận.</p>
+        </div>
+        <div class="table-wrap" th:unless="${#lists.isEmpty(usageRows)}">
+            <table class="admin-table usage-stats-table">
+                <thead>
+                <tr>
+                    <th>Ngày</th>
+                    <th>Phân loại</th>
+                    <th class="num-col">Embed (Calls)</th>
+                    <th class="num-col">Grounding</th>
+                    <th class="num-col">Token In</th>
+                    <th class="num-col">Token Out</th>
+                    <th class="num-col">Tổng Token</th>
+                    <th class="num-col">Web / URL</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="row : ${usageRows}">
+                    <td class="nowrap-col" th:text="${row.usageDateDisplay()}">14/11/2026</td>
+                    <td>
+                        <div class="usage-cat-cell">
+                            <span class="usage-cat-label" th:text="${row.categoryLabel()}">Trả lời nội bộ</span>
+                            <code class="usage-cat-code" th:text="${row.category}">LOCAL_ANSWERED</code>
+                        </div>
+                    </td>
+                    <td class="num-col">
+                        <strong th:text="${#numbers.formatInteger(row.embeddingCalls, 1, 'COMMA')}">0</strong>
+                        <small class="num-sub" th:text="|${#numbers.formatInteger(row.embeddingInputChars, 1, 'COMMA')} ký tự · ${row.embeddingCacheHits} cache|">0</small>
+                    </td>
+                    <td class="num-col" th:text="${#numbers.formatInteger(row.groundingCalls, 1, 'COMMA')}">0</td>
+                    <td class="num-col" th:text="${#numbers.formatInteger(row.groundingInputTokens, 1, 'COMMA')}">0</td>
+                    <td class="num-col" th:text="${#numbers.formatInteger(row.groundingOutputTokens, 1, 'COMMA')}">0</td>
+                    <td class="num-col">
+                        <strong th:text="${#numbers.formatInteger(row.totalTokens(), 1, 'COMMA')}">0</strong>
+                    </td>
+                    <td class="num-col">
+                        <span th:text="|${row.webSearchCalls} / ${row.fetchedUrls}|">0 / 0</span>
+                        <small class="num-sub" th:text="${row.downloadedSizeDisplay()}">0 B</small>
+                    </td>
+                </tr>
+                </tbody>
+                <tfoot th:if="${usageSummary != null}">
+                <tr class="usage-total-row">
+                    <td colspan="2"><strong>Tổng cộng (<span th:text="${#lists.size(usageRows)}">0</span> dòng)</strong></td>
+                    <td class="num-col">
+                        <strong th:text="${#numbers.formatInteger(usageSummary.totalEmbeddingCalls, 1, 'COMMA')}">0</strong>
+                        <small class="num-sub" th:text="|${#numbers.formatInteger(usageSummary.totalEmbeddingInputChars, 1, 'COMMA')} ký tự · ${usageSummary.totalEmbeddingCacheHits} cache|">0</small>
+                    </td>
+                    <td class="num-col"><strong th:text="${#numbers.formatInteger(usageSummary.totalGroundingCalls, 1, 'COMMA')}">0</strong></td>
+                    <td class="num-col"><strong th:text="${#numbers.formatInteger(usageSummary.totalInputTokens, 1, 'COMMA')}">0</strong></td>
+                    <td class="num-col"><strong th:text="${#numbers.formatInteger(usageSummary.totalOutputTokens, 1, 'COMMA')}">0</strong></td>
+                    <td class="num-col"><strong th:text="${#numbers.formatInteger(usageSummary.totalTokens(), 1, 'COMMA')}">0</strong></td>
+                    <td class="num-col">
+                        <strong th:text="|${usageSummary.totalWebSearchCalls} / ${usageSummary.totalFetchedUrls}|">0 / 0</strong>
+                        <small class="num-sub" th:text="${usageSummary.downloadedSizeDisplay()}">0 B</small>
+                    </td>
+                </tr>
+                </tfoot>
+            </table>
+        </div>
+    </section>
+
+        </div>
+    </div>
+</main>
+
+<div th:replace="~{fragments/layout :: footer}"></div>
+</body>
+</html>
+

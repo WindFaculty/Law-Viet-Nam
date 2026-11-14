@@ -12,6 +12,8 @@ import vn.edu.hsf302.lawrag.chat.repository.ChatMessageRepository;
 import vn.edu.hsf302.lawrag.chat.service.MessageStateService;
 import vn.edu.hsf302.lawrag.chat.entity.MessageStatus;
 import vn.edu.hsf302.lawrag.chat.dto.SessionOwner;
+import vn.edu.hsf302.lawrag.llm.entity.LlmPersona;
+import vn.edu.hsf302.lawrag.llm.service.LlmPersonaService;
 import vn.edu.hsf302.lawrag.gemini.service.GroundingClient;
 import vn.edu.hsf302.lawrag.gemini.service.GroundingException;
 import vn.edu.hsf302.lawrag.ingestion.service.DocumentFetcher;
@@ -25,6 +27,8 @@ import vn.edu.hsf302.lawrag.observability.dto.UsageCategory;
 import vn.edu.hsf302.lawrag.retrieval.service.AnswerRenderer;
 import vn.edu.hsf302.lawrag.retrieval.service.CitationValidationException;
 import vn.edu.hsf302.lawrag.retrieval.service.CitationValidator;
+import vn.edu.hsf302.lawrag.retrieval.dto.ClarificationContext;
+import vn.edu.hsf302.lawrag.retrieval.dto.ClarificationTurn;
 import vn.edu.hsf302.lawrag.retrieval.service.ContextGrader;
 import vn.edu.hsf302.lawrag.retrieval.service.HybridRetrievalService;
 import vn.edu.hsf302.lawrag.retrieval.dto.QueryAnalysis;
@@ -82,6 +86,7 @@ public class WebSearchWorker {
     private final ContextGrader grader;
     private final CitationValidator citationValidator;
     private final AnswerRenderer answerRenderer;
+    private final LlmPersonaService personas;
     private final CostBudgetService budget;
     private final TransactionTemplate transactions;
     private final ScheduledExecutorService heartbeatExecutor;
@@ -101,6 +106,7 @@ public class WebSearchWorker {
                            ContextGrader grader,
                            CitationValidator citationValidator,
                            AnswerRenderer answerRenderer,
+                           LlmPersonaService personas,
                            CostBudgetService budget,
                            PlatformTransactionManager transactionManager) {
         this.jobs = jobs;
@@ -118,6 +124,7 @@ public class WebSearchWorker {
         this.grader = grader;
         this.citationValidator = citationValidator;
         this.answerRenderer = answerRenderer;
+        this.personas = personas;
         this.budget = budget;
         this.transactions = new TransactionTemplate(transactionManager);
         this.heartbeatExecutor = Executors.newSingleThreadScheduledExecutor(runnable -> {
@@ -300,25 +307,27 @@ public class WebSearchWorker {
         if (Instant.now().isAfter(claim.deadline())) {
             throw new WebSearchJobDeadlineException("job deadline elapsed before re-evaluation");
         }
-        if (context.question() == null || context.question().isBlank()) {
+        if (context.effectiveQuestion() == null || context.effectiveQuestion().isBlank()) {
             jobs.finalizeNoEvidence(claim.jobId(), claim.leaseToken(), WebSearchErrorCode.NO_EVIDENCE);
             return;
         }
-        QueryAnalysis analysis = queryAnalyzer.analyze(context.question(), context.applicableDate());
+        QueryAnalysis analysis = queryAnalyzer.analyze(
+                context.effectiveQuestion(), context.applicableDate());
         usage.embeddingCalls++;
         usage.embeddingChars += analysis.normalizedQuestion().length();
         RetrievalResult result = retrieval.retrieve(analysis);
-        if (!result.gatePassed()) {
+        if (result.contextCandidates().isEmpty() && result.temporalIssues().isEmpty()) {
             jobs.finalizeNoEvidence(claim.jobId(), claim.leaseToken(), WebSearchErrorCode.NO_EVIDENCE);
             return;
         }
 
+        LlmPersona persona = personas.resolveOrDefault(context.personaCode());
         GroundingClient.Decision decision;
         usage.groundingCalls++;
         usage.groundingInputTokens += result.contextCandidates().stream()
                 .mapToLong(candidate -> candidate.rawText().length()).sum() / 4 + 1;
         try {
-            decision = grader.grade(analysis, result);
+            decision = grader.grade(analysis, result, persona, context.clarificationHistory());
             usage.groundingOutputTokens += Math.max(1, outputChars(decision) / 4);
         } catch (BudgetExceededException exception) {
             jobs.finalizeFailure(claim.jobId(), claim.leaseToken(), WebSearchErrorCode.BUDGET_EXCEEDED);
@@ -335,7 +344,7 @@ public class WebSearchWorker {
         try {
             List<ValidatedCitation> validated =
                     citationValidator.validate(decision, analysis, result.contextCandidates());
-            RenderedAnswer rendered = answerRenderer.render(validated);
+            RenderedAnswer rendered = answerRenderer.render(validated, decision.answer(), persona);
             usage.groundingOutputTokens += Math.max(1, rendered.content().length() / 4);
             jobs.finalizeSuccess(claim.jobId(), claim.leaseToken(), rendered.content(), rendered);
         } catch (CitationValidationException exception) {
@@ -446,14 +455,23 @@ public class WebSearchWorker {
             if (message == null) {
                 return null;
             }
+            ClarificationContext clarificationContext = messages.resolveClarificationContext(message.getId());
+            String rawQuestion = message.getInReplyTo() == null ? null : message.getInReplyTo().getContent();
+            String effectiveQuestion = clarificationContext.effectiveQuestion() != null
+                    && !clarificationContext.effectiveQuestion().isBlank()
+                    ? clarificationContext.effectiveQuestion()
+                    : rawQuestion;
             return new WorkerMessageContext(
                     message.getId(),
                     message.getMessageStatus(),
                     message.getConfirmedAt(),
                     message.getSuggestedQuery(),
                     message.getApplicableDate(),
-                    message.getInReplyTo() == null ? null : message.getInReplyTo().getContent(),
-                    message.getSession().owner());
+                    rawQuestion,
+                    effectiveQuestion,
+                    clarificationContext.history(),
+                    message.getSession().owner(),
+                    message.getPersonaCode());
         });
     }
 
@@ -469,7 +487,10 @@ public class WebSearchWorker {
             String suggestedQuery,
             java.time.LocalDate applicableDate,
             String question,
-            SessionOwner owner) {
+            String effectiveQuestion,
+            List<ClarificationTurn> clarificationHistory,
+            SessionOwner owner,
+            String personaCode) {
     }
 
     private record CandidateSelection(List<URI> accepted) {

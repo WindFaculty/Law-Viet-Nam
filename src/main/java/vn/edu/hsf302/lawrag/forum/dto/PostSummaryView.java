@@ -10,7 +10,13 @@ public record PostSummaryView(
         String categoryLabel,
         String authorDisplayName,
         String authorUsername,
+        boolean authorAdmin,
         boolean pinned,
+        String statusCode,
+        String statusLabel,
+        String requestStatusCode,
+        String requestStatusLabel,
+        boolean hasOfficialReply,
         long commentCount,
         String createdAtDisplay) {
 }

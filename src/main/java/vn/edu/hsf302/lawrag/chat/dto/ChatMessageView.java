@@ -1,12 +1,12 @@
 package vn.edu.hsf302.lawrag.chat.dto;
 
-import vn.edu.hsf302.lawrag.websearch.entity.WebSearchJobStage;
-import vn.edu.hsf302.lawrag.websearch.entity.WebSearchJobStatus;
-
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
+
 import vn.edu.hsf302.lawrag.chat.entity.MessageStatus;
+import vn.edu.hsf302.lawrag.websearch.entity.WebSearchJobStage;
+import vn.edu.hsf302.lawrag.websearch.entity.WebSearchJobStatus;
 
 /**
  * Immutable data required by the state-driven chat fragment. Everything lazy
@@ -29,7 +29,9 @@ public record ChatMessageView(
         boolean canRetry,
         boolean webSearchAllowed,
         boolean hasQuota,
-        List<Citation> citations) {
+        List<Citation> citations,
+        String personaCode,
+        String personaName) {
 
     public ChatMessageView {
         citations = citations == null ? List.of() : List.copyOf(citations);

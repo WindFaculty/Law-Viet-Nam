@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Cấu hình Tính cách AI (LLM) — Quản trị LawRAG</title>
+    <link rel="icon" type="image/svg+xml" th:href="@{/images/favicon.svg}">
+    <link rel="stylesheet" th:href="@{/css/ui.css}">
+    <script th:src="@{/js/app.js}" defer></script>
+</head>
+<body>
+<a class="skip-link" href="#main">Bỏ qua điều hướng</a>
+
+<div th:replace="~{fragments/layout :: topbar('admin')}"></div>
+
+<main id="main" class="page page-admin">
+    <div class="admin-workspace">
+
+        <aside th:replace="~{fragments/admin-nav :: header('llm', 'Tính cách AI (LLM Personas)', 'Quản lý các tùy chọn phong cách trả lời của mô hình (Chuyên nghiệp, Ngắn gọn, Đầy đủ hoặc tùy chỉnh). Mọi chế độ vẫn bắt buộc tuân thủ quy tắc trích dẫn nguyên văn và không bịa căn cứ.')}"></aside>
+
+        <div class="admin-main">
+            <div th:replace="~{fragments/admin-nav :: alerts}"></div>
+
+    <section class="admin-section" aria-labelledby="persona-list-heading">
+        <div class="section-head">
+            <h2 id="persona-list-heading">
+                Danh sách tính cách hiện có
+                <span class="count-pill" th:text="${#lists.size(personas)}">0</span>
+            </h2>
+        </div>
+
+        <div class="persona-grid">
+            <article class="card persona-card" th:each="persona : ${personas}">
+                <div class="persona-card-head">
+                    <div>
+                        <div class="forum-post-badges">
+                            <span class="badge badge-ok" th:if="${persona.defaultPersona}">Mặc định</span>
+                            <span class="badge"
+                                  th:classappend="${persona.active} ? ' badge-info' : ' badge-danger'"
+                                  th:text="${persona.active} ? 'Đang bật' : 'Đang tắt'">Đang bật</span>
+                            <span class="badge badge-violet" th:text="${persona.styleLabel}">Chuyên nghiệp</span>
+                            <code class="mono-cell" th:text="${persona.code}">CHUYEN_NGHIEP</code>
+                        </div>
+                        <h3 class="persona-title" th:text="${persona.name}">Chuyên nghiệp</h3>
+                    </div>
+
+                    <form th:if="${!persona.defaultPersona}"
+                          th:action="@{/admin/llm/personas/{id}/set-default(id=${persona.id})}"
+                          method="post">
+                        <button type="submit" class="btn btn-secondary btn-sm">Đặt làm mặc định</button>
+                    </form>
+                </div>
+
+                <form class="form-stack"
+                      th:action="@{/admin/llm/personas/{id}/update(id=${persona.id})}"
+                      method="post">
+                    <div class="persona-form-row">
+                        <label class="form-field">
+                            <span>Tên hiển thị</span>
+                            <input type="text" name="name" maxlength="100" required th:value="${persona.name}">
+                        </label>
+                        <label class="form-field">
+                            <span>Kiểu phản hồi (Style)</span>
+                            <select name="responseStyle">
+                                <option th:each="st : ${styles}"
+                                        th:value="${st.name()}"
+                                        th:text="${st.label()}"
+                                        th:selected="${st == persona.responseStyle}">Chuyên nghiệp</option>
+                            </select>
+                        </label>
+                        <label class="form-field persona-order-field">
+                            <span>Thứ tự</span>
+                            <input type="number" name="displayOrder" min="0" max="999" th:value="${persona.displayOrder}">
+                        </label>
+                    </div>
+                    <label class="form-field">
+                        <span>Mô tả ngắn (hiển thị cho người dùng khi chọn)</span>
+                        <input type="text" name="description" maxlength="255" required th:value="${persona.description}">
+                    </label>
+                    <label class="form-field">
+                        <span>Hướng dẫn hệ thống (System Instruction đưa vào ContextGrader)</span>
+                        <textarea name="systemInstruction" rows="3" maxlength="4000" required
+                                  th:text="${persona.systemInstruction}"></textarea>
+                    </label>
+                    <div class="persona-card-foot">
+                        <label class="checkbox-inline">
+                            <input type="checkbox" name="active" value="true" th:checked="${persona.active}">
+                            <span>Cho phép người dùng chọn trên trang Chat</span>
+                        </label>
+                        <button type="submit" class="btn btn-sm">Lưu cấu hình</button>
+                    </div>
+                </form>
+            </article>
+        </div>
+    </section>
+
+    <section class="admin-section" aria-labelledby="persona-create-heading">
+        <div class="card admin-panel">
+            <h2 id="persona-create-heading">Thêm tính cách AI mới</h2>
+            <p class="muted">
+                Mã tính cách chỉ gồm chữ IN HOA A–Z, số 0–9 và dấu gạch dưới <code>_</code> (ví dụ: <code>THAM_KHAO_NHANH</code>).
+            </p>
+            <form class="form-stack" th:action="@{/admin/llm/personas}" method="post">
+                <div class="persona-form-row">
+                    <label class="form-field">
+                        <span>Mã tính cách (Code)</span>
+                        <input type="text" name="code" required maxlength="64"
+                               pattern="[A-Za-z0-9_]{2,64}" placeholder="VD: GIAI_THICH_DE_HIEU">
+                    </label>
+                    <label class="form-field">
+                        <span>Tên hiển thị</span>
+                        <input type="text" name="name" required maxlength="100" placeholder="VD: Giải thích dễ hiểu">
+                    </label>
+                    <label class="form-field">
+                        <span>Kiểu phản hồi</span>
+                        <select name="responseStyle">
+                            <option th:each="st : ${styles}"
+                                    th:value="${st.name()}"
+                                    th:text="${st.label()}"
+                                    th:selected="${st.name() == 'CUSTOM'}">Tùy chỉnh</option>
+                        </select>
+                    </label>
+                    <label class="form-field persona-order-field">
+                        <span>Thứ tự</span>
+                        <input type="number" name="displayOrder" min="0" max="999" value="10">
+                    </label>
+                </div>
+                <label class="form-field">
+                    <span>Mô tả ngắn</span>
+                    <input type="text" name="description" required maxlength="255"
+                           placeholder="Mô tả ngắn gọn cách trợ lý trình bày câu trả lời...">
+                </label>
+                <label class="form-field">
+                    <span>Hướng dẫn hệ thống (System Instruction)</span>
+                    <textarea name="systemInstruction" rows="3" required maxlength="4000"
+                              placeholder="Hướng dẫn giọng văn, bố cục trình bày câu trả lời cho LLM..."></textarea>
+                </label>
+                <div class="persona-card-foot">
+                    <label class="checkbox-inline">
+                        <input type="checkbox" name="setAsDefault" value="true">
+                        <span>Đặt ngay làm tính cách mặc định của hệ thống</span>
+                    </label>
+                    <button type="submit" class="btn">Tạo tính cách mới</button>
+                </div>
+            </form>
+        </div>
+    </section>
+
+        </div>
+    </div>
+</main>
+
+<div th:replace="~{fragments/layout :: footer}"></div>
+</body>
+</html>
+

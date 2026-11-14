@@ -38,9 +38,11 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.not;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.asyncDispatch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.request;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 /**
@@ -57,8 +59,8 @@ class G5AcceptanceTest extends PostgresIntegrationTest {
             "Theo Nghị định 238/2026/NĐ-CP, người điều khiển xe máy vượt đèn đỏ bị phạt bao nhiêu tiền?";
     private static final String CLARIFICATION_QUESTION = "Tôi bị phạt bao nhiêu tiền?";
     private static final String CONFIRM_PROMPT =
-            "Kho nội bộ chưa có đủ căn cứ để trả lời câu hỏi này. "
-                    + "Bạn có muốn tìm trên Web và bổ sung dữ liệu đã kiểm tra vào kho không?";
+            "Kho dữ liệu của chúng tôi hiện tại chưa đủ thông tin để trả lời câu hỏi này. "
+                    + "Bạn có muốn tra cứu trên Web không?";
     private static final Pattern SESSION_ID = Pattern.compile("data-session-id=\"([0-9a-f-]{36})\"");
 
     @Autowired
@@ -113,6 +115,49 @@ class G5AcceptanceTest extends PostgresIntegrationTest {
                 .andExpect(status().isOk())
                 .andExpect(content().string(containsString(HELMET_QUESTION)))
                 .andExpect(content().string(containsString("1 / 5")));
+    }
+
+    @Test
+    void streamingSubmissionEmitsSseEventsAndFinalizesWithCitationAndQuota() throws Exception {
+        String anonId = newAnonId();
+        ChatSession session = chatSessionService.createSession(owner(anonId));
+
+        MvcResult submitResult = mockMvc.perform(question(session.getId(), anonId, "g5-stream", HELMET_QUESTION)
+                        .header("X-Chat-Stream", "true"))
+                .andExpect(status().isOk())
+                .andExpect(content().string(containsString("data-status=\"PROCESSING_LOCAL\"")))
+                .andExpect(content().string(containsString("data-stream-url=\"/api/chat/messages/")))
+                .andReturn();
+
+        UUID messageId = aiMessageId(session.getId(), HELMET_QUESTION);
+        assertThat(body(submitResult)).contains("data-stream-url=\"/api/chat/messages/" + messageId + "/stream\"");
+
+        MvcResult streamStart = mockMvc.perform(get("/api/chat/messages/{id}/stream", messageId)
+                        .cookie(cookie(anonId)))
+                .andExpect(request().asyncStarted())
+                .andReturn();
+        streamStart.getAsyncResult(10_000);
+
+        MvcResult streamResult = mockMvc.perform(asyncDispatch(streamStart))
+                .andExpect(status().isOk())
+                .andReturn();
+        String sseBody = streamResult.getResponse().getContentAsString(StandardCharsets.UTF_8);
+
+        assertThat(sseBody).contains("event:stage");
+        assertThat(sseBody).contains("event:delta");
+        assertThat(sseBody).contains("event:complete");
+        assertThat(sseBody).contains("\"status\":\"COMPLETED\"");
+
+        assertThat(messageStatus(messageId)).isEqualTo("COMPLETED");
+        assertThat(citationCount(messageId)).isEqualTo(1);
+        BucketState bucket = bucket(owner(anonId));
+        assertThat(bucket.usedCount()).isEqualTo(1);
+        assertThat(bucket.reservedCount()).isZero();
+
+        mockMvc.perform(get("/api/chat/messages/{id}/fragment", messageId).cookie(cookie(anonId)))
+                .andExpect(status().isOk())
+                .andExpect(content().string(containsString("data-status=\"COMPLETED\"")))
+                .andExpect(content().string(containsString("Trích dẫn nguyên văn")));
     }
 
     @Test
@@ -649,6 +694,52 @@ class G5AcceptanceTest extends PostgresIntegrationTest {
                         .cookie(cookie(anonId)))
                 .andExpect(status().isOk())
                 .andExpect(content().string(containsString("data-session-id=\"" + sessionId + "\"")));
+    }
+
+    @Test
+    void multiTurnClarificationCompletesAndPreservesWebConfirmQuestionHash() throws Exception {
+        String anonId = newAnonId();
+        ChatSession session = chatSessionService.createSession(owner(anonId));
+
+        mockMvc.perform(question(session.getId(), anonId, "g5-clarify-1", CLARIFICATION_QUESTION))
+                .andExpect(status().isOk())
+                .andExpect(content().string(containsString("data-status=\"NEEDS_CLARIFICATION\"")));
+
+        mockMvc.perform(question(session.getId(), anonId, "g5-clarify-2", "chở quá số người"))
+                .andExpect(status().isOk())
+                .andExpect(content().string(containsString("data-status=\"NEEDS_CLARIFICATION\"")));
+
+        mockMvc.perform(question(session.getId(), anonId, "g5-clarify-3",
+                        "22 tuổi xe 4 chỗ gia đình và chở 5 người"))
+                .andExpect(status().isOk())
+                .andExpect(content().string(containsString("data-status=\"COMPLETED\"")))
+                .andExpect(content().string(containsString("Trích dẫn nguyên văn")));
+
+        UUID completedAiId = aiMessageId(session.getId(), "22 tuổi xe 4 chỗ gia đình và chở 5 người");
+        assertThat(messageStatus(completedAiId)).isEqualTo("COMPLETED");
+        assertThat(citationCount(completedAiId)).isGreaterThanOrEqualTo(1);
+        assertThat(bucket(owner(anonId)).usedCount()).isEqualTo(1);
+        assertThat(bucket(owner(anonId)).reservedCount()).isZero();
+
+        // A clarification chain that subsequently transitions to AWAITING_WEB_CONFIRM must
+        // keep questionHash aligned with the latest USER message so confirm-web-search succeeds.
+        String webAnonId = newAnonId();
+        ChatSession webSession = chatSessionService.createSession(owner(webAnonId));
+        mockMvc.perform(question(webSession.getId(), webAnonId, "g5-clarify-web-1", CLARIFICATION_QUESTION))
+                .andExpect(status().isOk())
+                .andExpect(content().string(containsString("data-status=\"NEEDS_CLARIFICATION\"")));
+
+        String followUpWithMissingDoc = "Nghị định 238/2026/NĐ-CP xe máy vượt đèn đỏ";
+        mockMvc.perform(question(webSession.getId(), webAnonId, "g5-clarify-web-2", followUpWithMissingDoc))
+                .andExpect(status().isOk())
+                .andExpect(content().string(containsString("data-status=\"AWAITING_WEB_CONFIRM\"")));
+
+        UUID awaitingId = aiMessageId(webSession.getId(), followUpWithMissingDoc);
+        String hash = questionHash(awaitingId);
+        confirm(new AwaitingMessage(webSession.getId(), awaitingId, hash), webAnonId)
+                .andExpect(status().isOk())
+                .andExpect(content().string(containsString("data-status=\"WEB_QUEUED\"")));
+        assertThat(jobCount(awaitingId)).isEqualTo(1);
     }
 
     // -----------------------------------------------------------------------

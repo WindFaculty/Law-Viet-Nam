@@ -1,5 +1,6 @@
 package vn.edu.hsf302.lawrag.chat.controller;
 
+import java.util.List;
 import java.util.UUID;
 
 import org.springframework.boot.actuate.health.HealthComponent;
@@ -18,6 +19,8 @@ import vn.edu.hsf302.lawrag.chat.entity.ChatSession;
 import vn.edu.hsf302.lawrag.chat.service.ChatSessionService;
 import vn.edu.hsf302.lawrag.chat.service.ChatViewService;
 import vn.edu.hsf302.lawrag.chat.dto.SessionOwner;
+import vn.edu.hsf302.lawrag.llm.dto.LlmPersonaView;
+import vn.edu.hsf302.lawrag.llm.service.LlmPersonaService;
 
 @Controller
 public class ChatController {
@@ -25,13 +28,16 @@ public class ChatController {
     private final HealthEndpoint healthEndpoint;
     private final ChatSessionService sessions;
     private final ChatViewService views;
+    private final LlmPersonaService personas;
 
     public ChatController(HealthEndpoint healthEndpoint,
                           ChatSessionService sessions,
-                          ChatViewService views) {
+                          ChatViewService views,
+                          LlmPersonaService personas) {
         this.healthEndpoint = healthEndpoint;
         this.sessions = sessions;
         this.views = views;
+        this.personas = personas;
     }
 
     @GetMapping({"/", "/chat"})
@@ -45,6 +51,12 @@ public class ChatController {
 
         ChatConversationView conversation = views.conversation(session.getId(), owner);
         HealthComponent health = healthEndpoint.health();
+        List<LlmPersonaView> activePersonas = personas.listActivePersonas();
+        String selectedPersonaCode = activePersonas.stream()
+                .map(LlmPersonaView::code)
+                .filter(code -> code.equals(conversation.personaCode()))
+                .findFirst()
+                .orElseGet(() -> personas.getDefaultPersona().getCode());
 
         model.addAttribute("healthStatus", health.getStatus().getCode());
         model.addAttribute("healthUp", "UP".equals(health.getStatus().getCode()));
@@ -53,6 +65,8 @@ public class ChatController {
         model.addAttribute("quotaUsed", conversation.quotaUsed());
         model.addAttribute("quotaLimit", conversation.quotaLimit());
         model.addAttribute("webSearchAllowed", conversation.webSearchAllowed());
+        model.addAttribute("personas", activePersonas);
+        model.addAttribute("selectedPersonaCode", selectedPersonaCode);
         model.addAttribute("recentSessions", views.listRecentSessions(owner, session.getId()));
         model.addAttribute("idempotencyKey", UUID.randomUUID().toString());
         return "chat/index";

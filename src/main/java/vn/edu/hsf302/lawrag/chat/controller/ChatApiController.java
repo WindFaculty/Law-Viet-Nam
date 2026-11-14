@@ -1,6 +1,7 @@
 package vn.edu.hsf302.lawrag.chat.controller;
 
 import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -8,6 +9,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import java.util.UUID;
 import vn.edu.hsf302.lawrag.chat.service.ChatConsentService;
@@ -41,13 +43,23 @@ public class ChatApiController {
     public String submit(@PathVariable UUID sessionId,
                          @RequestParam(name = "message", defaultValue = "") String message,
                          @RequestParam(name = "idempotencyKey", required = false) String idempotencyKey,
+                         @RequestParam(name = "personaCode", required = false) String personaCode,
+                         @RequestParam(name = "stream", required = false) Boolean stream,
                          HttpServletRequest request,
                          Model model) {
         SessionOwner owner = ChatOwnerResolver.current(request);
-        ChatOutcome outcome =
-                orchestrator.ask(sessionId, owner, idempotencyKey, message);
+        boolean streamRequested = "true".equalsIgnoreCase(request.getHeader("X-Chat-Stream"))
+                || Boolean.TRUE.equals(stream);
+        ChatOutcome outcome = streamRequested
+                ? orchestrator.submitForStream(sessionId, owner, idempotencyKey, message, personaCode)
+                : orchestrator.ask(sessionId, owner, idempotencyKey, message, personaCode);
         model.addAttribute("pairView", views.pair(outcome.messageId(), owner));
         return "fragments/chat-message :: pair";
+    }
+
+    @GetMapping(value = "/messages/{messageId}/stream", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
+    public SseEmitter stream(@PathVariable UUID messageId, HttpServletRequest request) {
+        return orchestrator.connectStream(messageId, ChatOwnerResolver.current(request));
     }
 
     @PostMapping("/messages/{messageId}/confirm-web-search")

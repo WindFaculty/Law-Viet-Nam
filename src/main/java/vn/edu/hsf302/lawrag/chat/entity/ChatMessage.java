@@ -77,6 +77,9 @@ public class ChatMessage {
     @Column(name = "confirmed_at")
     private Instant confirmedAt;
 
+    @Column(name = "persona_code", length = 64)
+    private String personaCode;
+
     @Version
     @Column(name = "version", nullable = false)
     private long version;
@@ -201,6 +204,14 @@ public class ChatMessage {
 
     public void setConfirmedAt(Instant confirmedAt) {
         this.confirmedAt = confirmedAt;
+    }
+
+    public String getPersonaCode() {
+        return personaCode;
+    }
+
+    public void setPersonaCode(String personaCode) {
+        this.personaCode = personaCode;
     }
 
     public long getVersion() {

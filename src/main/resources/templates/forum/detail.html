@@ -25,14 +25,39 @@
         <p th:text="${error}">Có lỗi xảy ra.</p>
     </div>
 
+    <div class="alert alert-error" th:if="${post.statusCode == 'REMOVED'}" role="alert">
+        <div>
+            <strong>Bài viết này hiện đang ở trạng thái ĐÃ GỠ khỏi diễn đàn công khai.</strong>
+            <p th:if="${post.removedReason}" th:text="'Lý do gỡ: ' + ${post.removedReason}"></p>
+        </div>
+        <form th:if="${currentUser != null and currentUser.admin}"
+              th:action="@{/admin/forum/posts/{id}/restore(id=${post.id})}"
+              method="post">
+            <button type="submit" class="btn btn-sm">Khôi phục bài viết</button>
+        </form>
+    </div>
+
     <article class="card forum-detail-card">
         <div class="forum-detail-head">
             <div class="forum-post-badges">
                 <span class="badge badge-ok" th:if="${post.pinned}">Ghim</span>
                 <span class="badge badge-info" th:text="${post.categoryLabel}">Thảo luận chung</span>
+                <span class="badge badge-ok" th:if="${post.requestStatusCode == 'RESOLVED'}">Đã giải quyết</span>
+                <span class="badge badge-official" th:if="${post.requestStatusCode == 'ANSWERED'}">Admin đã trả lời</span>
+                <span class="badge badge-warn" th:if="${post.requestStatusCode == 'OPEN'}">Chờ phản hồi</span>
+                <span class="badge badge-danger" th:if="${post.statusCode == 'REMOVED'}">Đã gỡ</span>
             </div>
 
             <div class="forum-comment-actions">
+                <a class="btn btn-secondary btn-sm"
+                   th:if="${currentUser != null and currentUser.admin}"
+                   th:href="@{/admin/forum}">Mở quản trị diễn đàn</a>
+                <button type="button"
+                        class="btn btn-secondary btn-sm"
+                        th:if="${post.canEdit}"
+                        data-toggle-target="post-edit-form">
+                    Chỉnh sửa
+                </button>
                 <form th:if="${post.canPin}"
                       th:action="@{/forum/posts/{id}/pin(id=${post.id})}"
                       method="post">
@@ -42,7 +67,8 @@
                 <form th:if="${post.canDelete}"
                       th:action="@{/forum/posts/{id}/delete(id=${post.id})}"
                       method="post">
-                    <button type="submit" class="btn btn-secondary btn-sm">Xóa bài viết</button>
+                    <button type="submit" class="btn btn-secondary btn-sm"
+                            data-confirm="Xóa vĩnh viễn bài viết này?">Xóa bài viết</button>
                 </form>
             </div>
         </div>
@@ -50,21 +76,61 @@
         <h1 class="forum-detail-title" th:text="${post.title}">Tiêu đề bài viết</h1>
 
         <div class="forum-post-meta">
-            <span>
+            <span class="forum-post-author">
                 Đăng bởi <strong th:text="${post.authorDisplayName}">Tác giả</strong>
+                <span class="badge badge-admin" th:if="${post.authorAdmin}">Quản trị viên</span>
+                <span class="badge" th:unless="${post.authorAdmin}">Thành viên</span>
                 <span class="muted" th:text="'@' + ${post.authorUsername}">@user</span>
             </span>
-            <span class="muted" th:text="${post.createdAtDisplay}">01/01/2026</span>
+            <span class="muted">
+                <span th:text="${post.createdAtDisplay}">01/01/2026</span>
+                <span th:if="${!#strings.isEmpty(post.editedAtDisplay)}"
+                      th:text="| · Đã chỉnh sửa ${post.editedAtDisplay}|"></span>
+            </span>
         </div>
 
         <div class="forum-detail-body" th:text="${post.content}">Nội dung bài viết</div>
+
+        <form th:if="${post.canEdit}"
+              id="post-edit-form"
+              th:action="@{/forum/posts/{id}/edit(id=${post.id})}"
+              method="post"
+              class="form-stack forum-inline-form"
+              hidden>
+            <div class="forum-compose-row">
+                <label class="form-field forum-compose-title">
+                    <span>Tiêu đề</span>
+                    <input type="text" name="title" required minlength="5" maxlength="200"
+                           th:value="${post.title}">
+                </label>
+                <label class="form-field">
+                    <span>Chuyên mục</span>
+                    <select name="category">
+                        <option th:each="cat : ${categories}"
+                                th:value="${cat.name()}"
+                                th:text="${cat.label}"
+                                th:selected="${cat.name() == post.categoryCode}">Thảo luận chung</option>
+                    </select>
+                </label>
+            </div>
+            <label class="form-field">
+                <span>Nội dung bài viết</span>
+                <textarea name="content" rows="5" required minlength="10" maxlength="5000"
+                          th:text="${post.content}"></textarea>
+            </label>
+            <div class="forum-inline-actions">
+                <button type="submit" class="btn btn-sm">Lưu thay đổi</button>
+                <button type="button" class="btn btn-secondary btn-sm"
+                        data-toggle-target="post-edit-form">Hủy</button>
+            </div>
+        </form>
     </article>
 
     <section id="comments" class="card forum-comments-section" aria-labelledby="comments-heading">
         <div class="card-head">
             <h2 id="comments-heading">
                 Bình luận
-                <span class="count-pill" th:text="${#lists.size(post.comments)}">0</span>
+                <span class="count-pill" th:text="${post.totalCommentCount}">0</span>
             </h2>
         </div>
 
@@ -73,27 +139,13 @@
         </div>
 
         <ul class="forum-comment-list" th:unless="${#lists.isEmpty(post.comments)}">
-            <li class="forum-comment-item" th:each="comment : ${post.comments}">
-                <div class="forum-comment-head">
-                    <span>
-                        <strong th:text="${comment.authorDisplayName}">Thành viên</strong>
-                        <span class="muted" th:text="'@' + ${comment.authorUsername}">@user</span>
-                    </span>
-                    <span class="forum-comment-actions">
-                        <span class="muted" th:text="${comment.createdAtDisplay}">01/01/2026</span>
-                        <form th:if="${comment.canDelete}"
-                              th:action="@{/forum/comments/{id}/delete(id=${comment.id})}"
-                              method="post">
-                            <button type="submit" class="btn btn-secondary btn-sm">Xóa</button>
-                        </form>
-                    </span>
-                </div>
-                <p class="forum-comment-body" th:text="${comment.content}">Nội dung bình luận</p>
-            </li>
+            <th:block th:each="comment : ${post.comments}">
+                <li th:replace="~{fragments/forum-comments :: commentNode(${comment}, ${post}, 0)}"></li>
+            </th:block>
         </ul>
 
         <form class="form-stack forum-comment-form"
-              th:if="${currentUser != null}"
+              th:if="${currentUser != null and post.statusCode == 'PUBLISHED'}"
               th:action="@{/forum/posts/{id}/comments(id=${post.id})}"
               method="post">
             <label class="form-field">

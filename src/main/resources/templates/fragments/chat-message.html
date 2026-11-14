@@ -21,9 +21,14 @@
 <article th:fragment="aiMessage(view)"
          class="message message-ai"
          th:id="|message-${view.id}|"
-         th:attr="data-status=${view.status},data-polling=${view.polling}">
+         th:attr="data-status=${view.status},data-polling=${view.polling},data-stream-url=${view.status.name() == 'PROCESSING_LOCAL' ? '/api/chat/messages/' + view.id + '/stream' : null}">
     <div class="message-head">
-        <p class="message-role">Trợ lý LawRAG</p>
+        <div class="message-head-left">
+            <p class="message-role">Trợ lý LawRAG</p>
+            <span class="badge badge-persona"
+                  th:if="${view.personaName != null}"
+                  th:text="${view.personaName}">Chuyên nghiệp</span>
+        </div>
         <span class="badge message-state-badge"
               th:classappend="${view.status.name() == 'COMPLETED'} ? ' badge-ok'
                               : (${view.status.name() == 'AWAITING_WEB_CONFIRM'} ? ' badge-warn'
@@ -60,8 +65,11 @@
         <div th:case="'PROCESSING_LOCAL'" class="state-box state-loading">
             <p class="message-loading" role="status">
                 <span class="spinner" aria-hidden="true"></span>
-                <span>Đang tìm trong kho nội bộ…</span>
+                <span class="js-stream-stage">Đang tìm trong kho nội bộ…</span>
             </p>
+            <div class="stream-preview js-stream-preview" hidden>
+                <p class="message-content js-stream-text"></p>
+            </div>
             <div class="shimmer-lines" aria-hidden="true">
                 <span class="shimmer-line"></span>
                 <span class="shimmer-line shimmer-line-short"></span>
@@ -76,7 +84,7 @@
                     <path d="M10 6.2V10.4M10 13.4H10.01" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
                 </svg>
                 <p>
-                    Kho nội bộ chưa có đủ căn cứ để trả lời câu hỏi này. Bạn có muốn tìm trên Web và bổ sung dữ liệu đã kiểm tra vào kho không?
+                    Kho dữ liệu của chúng tôi hiện tại chưa đủ thông tin để trả lời câu hỏi này. Bạn có muốn tra cứu trên Web không?
                 </p>
             </div>
             <p class="hint query-preview" th:if="${view.suggestedQuery != null}">

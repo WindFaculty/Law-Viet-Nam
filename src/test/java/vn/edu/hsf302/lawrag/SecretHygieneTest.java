@@ -59,7 +59,7 @@ class SecretHygieneTest {
         GeminiProperties properties = new GeminiProperties(
                 true,
                 "test-secret-value",
-                "gemini-2.5-flash",
+                "gemini-3.5-flash-lite",
                 "gemini-embedding-001",
                 "gemini-embedding-001@768:v1",
                 768,

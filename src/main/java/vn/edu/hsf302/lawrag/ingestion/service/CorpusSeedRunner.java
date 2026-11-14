@@ -27,11 +27,16 @@ public class CorpusSeedRunner implements ApplicationRunner {
 
     @Override
     public void run(ApplicationArguments args) {
-        CorpusImportResult result = corpusImportService.importCorpus();
-        log.info("Corpus import complete: version={}, documentsCreated={}, documentsReused={}, "
-                        + "articlesCreated={}, articlesReused={}, embeddingsGenerated={}, embeddingsReused={}",
-                result.corpusVersion(), result.documentsCreated(), result.documentsReused(),
-                result.articlesCreated(), result.articlesReused(),
-                result.embeddingsGenerated(), result.embeddingsReused());
+        try {
+            CorpusImportResult result = corpusImportService.importCorpus();
+            log.info("Corpus import complete: version={}, documentsCreated={}, documentsReused={}, "
+                            + "articlesCreated={}, articlesReused={}, embeddingsGenerated={}, embeddingsReused={}",
+                    result.corpusVersion(), result.documentsCreated(), result.documentsReused(),
+                    result.articlesCreated(), result.articlesReused(),
+                    result.embeddingsGenerated(), result.embeddingsReused());
+        } catch (RuntimeException exception) {
+            log.warn("Corpus seed stopped before finishing embeddings ({}); "
+                    + "application will continue serving persisted corpus data", exception.getMessage());
+        }
     }
 }

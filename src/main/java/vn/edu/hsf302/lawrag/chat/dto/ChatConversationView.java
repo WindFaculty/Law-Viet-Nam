@@ -9,7 +9,17 @@ public record ChatConversationView(
         List<ChatMessageView> messages,
         int quotaUsed,
         int quotaLimit,
-        boolean webSearchAllowed) {
+        boolean webSearchAllowed,
+        String personaCode) {
+
+    public ChatConversationView(
+            UUID sessionId,
+            List<ChatMessageView> messages,
+            int quotaUsed,
+            int quotaLimit,
+            boolean webSearchAllowed) {
+        this(sessionId, messages, quotaUsed, quotaLimit, webSearchAllowed, null);
+    }
 
     public ChatConversationView {
         messages = List.copyOf(messages);

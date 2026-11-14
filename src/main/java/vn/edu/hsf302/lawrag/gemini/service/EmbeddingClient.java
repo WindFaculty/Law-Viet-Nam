@@ -1,5 +1,7 @@
 package vn.edu.hsf302.lawrag.gemini.service;
 
+import java.util.List;
+
 /**
  * Adapter boundary for the embedding provider. Controllers and services depend on
  * this interface so tests and future providers can replace the Gemini implementation.
@@ -17,6 +19,19 @@ public interface EmbeddingClient {
      * @param taskType distinguishes stored documents from search queries
      */
     Embedding embed(String text, EmbeddingTaskType taskType);
+
+    /**
+     * Embeds a batch of non-blank texts in order. Implementations backed by remote APIs
+     * may override this to call a batch endpoint.
+     */
+    default List<Embedding> embedBatch(List<String> texts, EmbeddingTaskType taskType) {
+        if (texts == null || texts.isEmpty()) {
+            return List.of();
+        }
+        return texts.stream()
+                .map(text -> embed(text, taskType))
+                .toList();
+    }
 
     enum EmbeddingTaskType {
         RETRIEVAL_DOCUMENT,

@@ -42,6 +42,9 @@ public class ChatSession {
     @Column(name = "expires_at", nullable = false)
     private Instant expiresAt;
 
+    @Column(name = "persona_code", length = 64)
+    private String personaCode;
+
     protected ChatSession() {
     }
 
@@ -77,6 +80,14 @@ public class ChatSession {
 
     public Instant getExpiresAt() {
         return expiresAt;
+    }
+
+    public String getPersonaCode() {
+        return personaCode;
+    }
+
+    public void setPersonaCode(String personaCode) {
+        this.personaCode = personaCode;
     }
 
     public SessionOwner owner() {

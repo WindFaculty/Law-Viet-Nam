@@ -71,9 +71,21 @@ public final class VietnameseText {
             new SubjectTerm("xe gan may", "xe_mo_to"),
             new SubjectTerm("xe may", "xe_mo_to"),
             new SubjectTerm("mo to", "xe_mo_to"),
+            new SubjectTerm("xe ban tai", "o_to"),
+            new SubjectTerm("xe gia dinh", "o_to"),
+            new SubjectTerm("xe 16 cho", "o_to"),
+            new SubjectTerm("xe 29 cho", "o_to"),
+            new SubjectTerm("xe 45 cho", "o_to"),
+            new SubjectTerm("xe 4 cho", "o_to"),
+            new SubjectTerm("xe 5 cho", "o_to"),
+            new SubjectTerm("xe 7 cho", "o_to"),
+            new SubjectTerm("xe 9 cho", "o_to"),
             new SubjectTerm("xe o to", "o_to"),
             new SubjectTerm("o to", "o_to"),
-            new SubjectTerm("xe hoi", "o_to"));
+            new SubjectTerm("xe hoi", "o_to"),
+            new SubjectTerm("xe con", "o_to"),
+            new SubjectTerm("xe tai", "o_to"),
+            new SubjectTerm("xe khach", "o_to"));
 
     private VietnameseText() {
     }

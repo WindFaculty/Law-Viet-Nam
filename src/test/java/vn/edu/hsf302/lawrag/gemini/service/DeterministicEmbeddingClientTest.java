@@ -10,7 +10,7 @@ import vn.edu.hsf302.lawrag.gemini.config.GeminiProperties;
 class DeterministicEmbeddingClientTest {
 
     private final DeterministicEmbeddingClient client = new DeterministicEmbeddingClient(
-            new GeminiProperties(false, "", "gemini-2.5-flash", "gemini-embedding-001",
+            new GeminiProperties(false, "", "gemini-3.5-flash-lite", "gemini-embedding-001",
                     "gemini-embedding-001@768:v1", 768, Duration.ofSeconds(30)));
 
     @Test

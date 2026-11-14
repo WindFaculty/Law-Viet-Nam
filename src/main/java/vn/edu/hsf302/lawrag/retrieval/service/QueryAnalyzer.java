@@ -6,10 +6,12 @@ import java.time.Clock;
 import java.time.DateTimeException;
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
+import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import vn.edu.hsf302.lawrag.retrieval.dto.QueryAnalysis;
@@ -201,23 +203,54 @@ public class QueryAnalyzer {
     }
 
     private static ParsedDate parseDate(String strippedLower) {
-        Matcher longDate = LONG_DATE.matcher(strippedLower);
-        if (longDate.find()) {
-            return toDate(longDate.group(1), longDate.group(2), longDate.group(3));
+        List<int[]> occupiedSpans = new ArrayList<>();
+        List<MatchedDate> matches = new ArrayList<>();
+        collectDateMatches(LONG_DATE.matcher(strippedLower), 3, occupiedSpans, matches,
+                matcher -> toDate(matcher.group(1), matcher.group(2), matcher.group(3)));
+        collectDateMatches(FULL_DATE.matcher(strippedLower), 3, occupiedSpans, matches,
+                matcher -> toDate(matcher.group(1), matcher.group(2), matcher.group(3)));
+        collectDateMatches(MONTH_YEAR.matcher(strippedLower), 2, occupiedSpans, matches,
+                matcher -> toDate("1", matcher.group(1), matcher.group(2)));
+        collectDateMatches(YEAR.matcher(strippedLower), 1, occupiedSpans, matches,
+                matcher -> toDate("1", "1", matcher.group(1)));
+        if (matches.isEmpty()) {
+            return ParsedDate.none();
         }
-        Matcher fullDate = FULL_DATE.matcher(strippedLower);
-        if (fullDate.find()) {
-            return toDate(fullDate.group(1), fullDate.group(2), fullDate.group(3));
+        int lastInvalidStart = matches.stream()
+                .filter(match -> match.date().invalid())
+                .mapToInt(MatchedDate::start)
+                .max()
+                .orElse(-1);
+        Optional<MatchedDate> bestValid = matches.stream()
+                .filter(match -> !match.date().invalid() && match.start() > lastInvalidStart)
+                .max(Comparator.comparingInt(MatchedDate::specificity)
+                        .thenComparingInt(MatchedDate::start));
+        return bestValid.map(MatchedDate::date).orElseGet(ParsedDate::invalidDate);
+    }
+
+    private static void collectDateMatches(Matcher matcher,
+                                           int specificity,
+                                           List<int[]> occupiedSpans,
+                                           List<MatchedDate> matches,
+                                           Function<Matcher, ParsedDate> extractor) {
+        while (matcher.find()) {
+            int start = matcher.start();
+            int end = matcher.end();
+            boolean overlaps = false;
+            for (int[] span : occupiedSpans) {
+                if (start < span[1] && end > span[0]) {
+                    overlaps = true;
+                    break;
+                }
+            }
+            if (!overlaps) {
+                occupiedSpans.add(new int[]{start, end});
+                matches.add(new MatchedDate(start, specificity, extractor.apply(matcher)));
+            }
         }
-        Matcher monthYear = MONTH_YEAR.matcher(strippedLower);
-        if (monthYear.find()) {
-            return toDate("1", monthYear.group(1), monthYear.group(2));
-        }
-        Matcher year = YEAR.matcher(strippedLower);
-        if (year.find()) {
-            return toDate("1", "1", year.group(1));
-        }
-        return ParsedDate.none();
+    }
+
+    private record MatchedDate(int start, int specificity, ParsedDate date) {
     }
 
     private static ParsedDate toDate(String day, String month, String year) {

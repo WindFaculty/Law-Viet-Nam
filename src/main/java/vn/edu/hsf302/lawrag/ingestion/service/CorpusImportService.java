@@ -100,6 +100,7 @@ public class CorpusImportService {
 
         Counters counters = new Counters();
         Map<String, UUID> documentIds = new LinkedHashMap<>();
+        List<UUID> readyDocumentIds = new ArrayList<>();
         List<CorpusImportResult.DocumentResult> documentResults = new ArrayList<>();
 
         for (CorpusManifest.DocumentEntry entry : manifest.documents()) {
@@ -136,7 +137,7 @@ public class CorpusImportService {
 
             PublicationDecision decision = publication.publishIfEligible(persisted.documentId());
             if (decision.ready()) {
-                generateEmbeddings(persisted.documentId(), counters);
+                readyDocumentIds.add(persisted.documentId());
             }
 
             documentIds.put(entry.documentKey(), persisted.documentId());
@@ -146,6 +147,9 @@ public class CorpusImportService {
         }
 
         transactions.executeWithoutResult(status -> persistRelations(manifest, documentIds, counters));
+        for (UUID readyDocumentId : readyDocumentIds) {
+            generateEmbeddings(readyDocumentId, counters);
+        }
 
         return new CorpusImportResult(
                 manifest.corpusVersion(),
@@ -327,10 +331,13 @@ public class CorpusImportService {
         return new PersistedDocument(savedDocument.getId(), storedArticles.size());
     }
 
+    private static final int EMBEDDING_BATCH_SIZE = 50;
+
     private void generateEmbeddings(UUID documentId, Counters counters) {
         LegalDocument document = documents.findById(documentId).orElseThrow();
         List<LegalArticle> readyArticles = articles
                 .findByDocumentIdAndVerificationStatus(documentId, VerificationStatus.READY);
+        List<PendingEmbedding> pending = new ArrayList<>();
         for (LegalArticle article : readyArticles) {
             String header = embeddingHeader(document, article);
             List<String> chunks = RetrievalChunker.chunk(header, article.getSearchText());
@@ -345,22 +352,37 @@ public class CorpusImportService {
                         textHash);
                 if (exists) {
                     counters.embeddingsReused++;
-                    continue;
+                } else {
+                    pending.add(new PendingEmbedding(article.getId(), article.getArticleCode(), index, textHash, text));
                 }
-                EmbeddingClient.Embedding embedding = embeddingClient.embed(
-                        text, EmbeddingClient.EmbeddingTaskType.RETRIEVAL_DOCUMENT);
+            }
+        }
+
+        for (int start = 0; start < pending.size(); start += EMBEDDING_BATCH_SIZE) {
+            int end = Math.min(pending.size(), start + EMBEDDING_BATCH_SIZE);
+            List<PendingEmbedding> batch = pending.subList(start, end);
+            List<String> texts = batch.stream().map(PendingEmbedding::text).toList();
+            List<EmbeddingClient.Embedding> vectors = embeddingClient.embedBatch(
+                    texts, EmbeddingClient.EmbeddingTaskType.RETRIEVAL_DOCUMENT);
+            if (vectors.size() != batch.size()) {
+                throw new IllegalStateException("embedding batch size mismatch: expected "
+                        + batch.size() + ", got " + vectors.size());
+            }
+            for (int offset = 0; offset < batch.size(); offset++) {
+                PendingEmbedding item = batch.get(offset);
+                EmbeddingClient.Embedding embedding = vectors.get(offset);
                 if (embedding.dimensions() != geminiProperties.embeddingDimensions()) {
-                    throw new CorpusIntegrityException("embedding dimension mismatch for " + article.getArticleCode()
+                    throw new CorpusIntegrityException("embedding dimension mismatch for " + item.articleCode()
                             + ": expected " + geminiProperties.embeddingDimensions()
                             + ", got " + embedding.dimensions());
                 }
                 embeddings.insert(
-                        article.getId(),
-                        index,
+                        item.articleId(),
+                        item.chunkIndex(),
                         geminiProperties.embeddingModelId(),
                         embedding.spaceId(),
                         embedding.dimensions(),
-                        textHash,
+                        item.textHash(),
                         embedding.values(),
                         EmbeddingStatus.READY);
                 counters.embeddingsGenerated++;
@@ -461,6 +483,9 @@ public class CorpusImportService {
     }
 
     private record PersistedDocument(UUID documentId, int articleCount) {
+    }
+
+    private record PendingEmbedding(UUID articleId, String articleCode, int chunkIndex, String textHash, String text) {
     }
 
     private record LocalDates(java.time.LocalDate from, java.time.LocalDate to) {

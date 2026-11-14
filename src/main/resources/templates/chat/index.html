@@ -123,6 +123,29 @@
                         </button>
                     </div>
                 </section>
+
+                <section class="side-card persona-card" aria-label="Tính cách AI"
+                         th:if="${personas != null and !#lists.isEmpty(personas)}">
+                    <div class="side-card-head">
+                        <span id="persona-group-label" class="side-card-title">Tính cách AI</span>
+                    </div>
+                    <div class="persona-btn-group" role="radiogroup" aria-labelledby="persona-group-label">
+                        <label class="persona-btn"
+                               th:each="persona : ${personas}"
+                               th:classappend="${persona.code == selectedPersonaCode} ? ' is-selected'"
+                               th:title="${persona.defaultPersona ? persona.name + ' (Mặc định)' : persona.name}">
+                            <input type="radio"
+                                   name="personaCode"
+                                   form="question-form"
+                                   class="persona-radio sr-only"
+                                   th:value="${persona.code}"
+                                   th:checked="${persona.code == selectedPersonaCode}"
+                                   th:attr="data-description=${persona.description},data-default=${persona.defaultPersona}">
+                            <span class="persona-btn-label" th:text="${persona.name}">Chuyên nghiệp</span>
+                        </label>
+                    </div>
+                    <p id="persona-hint" class="side-persona-hint"></p>
+                </section>
             </aside>
 
             <div class="chat-main">

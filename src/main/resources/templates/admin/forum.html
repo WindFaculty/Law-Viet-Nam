@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Quản trị Diễn đàn — LawRAG</title>
+    <meta name="_csrf" th:content="${_csrf != null ? _csrf.token : ''}">
+    <meta name="_csrf_header" th:content="${_csrf != null ? _csrf.headerName : ''}">
+    <link rel="icon" type="image/svg+xml" th:href="@{/images/favicon.svg}">
+    <link rel="stylesheet" th:href="@{/css/ui.css}">
+    <script th:src="@{/js/app.js}" defer></script>
+</head>
+<body>
+<a class="skip-link" href="#main">Bỏ qua điều hướng</a>
+
+<div th:replace="~{fragments/layout :: topbar('admin')}"></div>
+
+<main id="main" class="page page-admin">
+    <div class="admin-workspace">
+
+        <aside th:replace="~{fragments/admin-nav :: header('forum', 'Điều phối Diễn đàn & Trả lời yêu cầu', 'Theo dõi các chủ đề chưa có phản hồi từ Quản trị viên, tạo gợi ý trả lời từ kho RAG, gỡ tạm thời hoặc xóa vĩnh viễn bài viết.')}"></aside>
+
+        <div class="admin-main">
+            <div th:replace="~{fragments/admin-nav :: alerts}"></div>
+
+    <section class="admin-section">
+        <div class="kpi-grid">
+            <a class="kpi-card kpi-link" th:href="@{/admin/forum(status='PUBLISHED',requestStatus='OPEN')}"
+               th:classappend="${postsPage.openCount > 0} ? ' kpi-warn'">
+                <span class="kpi-label">Chưa Admin trả lời (OPEN)</span>
+                <strong class="kpi-value" th:text="${postsPage.openCount}">0</strong>
+            </a>
+            <a class="kpi-card kpi-link" th:href="@{/admin/forum(status='PUBLISHED',requestStatus='ANSWERED')}">
+                <span class="kpi-label">Admin đã trả lời</span>
+                <strong class="kpi-value" th:text="${postsPage.answeredCount}">0</strong>
+            </a>
+            <a class="kpi-card kpi-link" th:href="@{/admin/forum(status='PUBLISHED',requestStatus='RESOLVED')}">
+                <span class="kpi-label">Đã giải quyết</span>
+                <strong class="kpi-value" th:text="${postsPage.resolvedCount}">0</strong>
+            </a>
+            <a class="kpi-card kpi-link" th:href="@{/admin/forum(status='REMOVED')}">
+                <span class="kpi-label">Bài viết đã gỡ</span>
+                <strong class="kpi-value" th:text="${postsPage.removedCount}">0</strong>
+            </a>
+        </div>
+    </section>
+
+    <section class="admin-section">
+        <form class="admin-filter-bar card" th:action="@{/admin/forum}" method="get">
+            <label class="form-field">
+                <span>Hiển thị</span>
+                <select name="status">
+                    <option value="ALL" th:selected="${status == 'ALL'}">Tất cả trạng thái</option>
+                    <option value="PUBLISHED" th:selected="${status == 'PUBLISHED'}">Đang hiển thị (PUBLISHED)</option>
+                    <option value="REMOVED" th:selected="${status == 'REMOVED'}">Đã gỡ (REMOVED)</option>
+                </select>
+            </label>
+            <label class="form-field">
+                <span>Tiến độ phản hồi</span>
+                <select name="requestStatus">
+                    <option value="ALL" th:selected="${requestStatus == 'ALL'}">Tất cả yêu cầu</option>
+                    <option value="OPEN" th:selected="${requestStatus == 'OPEN'}">Chưa Admin phản hồi (OPEN)</option>
+                    <option value="ANSWERED" th:selected="${requestStatus == 'ANSWERED'}">Admin đã trả lời (ANSWERED)</option>
+                    <option value="RESOLVED" th:selected="${requestStatus == 'RESOLVED'}">Đã giải quyết (RESOLVED)</option>
+                </select>
+            </label>
+            <label class="form-field">
+                <span>Chuyên mục</span>
+                <select name="category">
+                    <option value="">Tất cả chuyên mục</option>
+                    <option th:each="cat : ${categories}"
+                            th:value="${cat.name()}"
+                            th:text="${cat.label}"
+                            th:selected="${cat.name() == selectedCategory}">Thảo luận</option>
+                </select>
+            </label>
+            <label class="form-field filter-grow">
+                <span>Từ khóa / tác giả</span>
+                <input type="search" name="q" th:value="${query}" placeholder="Tìm tiêu đề, nội dung, @username...">
+            </label>
+            <div class="filter-actions">
+                <button type="submit" class="btn btn-sm">Lọc bài viết</button>
+                <a class="btn btn-secondary btn-sm" th:href="@{/admin/forum}">Đặt lại</a>
+            </div>
+        </form>
+    </section>
+
+    <section class="admin-section" aria-labelledby="admin-forum-heading">
+        <div class="section-head">
+            <h2 id="admin-forum-heading">
+                Danh sách bài viết diễn đàn
+                <span class="count-pill" th:text="${postsPage.totalItems}">0</span>
+            </h2>
+        </div>
+
+        <div class="empty-state" th:if="${#lists.isEmpty(posts)}">
+            <p class="muted">Không có bài viết nào khớp với bộ lọc hiện tại.</p>
+        </div>
+
+        <div class="admin-forum-list" th:unless="${#lists.isEmpty(posts)}">
+            <article class="card admin-forum-card"
+                     th:each="post : ${posts}"
+                     th:classappend="${post.statusCode == 'REMOVED'} ? ' is-removed'">
+                <div class="admin-forum-head">
+                    <div class="forum-post-badges">
+                        <span class="badge badge-ok" th:if="${post.pinned}">Ghim</span>
+                        <span class="badge badge-info" th:text="${post.categoryLabel}">Chuyên mục</span>
+                        <span class="badge badge-danger" th:if="${post.statusCode == 'REMOVED'}">ĐÃ GỠ</span>
+                        <span class="badge badge-ok" th:if="${post.requestStatusCode == 'RESOLVED'}">Đã giải quyết</span>
+                        <span class="badge badge-official" th:if="${post.requestStatusCode == 'ANSWERED'}">Admin đã trả lời</span>
+                        <span class="badge badge-warn" th:if="${post.requestStatusCode == 'OPEN'}">Chờ phản hồi</span>
+                    </div>
+                    <div class="forum-comment-actions">
+                        <a class="btn btn-secondary btn-sm" th:href="@{/forum/{id}(id=${post.id})}">Xem chi tiết</a>
+                        <button type="button"
+                                class="btn btn-sm"
+                                th:if="${post.statusCode == 'PUBLISHED'}"
+                                th:attr="data-toggle-target=|admin-reply-${post.id}|">
+                            Trả lời chính thức
+                        </button>
+                        <form th:action="@{/admin/forum/posts/{id}/pin(id=${post.id})}" method="post">
+                            <button type="submit" class="btn btn-secondary btn-sm"
+                                    th:text="${post.pinned} ? 'Bỏ ghim' : 'Ghim'">Ghim</button>
+                        </form>
+                        <button type="button"
+                                class="btn btn-secondary btn-sm"
+                                th:if="${post.statusCode == 'PUBLISHED'}"
+                                th:attr="data-toggle-target=|admin-remove-${post.id}|">
+                            Gỡ bài
+                        </button>
+                        <form th:if="${post.statusCode == 'REMOVED'}"
+                              th:action="@{/admin/forum/posts/{id}/restore(id=${post.id})}"
+                              method="post">
+                            <button type="submit" class="btn btn-sm">Khôi phục</button>
+                        </form>
+                        <form th:action="@{/admin/forum/posts/{id}/delete(id=${post.id})}" method="post">
+                            <button type="submit" class="btn btn-danger btn-sm"
+                                    data-confirm="Xóa VĨNH VIỄN bài viết này và toàn bộ bình luận? Hành động không thể hoàn tác.">
+                                Xóa vĩnh viễn
+                            </button>
+                        </form>
+                    </div>
+                </div>
+
+                <h3 class="admin-forum-title">
+                    <a th:href="@{/forum/{id}(id=${post.id})}" th:text="${post.title}">Tiêu đề</a>
+                </h3>
+
+                <div class="forum-post-meta">
+                    <span class="forum-post-author">
+                        Đăng bởi <strong th:text="${post.authorDisplayName}">Tác giả</strong>
+                        <span class="badge badge-admin" th:if="${post.authorAdmin}">Quản trị viên</span>
+                        <span class="badge" th:unless="${post.authorAdmin}">Thành viên</span>
+                        <span class="muted" th:text="'@' + ${post.authorUsername}">@user</span>
+                    </span>
+                    <span class="muted"
+                          th:text="|${post.createdAtDisplay} · ${post.commentCount} bình luận (${post.officialReplyCount} từ Admin)|">
+                        01/01/2026
+                    </span>
+                </div>
+
+                <p class="forum-post-excerpt" th:text="${post.excerpt}">Nội dung tóm tắt</p>
+
+                <details class="admin-post-full">
+                    <summary>Xem toàn bộ nội dung bài viết</summary>
+                    <p class="forum-detail-body" th:text="${post.fullContent}">Nội dung đầy đủ</p>
+                </details>
+
+                <div class="alert alert-error" th:if="${post.statusCode == 'REMOVED'}">
+                    <p th:text="|Đã gỡ bởi @${post.removedBy ?: 'admin'} — Lý do: ${post.removedReason ?: 'Không có'}|">Đã gỡ</p>
+                </div>
+
+                <!-- Official Admin Reply Box -->
+                <div th:if="${post.statusCode == 'PUBLISHED'}"
+                     th:id="|admin-reply-${post.id}|"
+                     class="admin-reply-drawer"
+                     hidden>
+                    <div class="admin-draft-toolbar">
+                        <label>
+                            <span>Tính cách gợi ý:</span>
+                            <select th:id="|draft-persona-${post.id}|" class="ai-draft-persona">
+                                <option th:each="persona : ${personas}"
+                                        th:value="${persona.code}"
+                                        th:text="${persona.name}"
+                                        th:selected="${persona.code == defaultPersonaCode}">Chuyên nghiệp</option>
+                            </select>
+                        </label>
+                        <button type="button"
+                                class="btn btn-secondary btn-sm js-ai-draft"
+                                th:attr="data-draft-url=@{/admin/forum/posts/{id}/ai-draft(id=${post.id})},
+                                         data-persona-select=|draft-persona-${post.id}|,
+                                         data-target-textarea=|reply-text-${post.id}|,
+                                         data-status-target=|draft-status-${post.id}|">
+                            Gợi ý trả lời bằng RAG/AI
+                        </button>
+                        <span th:id="|draft-status-${post.id}|" class="hint" role="status"></span>
+                    </div>
+                    <form th:action="@{/admin/forum/posts/{id}/reply(id=${post.id})}" method="post" class="form-stack">
+                        <label class="form-field">
+                            <span>Nội dung phản hồi chính thức của Quản trị viên</span>
+                            <textarea th:id="|reply-text-${post.id}|"
+                                      name="content"
+                                      rows="4"
+                                      required
+                                      minlength="2"
+                                      maxlength="2000"
+                                      placeholder="Nhập câu trả lời chính thức hoặc bấm 'Gợi ý trả lời bằng RAG/AI' để tạo bản nháp..."></textarea>
+                        </label>
+                        <div class="forum-inline-actions">
+                            <button type="submit" class="btn btn-sm">Gửi phản hồi chính thức</button>
+                            <button type="button" class="btn btn-secondary btn-sm"
+                                    th:attr="data-toggle-target=|admin-reply-${post.id}|">Đóng</button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Soft Remove Form Box -->
+                <form th:if="${post.statusCode == 'PUBLISHED'}"
+                      th:id="|admin-remove-${post.id}|"
+                      th:action="@{/admin/forum/posts/{id}/remove(id=${post.id})}"
+                      method="post"
+                      class="form-stack admin-reply-drawer"
+                      hidden>
+                    <label class="form-field">
+                        <span>Lý do gỡ bài viết (bài sẽ ẩn khỏi diễn đàn công khai và có thể khôi phục sau)</span>
+                        <input type="text" name="reason" required maxlength="1000"
+                               placeholder="Ví dụ: Trùng lặp chủ đề / thông tin sai lệch / vi phạm quy tắc cộng đồng...">
+                    </label>
+                    <div class="forum-inline-actions">
+                        <button type="submit" class="btn btn-danger btn-sm">Xác nhận gỡ bài</button>
+                        <button type="button" class="btn btn-secondary btn-sm"
+                                th:attr="data-toggle-target=|admin-remove-${post.id}|">Hủy</button>
+                    </div>
+                </form>
+            </article>
+        </div>
+
+        <nav class="card forum-pagination" th:if="${postsPage.totalPages > 1}" aria-label="Phân trang quản trị diễn đàn">
+            <span class="forum-pagination-info muted">
+                Trang <strong th:text="${postsPage.page}">1</strong> / <strong th:text="${postsPage.totalPages}">1</strong>
+            </span>
+            <div class="forum-pagination-links">
+                <a class="filter-chip"
+                   th:if="${postsPage.hasPrevious()}"
+                   th:href="@{/admin/forum(status=${status},requestStatus=${requestStatus},category=${#strings.isEmpty(selectedCategory) ? null : selectedCategory},q=${#strings.isEmpty(query) ? null : query},page=${postsPage.page - 1})}">
+                    ← Trước
+                </a>
+                <a class="filter-chip"
+                   th:each="p : ${#numbers.sequence(1, postsPage.totalPages)}"
+                   th:href="@{/admin/forum(status=${status},requestStatus=${requestStatus},category=${#strings.isEmpty(selectedCategory) ? null : selectedCategory},q=${#strings.isEmpty(query) ? null : query},page=${p})}"
+                   th:text="${p}"
+                   th:classappend="${p == postsPage.page} ? ' is-active'">1</a>
+                <a class="filter-chip"
+                   th:if="${postsPage.hasNext()}"
+                   th:href="@{/admin/forum(status=${status},requestStatus=${requestStatus},category=${#strings.isEmpty(selectedCategory) ? null : selectedCategory},q=${#strings.isEmpty(query) ? null : query},page=${postsPage.page + 1})}">
+                    Sau →
+                </a>
+            </div>
+        </nav>
+    </section>
+
+        </div>
+    </div>
+</main>
+
+<div th:replace="~{fragments/layout :: footer}"></div>
+</body>
+</html>
+

@@ -3,6 +3,7 @@ package vn.edu.hsf302.lawrag.gemini.service;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Locale;
+import java.util.function.Consumer;
 
 /**
  * Adapter boundary for the Gemini context-grading call. The backend validates
@@ -13,6 +14,14 @@ import java.util.Locale;
 public interface GroundingClient {
 
     Decision evaluate(Request request);
+
+    default Decision evaluateStream(Request request, Consumer<String> onAnswerDelta) {
+        Decision decision = evaluate(request);
+        if (decision.answer() != null && !decision.answer().isBlank() && onAnswerDelta != null) {
+            onAnswerDelta.accept(decision.answer());
+        }
+        return decision;
+    }
 
     record ContextArticle(
             int ordinal,
@@ -82,6 +91,7 @@ public interface GroundingClient {
             ReasonCode reasonCode,
             String suggestedSearchQuery,
             String clarificationQuestion,
+            String answer,
             String modelId,
             String promptVersion) {
 
@@ -98,7 +108,19 @@ public interface GroundingClient {
             if (promptVersion == null || promptVersion.isBlank()) {
                 throw new IllegalArgumentException("promptVersion must not be blank");
             }
+            answer = (answer == null || answer.isBlank()) ? null : answer.strip();
             selectedArticleIds = selectedArticleIds == null ? List.of() : List.copyOf(selectedArticleIds);
+        }
+
+        public Decision(Outcome outcome,
+                        List<String> selectedArticleIds,
+                        ReasonCode reasonCode,
+                        String suggestedSearchQuery,
+                        String clarificationQuestion,
+                        String modelId,
+                        String promptVersion) {
+            this(outcome, selectedArticleIds, reasonCode, suggestedSearchQuery,
+                    clarificationQuestion, null, modelId, promptVersion);
         }
     }
 

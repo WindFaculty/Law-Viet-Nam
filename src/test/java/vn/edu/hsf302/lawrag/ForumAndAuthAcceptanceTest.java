@@ -1,5 +1,7 @@
 package vn.edu.hsf302.lawrag;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -23,6 +25,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import vn.edu.hsf302.lawrag.auth.entity.AppUser;
 import vn.edu.hsf302.lawrag.auth.repository.AppUserRepository;
 import vn.edu.hsf302.lawrag.auth.entity.UserRole;
+import vn.edu.hsf302.lawrag.forum.entity.ForumCategory;
+import vn.edu.hsf302.lawrag.forum.service.ForumService;
 
 class ForumAndAuthAcceptanceTest extends PostgresIntegrationTest {
 
@@ -33,6 +37,9 @@ class ForumAndAuthAcceptanceTest extends PostgresIntegrationTest {
 
     @Autowired
     private AppUserRepository userRepository;
+
+    @Autowired
+    private ForumService forumService;
 
     @Test
     void topbarShowsQaForumAndLoginForGuests() throws Exception {
@@ -385,6 +392,58 @@ class ForumAndAuthAcceptanceTest extends PostgresIntegrationTest {
                         .with(csrf()))
                 .andExpect(status().is3xxRedirection())
                 .andExpect(redirectedUrl("/forum"));
+    }
+
+    @Test
+    void forumListLimitsTenPostsPerPageWithScrollableRegionAndPagination() throws Exception {
+        String marker = "pagetest-" + UUID.randomUUID().toString().substring(0, 8);
+        List<UUID> createdIds = new ArrayList<>();
+        try {
+            for (int i = 1; i <= 12; i++) {
+                createdIds.add(forumService.createPost(
+                        "admin",
+                        "Chủ đề kiểm thử phân trang " + marker + " #" + i,
+                        ForumCategory.KHAC,
+                        "Nội dung kiểm thử phân trang cho diễn đàn số " + i + " (" + marker + ")."));
+            }
+
+            MvcResult page1 = mockMvc.perform(get("/forum")
+                            .param("category", "KHAC")
+                            .param("q", marker))
+                    .andExpect(status().isOk())
+                    .andExpect(content().string(containsString("forum-scroll-region")))
+                    .andExpect(content().string(containsString("forum-pagination")))
+                    .andExpect(content().string(containsString("Trang <strong>1</strong> / <strong>2</strong>")))
+                    .andExpect(content().string(containsString("<span>10</span> bài/trang")))
+                    .andExpect(content().string(containsString("<strong>12</strong> bài viết")))
+                    .andReturn();
+            String page1Html = page1.getResponse().getContentAsString();
+            assertThat(countOccurrences(page1Html, "class=\"card forum-post-card\"")).isEqualTo(10);
+
+            MvcResult page2 = mockMvc.perform(get("/forum")
+                            .param("category", "KHAC")
+                            .param("q", marker)
+                            .param("page", "2"))
+                    .andExpect(status().isOk())
+                    .andExpect(content().string(containsString("Trang <strong>2</strong> / <strong>2</strong>")))
+                    .andReturn();
+            String page2Html = page2.getResponse().getContentAsString();
+            assertThat(countOccurrences(page2Html, "class=\"card forum-post-card\"")).isEqualTo(2);
+        } finally {
+            for (UUID id : createdIds) {
+                forumService.deletePost(id, "admin", true);
+            }
+        }
+    }
+
+    private int countOccurrences(String haystack, String needle) {
+        int count = 0;
+        int idx = 0;
+        while ((idx = haystack.indexOf(needle, idx)) != -1) {
+            count++;
+            idx += needle.length();
+        }
+        return count;
     }
 }
 

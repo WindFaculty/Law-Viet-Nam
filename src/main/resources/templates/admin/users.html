@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Quản lý tài khoản — Quản trị LawRAG</title>
+    <link rel="icon" type="image/svg+xml" th:href="@{/images/favicon.svg}">
+    <link rel="stylesheet" th:href="@{/css/ui.css}">
+    <script th:src="@{/js/app.js}" defer></script>
+</head>
+<body>
+<a class="skip-link" href="#main">Bỏ qua điều hướng</a>
+
+<div th:replace="~{fragments/layout :: topbar('admin')}"></div>
+
+<main id="main" class="page page-admin">
+    <div class="admin-workspace">
+
+        <aside th:replace="~{fragments/admin-nav :: header('users', 'Quản lý tài khoản', 'Tìm kiếm thành viên, cấp quyền Quản trị viên hoặc khóa/mở khóa tài khoản.')}"></aside>
+
+        <div class="admin-main">
+            <div th:replace="~{fragments/admin-nav :: alerts}"></div>
+
+    <section class="admin-section">
+        <form class="admin-filter-bar card" th:action="@{/admin/users}" method="get">
+            <label class="form-field filter-grow">
+                <span>Tìm theo @username hoặc tên hiển thị</span>
+                <input type="search" name="q" th:value="${query}" placeholder="Nhập từ khóa tài khoản...">
+            </label>
+            <div class="filter-actions">
+                <button type="submit" class="btn btn-sm">Lọc tài khoản</button>
+                <a class="btn btn-secondary btn-sm" th:href="@{/admin/users}" th:if="${!#strings.isEmpty(query)}">Xóa lọc</a>
+            </div>
+        </form>
+    </section>
+
+    <section class="admin-section" aria-labelledby="users-heading">
+        <div class="section-head">
+            <h2 id="users-heading">
+                Danh sách tài khoản
+                <span class="count-pill" th:text="${#lists.size(users)}">0</span>
+            </h2>
+            <span class="muted" th:text="|Tổng hệ thống: ${totalUserCount}|">0</span>
+        </div>
+
+        <div class="empty-state" th:if="${#lists.isEmpty(users)}">
+            <p class="muted">Không tìm thấy tài khoản nào phù hợp.</p>
+        </div>
+
+        <div class="table-wrap" th:unless="${#lists.isEmpty(users)}">
+            <table class="admin-table">
+                <thead>
+                <tr>
+                    <th>Tài khoản</th>
+                    <th>Tên hiển thị</th>
+                    <th>Vai trò</th>
+                    <th>Trạng thái</th>
+                    <th>Ngày tạo</th>
+                    <th>Thao tác</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="account : ${users}">
+                    <td><code class="mono-cell" th:text="'@' + ${account.username}">@user</code></td>
+                    <td th:text="${account.displayName}">Người dùng</td>
+                    <td>
+                        <span class="badge"
+                              th:classappend="${account.role.name() == 'ADMIN'} ? ' badge-violet' : ' badge-info'"
+                              th:text="${account.role.name()}">USER</span>
+                    </td>
+                    <td>
+                        <span class="badge"
+                              th:classappend="${account.enabled} ? ' badge-ok' : ' badge-danger'"
+                              th:text="${account.enabled} ? 'Hoạt động' : 'Đã khóa'">Hoạt động</span>
+                    </td>
+                    <td th:text="${account.createdAtDisplay}">01/01/2026</td>
+                    <td>
+                        <span class="muted" th:if="${account.systemAccount}">Tài khoản hệ thống</span>
+                        <span class="muted"
+                              th:if="${!account.systemAccount and currentUser != null and account.username == currentUser.username}">
+                            Đang đăng nhập
+                        </span>
+                        <div class="forum-comment-actions"
+                             th:if="${!account.systemAccount and (currentUser == null or account.username != currentUser.username)}">
+                            <form th:action="@{/admin/users/{id}/role(id=${account.id})}" method="post">
+                                <input type="hidden" name="returnTo" value="users">
+                                <input type="hidden" name="role"
+                                       th:value="${account.role.name() == 'ADMIN'} ? 'USER' : 'ADMIN'">
+                                <button type="submit" class="btn btn-secondary btn-sm"
+                                        th:text="${account.role.name() == 'ADMIN'} ? 'Hạ xuống USER' : 'Nâng lên ADMIN'">
+                                    Đổi vai trò
+                                </button>
+                            </form>
+                            <form th:action="@{/admin/users/{id}/toggle-enabled(id=${account.id})}" method="post">
+                                <input type="hidden" name="returnTo" value="users">
+                                <button type="submit" class="btn btn-secondary btn-sm"
+                                        th:text="${account.enabled} ? 'Khóa' : 'Mở khóa'">
+                                    Khóa
+                                </button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+        </div>
+    </div>
+</main>
+
+<div th:replace="~{fragments/layout :: footer}"></div>
+</body>
+</html>
+

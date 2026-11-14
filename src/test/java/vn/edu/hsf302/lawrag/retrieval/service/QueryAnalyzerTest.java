@@ -115,4 +115,33 @@ class QueryAnalyzerTest {
         assertThat(VietnameseText.normalizeForMatching("xe đạp máy"))
                 .isEqualTo("xe dap may");
     }
+
+    @Test
+    void recognizesCommonCarSynonymsAndResolvedMultiTurnClarifications() {
+        for (String phrase : new String[]{
+                "xe 4 chỗ", "xe 5 chỗ", "xe 7 chỗ", "xe gia đình",
+                "xe con", "xe bán tải", "xe tải", "xe khách"}) {
+            assertThat(VietnameseText.subjects(phrase))
+                    .as("subject extraction for '%s'", phrase)
+                    .containsExactly("o_to");
+        }
+
+        QueryAnalysis mergedClarification = analyzer.analyze(
+                "Tôi bị phạt bao nhiêu tiền? — chở quá số người — 22 tuổi xe 4 chỗ gia đình và chở 5 người");
+        assertThat(mergedClarification.subjects()).containsExactly("o_to");
+        assertThat(mergedClarification.topics()).contains("muc_phat", "cho_nguoi");
+        assertThat(mergedClarification.requiresClarification()).isFalse();
+
+        QueryAnalysis correctedInvalidDate = analyzer.analyze(
+                "Ngày 31/02/2025 tôi đi xe máy có phải đội mũ bảo hiểm không? — ngày 28/02/2025");
+        assertThat(correctedInvalidDate.applicableDate()).isEqualTo(LocalDate.of(2025, 2, 28));
+        assertThat(correctedInvalidDate.explicitDate()).isTrue();
+        assertThat(correctedInvalidDate.requiresClarification()).isFalse();
+
+        QueryAnalysis clarifiedAmbiguousDate = analyzer.analyze(
+                "Năm ngoái tôi không đội mũ bảo hiểm — xe máy ngày 01/06/2024");
+        assertThat(clarifiedAmbiguousDate.applicableDate()).isEqualTo(LocalDate.of(2024, 6, 1));
+        assertThat(clarifiedAmbiguousDate.subjects()).containsExactly("xe_mo_to");
+        assertThat(clarifiedAmbiguousDate.requiresClarification()).isFalse();
+    }
 }

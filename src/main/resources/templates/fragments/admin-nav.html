@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<body>
+
+<aside th:fragment="header(activeTab, pageHeading, pageSubtitle)" class="admin-sidebar" aria-label="Điều hướng quản trị">
+    <section class="admin-hero card">
+        <div class="admin-hero-head">
+            <p class="eyebrow">Khu vực hạn chế · ROLE_ADMIN</p>
+            <h1 th:text="${pageHeading}">Quản trị hệ thống</h1>
+            <p class="lead admin-sidebar-lead" th:text="${pageSubtitle}">
+                Trung tâm điều hành hệ thống LawRAG.
+            </p>
+        </div>
+        <nav class="admin-nav" aria-label="Menu quản trị">
+            <a th:href="@{/admin}"
+               th:classappend="${activeTab == 'overview'} ? ' is-active'">Tổng quan</a>
+            <a th:href="@{/admin/forum}"
+               th:classappend="${activeTab == 'forum'} ? ' is-active'">Diễn đàn &amp; Phản hồi</a>
+            <a th:href="@{/admin/logs}"
+               th:classappend="${activeTab == 'logs'} ? ' is-active'">Nhật ký hệ thống</a>
+            <a th:href="@{/admin/web-search-jobs}"
+               th:classappend="${activeTab == 'jobs'} ? ' is-active'">Tài liệu PDF (RAG)</a>
+            <a th:href="@{/admin/users}"
+               th:classappend="${activeTab == 'users'} ? ' is-active'">Quản lý tài khoản</a>
+            <a th:href="@{/admin/llm}"
+               th:classappend="${activeTab == 'llm'} ? ' is-active'">Tính cách AI (LLM)</a>
+            <a class="admin-nav-back" th:href="@{/chat}">← Về trang chat</a>
+        </nav>
+    </section>
+</aside>
+
+<div th:fragment="alerts">
+    <div class="alert alert-ok admin-flash" th:if="${message}" role="status">
+        <p th:text="${message}">Thành công.</p>
+    </div>
+    <div class="alert alert-error admin-flash" th:if="${error}" role="alert">
+        <p th:text="${error}">Có lỗi xảy ra.</p>
+    </div>
+</div>
+
+</body>
+</html>
+

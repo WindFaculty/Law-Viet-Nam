@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<body>
+
+<li th:fragment="commentNode(comment, post, depth)"
+    class="forum-comment-item"
+    th:id="|comment-${comment.id}|"
+    th:classappend="${(comment.officialAdminReply ? ' is-official' : '')
+                     + (comment.acceptedAnswer ? ' is-accepted' : '')
+                     + (depth > 0 ? ' is-reply' : '')}">
+    <div class="forum-comment-head">
+        <div class="forum-comment-author">
+            <strong th:text="${comment.authorDisplayName}">Thành viên</strong>
+            <span class="badge badge-admin" th:if="${comment.authorAdmin}">Quản trị viên</span>
+            <span class="badge" th:unless="${comment.authorAdmin}">Thành viên</span>
+            <span class="muted" th:text="'@' + ${comment.authorUsername}">@user</span>
+            <span class="badge badge-official" th:if="${comment.officialAdminReply}">
+                Phản hồi chính thức
+            </span>
+            <span class="badge badge-ok" th:if="${comment.acceptedAnswer}">
+                Câu trả lời hữu ích
+            </span>
+            <span class="muted reply-target"
+                  th:if="${comment.replyToDisplayName != null}"
+                  th:text="|↳ Trả lời ${comment.replyToDisplayName}|">↳ Trả lời</span>
+        </div>
+        <div class="forum-comment-actions">
+            <span class="muted" th:text="${comment.createdAtDisplay}">01/01/2026</span>
+            <span class="muted"
+                  th:if="${!#strings.isEmpty(comment.editedAtDisplay)}"
+                  th:text="|(sửa ${comment.editedAtDisplay})|">(đã sửa)</span>
+            <button type="button"
+                    class="btn btn-secondary btn-sm"
+                    th:if="${comment.canReply}"
+                    th:attr="data-toggle-target=|reply-form-${comment.id}|">
+                Trả lời
+            </button>
+            <form th:if="${comment.canAccept}"
+                  th:action="@{/forum/comments/{id}/accept(id=${comment.id})}"
+                  method="post">
+                <button type="submit"
+                        class="btn btn-sm"
+                        th:classappend="${comment.acceptedAnswer} ? ' btn-secondary' : ''"
+                        th:text="${comment.acceptedAnswer} ? 'Bỏ chọn hữu ích' : 'Đánh dấu hữu ích'">
+                    Đánh dấu hữu ích
+                </button>
+            </form>
+            <button type="button"
+                    class="btn btn-secondary btn-sm"
+                    th:if="${comment.canEdit}"
+                    th:attr="data-toggle-target=|edit-comment-${comment.id}|">
+                Sửa
+            </button>
+            <form th:if="${comment.canDelete}"
+                  th:action="@{/forum/comments/{id}/delete(id=${comment.id})}"
+                  method="post">
+                <button type="submit" class="btn btn-secondary btn-sm" data-confirm="Xóa bình luận này?">Xóa</button>
+            </form>
+        </div>
+    </div>
+
+    <p class="forum-comment-body" th:text="${comment.content}">Nội dung bình luận</p>
+
+    <form th:if="${comment.canEdit}"
+          th:id="|edit-comment-${comment.id}|"
+          th:action="@{/forum/comments/{id}/edit(id=${comment.id})}"
+          method="post"
+          class="form-stack forum-inline-form"
+          hidden>
+        <label class="form-field">
+            <span>Chỉnh sửa bình luận</span>
+            <textarea name="content" rows="2" required minlength="2" maxlength="2000"
+                      th:text="${comment.content}"></textarea>
+        </label>
+        <div class="forum-inline-actions">
+            <button type="submit" class="btn btn-sm">Lưu bình luận</button>
+            <button type="button" class="btn btn-secondary btn-sm"
+                    th:attr="data-toggle-target=|edit-comment-${comment.id}|">Hủy</button>
+        </div>
+    </form>
+
+    <form th:if="${comment.canReply}"
+          th:id="|reply-form-${comment.id}|"
+          th:action="@{/forum/posts/{id}/comments(id=${post.id})}"
+          method="post"
+          class="form-stack forum-inline-form"
+          hidden>
+        <input type="hidden" name="parentCommentId" th:value="${comment.id}">
+        <label class="form-field">
+            <span th:text="|Trả lời ${comment.authorDisplayName}|">Trả lời bình luận</span>
+            <textarea name="content" rows="2" required minlength="2" maxlength="2000"
+                      placeholder="Nhập phản hồi của bạn..."></textarea>
+        </label>
+        <div class="forum-inline-actions">
+            <button type="submit" class="btn btn-sm">Gửi phản hồi</button>
+            <button type="button" class="btn btn-secondary btn-sm"
+                    th:attr="data-toggle-target=|reply-form-${comment.id}|">Hủy</button>
+        </div>
+    </form>
+
+    <ul class="forum-comment-children" th:if="${!#lists.isEmpty(comment.replies)}">
+        <th:block th:each="child : ${comment.replies}">
+            <li th:replace="~{fragments/forum-comments :: commentNode(${child}, ${post}, ${depth + 1})}"></li>
+        </th:block>
+    </ul>
+</li>
+
+</body>
+</html>
+

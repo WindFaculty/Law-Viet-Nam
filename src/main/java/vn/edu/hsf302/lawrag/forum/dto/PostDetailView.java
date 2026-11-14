@@ -11,9 +11,22 @@ public record PostDetailView(
         String categoryLabel,
         String authorDisplayName,
         String authorUsername,
+        boolean authorAdmin,
         boolean pinned,
+        String statusCode,
+        String statusLabel,
+        String removedReason,
+        String requestStatusCode,
+        String requestStatusLabel,
         String createdAtDisplay,
+        String editedAtDisplay,
+        boolean canEdit,
         boolean canDelete,
         boolean canPin,
+        int totalCommentCount,
         List<CommentView> comments) {
+
+    public PostDetailView {
+        comments = comments == null ? List.of() : List.copyOf(comments);
+    }
 }

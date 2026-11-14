@@ -30,6 +30,8 @@ import vn.edu.hsf302.lawrag.chat.repository.MessageCitationRepository;
 import vn.edu.hsf302.lawrag.chat.entity.MessageStatus;
 import vn.edu.hsf302.lawrag.chat.dto.SessionOwner;
 import vn.edu.hsf302.lawrag.chat.entity.SessionOwnerType;
+import vn.edu.hsf302.lawrag.llm.dto.LlmPersonaView;
+import vn.edu.hsf302.lawrag.llm.service.LlmPersonaService;
 
 /**
  * Builds detached view models for the Thymeleaf fragments. A message whose
@@ -48,6 +50,7 @@ public class ChatViewService {
     private final MessageCitationRepository citations;
     private final WebSearchJobRepository jobs;
     private final QuotaReservationService quota;
+    private final LlmPersonaService personas;
     private final Clock clock;
     private final boolean allowAnonymousWebSearch;
 
@@ -57,6 +60,7 @@ public class ChatViewService {
                            MessageCitationRepository citations,
                            WebSearchJobRepository jobs,
                            QuotaReservationService quota,
+                           LlmPersonaService personas,
                            Clock clock,
                            @Value("${app.websearch.allow-anonymous:true}") boolean allowAnonymousWebSearch) {
         this.state = state;
@@ -65,6 +69,7 @@ public class ChatViewService {
         this.citations = citations;
         this.jobs = jobs;
         this.quota = quota;
+        this.personas = personas;
         this.clock = clock;
         this.allowAnonymousWebSearch = allowAnonymousWebSearch;
     }
@@ -72,7 +77,8 @@ public class ChatViewService {
     @Transactional(readOnly = true)
     public ChatMessageView view(UUID messageId, SessionOwner owner) {
         ChatMessage message = state.getOwnedMessage(messageId, owner);
-        return toView(message, quota.snapshot(owner), webSearchAllowed(owner));
+        Map<String, LlmPersonaView> personaMap = personas.mapAllByCode();
+        return toView(message, quota.snapshot(owner), webSearchAllowed(owner), personaMap);
     }
 
     @Transactional(readOnly = true)
@@ -85,22 +91,25 @@ public class ChatViewService {
         }
         QuotaSnapshot snapshot = quota.snapshot(owner);
         boolean allowed = webSearchAllowed(owner);
+        Map<String, LlmPersonaView> personaMap = personas.mapAllByCode();
         return new ChatMessagePairView(
-                toView(question, snapshot, allowed),
-                toView(assistant, snapshot, allowed));
+                toView(question, snapshot, allowed, personaMap),
+                toView(assistant, snapshot, allowed, personaMap));
     }
 
     @Transactional(readOnly = true)
     public ChatConversationView conversation(UUID sessionId, SessionOwner owner) {
-        sessions.requireOwnedSession(sessionId, owner);
+        ChatSession session = sessions.requireOwnedSession(sessionId, owner);
         QuotaSnapshot snapshot = quota.snapshot(owner);
         boolean allowed = webSearchAllowed(owner);
+        Map<String, LlmPersonaView> personaMap = personas.mapAllByCode();
+        String activePersonaCode = personas.resolveOrDefault(session.getPersonaCode()).getCode();
         List<ChatMessageView> views = new ArrayList<>();
         for (ChatMessage message : messages.findConversation(sessionId)) {
-            views.add(toView(message, snapshot, allowed));
+            views.add(toView(message, snapshot, allowed, personaMap));
         }
         return new ChatConversationView(
-                sessionId, views, snapshot.usedCount(), snapshot.limitCount(), allowed);
+                sessionId, views, snapshot.usedCount(), snapshot.limitCount(), allowed, activePersonaCode);
     }
 
     public boolean webSearchAllowed(SessionOwner owner) {
@@ -149,12 +158,16 @@ public class ChatViewService {
 
     private ChatMessageView toView(ChatMessage message,
                                    QuotaSnapshot snapshot,
-                                   boolean allowed) {
+                                   boolean allowed,
+                                   Map<String, LlmPersonaView> personaMap) {
+        String personaCode = message.getPersonaCode();
+        String personaName = resolvePersonaName(personaCode, personaMap);
         if (!message.isAi()) {
             return new ChatMessageView(
                     message.getId(), true, message.getMessageStatus(), message.getContent(),
                     null, null, null, null, null, null,
-                    false, false, false, false, allowed, snapshot.hasAvailableSlot(), List.of());
+                    false, false, false, false, allowed, snapshot.hasAvailableSlot(), List.of(),
+                    personaCode, personaName);
         }
 
         Instant now = clock.instant();
@@ -196,7 +209,17 @@ public class ChatViewService {
                 canRetry,
                 allowed,
                 hasQuota,
-                citationViews(message.getId()));
+                citationViews(message.getId()),
+                personaCode,
+                personaName);
+    }
+
+    private static String resolvePersonaName(String personaCode, Map<String, LlmPersonaView> personaMap) {
+        if (personaCode == null || personaCode.isBlank()) {
+            return null;
+        }
+        LlmPersonaView found = personaMap.get(personaCode);
+        return found != null ? found.name() : personaCode;
     }
 
     private List<ChatMessageView.Citation> citationViews(UUID messageId) {

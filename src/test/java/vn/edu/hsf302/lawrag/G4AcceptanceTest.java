@@ -343,6 +343,38 @@ class G4AcceptanceTest extends PostgresIntegrationTest {
     }
 
     @Test
+    void multiTurnClarificationPreservesOriginalContextWithoutBleedFromCompletedTurns() {
+        SessionOwner owner = anonymousOwner();
+        ChatSession session = chatSessionService.createSession(owner);
+
+        // An earlier COMPLETED turn on motorcycles must NOT bleed into a later clarification chain.
+        ChatOutcome completedTurn = orchestrator.ask(session.getId(), owner, "g4-chain-0", HELMET_QUESTION);
+        assertThat(completedTurn.status()).isEqualTo(MessageStatus.COMPLETED);
+
+        ChatOutcome turn1 = orchestrator.ask(session.getId(), owner, "g4-chain-1", "Tôi bị phạt bao nhiêu tiền?");
+        assertThat(turn1.status()).isEqualTo(MessageStatus.NEEDS_CLARIFICATION);
+
+        ChatOutcome turn2 = orchestrator.ask(session.getId(), owner, "g4-chain-2", "chở quá số người");
+        assertThat(turn2.status()).isEqualTo(MessageStatus.NEEDS_CLARIFICATION);
+        assertThat((String) messageRow(turn2.messageId()).get("content")).contains("loại phương tiện");
+
+        ChatOutcome turn3 = orchestrator.ask(
+                session.getId(), owner, "g4-chain-3", "22 tuổi xe 4 chỗ gia đình và chở 5 người");
+        assertThat(turn3.status()).isEqualTo(MessageStatus.COMPLETED);
+        assertThat(turn3.decision()).isEqualTo(GroundingClient.Outcome.ANSWER);
+
+        List<Map<String, Object>> citations = citations(turn3.messageId());
+        assertThat(citations).isNotEmpty();
+        assertThat(citations.get(0).get("doc_number")).isEqualTo("168/2024/NĐ-CP");
+        assertThat(citations.get(0).get("article_code")).isEqualTo("dieu-20-khoan-2");
+
+        // Total used quota: 1 from turn 0 + 1 from turn 3 = 2; no double-charging for clarification turns.
+        assertThat(bucket(owner).usedCount()).isEqualTo(2);
+        assertThat(bucket(owner).reservedCount()).isZero();
+        assertThat(webSearchProvider.calls()).isZero();
+    }
+
+    @Test
     void outOfDomainQuestionIsRefusedWithoutCitationsWebCallsOrQuota() {
         SessionOwner owner = anonymousOwner();
         ChatOutcome outcome = ask(owner, NO_EVIDENCE, "g4-no-evidence");

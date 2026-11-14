@@ -25,7 +25,7 @@
             </div>
             <div class="forum-hero-stats">
                 <span class="badge badge-info">
-                    <strong th:text="${#lists.size(posts)}">0</strong> bài viết
+                    <strong th:text="${totalPosts}">0</strong> bài viết
                 </span>
             </div>
         </div>
@@ -59,104 +59,146 @@
         </nav>
     </section>
 
-    <div class="alert alert-ok" th:if="${message}" role="status">
-        <p th:text="${message}">Thành công.</p>
-    </div>
-    <div class="alert alert-error" th:if="${error}" role="alert">
-        <p th:text="${error}">Có lỗi xảy ra.</p>
-    </div>
+    <div class="forum-scroll-region" aria-label="Danh sách bài viết có thể cuộn">
+        <div class="alert alert-ok" th:if="${message}" role="status">
+            <p th:text="${message}">Thành công.</p>
+        </div>
+        <div class="alert alert-error" th:if="${error}" role="alert">
+            <p th:text="${error}">Có lỗi xảy ra.</p>
+        </div>
 
-    <details class="card forum-compose"
-             th:if="${currentUser != null}"
-             th:open="${draftTitle != null or draftContent != null}">
-        <summary class="forum-compose-toggle">
-            <span>+ Tạo bài viết thảo luận mới</span>
-            <span class="hint">Đăng với tư cách <strong th:text="${currentUser.displayName}">Thành viên</strong></span>
-        </summary>
+        <details class="card forum-compose"
+                 th:if="${currentUser != null}"
+                 th:open="${draftTitle != null or draftContent != null}">
+            <summary class="forum-compose-toggle">
+                <span>+ Tạo bài viết thảo luận mới</span>
+                <span class="hint">Đăng với tư cách <strong th:text="${currentUser.displayName}">Thành viên</strong></span>
+            </summary>
 
-        <form class="form-stack forum-compose-form" th:action="@{/forum/posts}" method="post">
-            <div class="forum-compose-row">
+            <form class="form-stack forum-compose-form" th:action="@{/forum/posts}" method="post">
+                <div class="forum-compose-row">
+                    <label class="form-field">
+                        <span>Tiêu đề</span>
+                        <input type="text"
+                               name="title"
+                               th:value="${draftTitle}"
+                               required
+                               minlength="5"
+                               maxlength="200"
+                               placeholder="Nhập tiêu đề ngắn gọn, rõ ràng (5–200 ký tự)">
+                    </label>
+                    <label class="form-field forum-category-field">
+                        <span>Chuyên mục</span>
+                        <select name="category">
+                            <option th:each="cat : ${categories}"
+                                    th:value="${cat.name()}"
+                                    th:text="${cat.label}"
+                                    th:selected="${draftCategory == cat.name()}">
+                                Thảo luận chung
+                            </option>
+                        </select>
+                    </label>
+                </div>
+
                 <label class="form-field">
-                    <span>Tiêu đề</span>
-                    <input type="text"
-                           name="title"
-                           th:value="${draftTitle}"
-                           required
-                           minlength="5"
-                           maxlength="200"
-                           placeholder="Nhập tiêu đề ngắn gọn, rõ ràng (5–200 ký tự)">
+                    <span>Nội dung</span>
+                    <textarea name="content"
+                              rows="5"
+                              required
+                              minlength="10"
+                              maxlength="5000"
+                              placeholder="Mô tả chi tiết tình huống hoặc vấn đề pháp lý cần trao đổi..."
+                              th:text="${draftContent}"></textarea>
                 </label>
-                <label class="form-field forum-category-field">
-                    <span>Chuyên mục</span>
-                    <select name="category">
-                        <option th:each="cat : ${categories}"
-                                th:value="${cat.name()}"
-                                th:text="${cat.label}"
-                                th:selected="${draftCategory == cat.name()}">
-                            Thảo luận chung
-                        </option>
-                    </select>
-                </label>
+
+                <div class="forum-compose-actions">
+                    <button type="submit" class="btn">Đăng bài viết</button>
+                </div>
+            </form>
+        </details>
+
+        <section class="alert alert-info forum-guest-cta" th:if="${currentUser == null}">
+            <div>
+                <strong>Bạn muốn tạo bài viết hoặc tham gia bình luận?</strong>
+                <p>Đăng nhập bằng tài khoản thành viên để đăng chủ đề mới và trao đổi trên diễn đàn.</p>
+            </div>
+            <div class="forum-guest-actions">
+                <a class="btn btn-sm" th:href="@{/login}">Đăng nhập</a>
+                <a class="btn btn-secondary btn-sm" th:href="@{/register}">Đăng ký</a>
+            </div>
+        </section>
+
+        <section class="forum-list" aria-label="Danh sách bài viết">
+            <div class="card empty-state" th:if="${#lists.isEmpty(posts)}">
+                <p class="muted">Chưa có bài viết nào phù hợp với bộ lọc hiện tại.</p>
             </div>
 
-            <label class="form-field">
-                <span>Nội dung</span>
-                <textarea name="content"
-                          rows="5"
-                          required
-                          minlength="10"
-                          maxlength="5000"
-                          placeholder="Mô tả chi tiết tình huống hoặc vấn đề pháp lý cần trao đổi..."
-                          th:text="${draftContent}"></textarea>
-            </label>
+            <article class="card forum-post-card" th:each="post : ${posts}">
+                <div class="forum-post-badges">
+                    <span class="badge badge-ok" th:if="${post.pinned}">Ghim</span>
+                    <span class="badge badge-info" th:text="${post.categoryLabel}">Thảo luận chung</span>
+                    <span class="badge badge-ok" th:if="${post.requestStatusCode == 'RESOLVED'}">Đã giải quyết</span>
+                    <span class="badge badge-official" th:if="${post.requestStatusCode == 'ANSWERED'}">Admin đã trả lời</span>
+                    <span class="badge badge-warn" th:if="${post.requestStatusCode == 'OPEN'}">Chờ phản hồi</span>
+                </div>
 
-            <div class="forum-compose-actions">
-                <button type="submit" class="btn">Đăng bài viết</button>
-            </div>
-        </form>
-    </details>
+                <h2 class="forum-post-title">
+                    <a th:href="@{/forum/{id}(id=${post.id})}" th:text="${post.title}">Tiêu đề bài viết</a>
+                </h2>
 
-    <section class="alert alert-info forum-guest-cta" th:if="${currentUser == null}">
-        <div>
-            <strong>Bạn muốn tạo bài viết hoặc tham gia bình luận?</strong>
-            <p>Đăng nhập bằng tài khoản thành viên để đăng chủ đề mới và trao đổi trên diễn đàn.</p>
-        </div>
-        <div class="forum-guest-actions">
-            <a class="btn btn-sm" th:href="@{/login}">Đăng nhập</a>
-            <a class="btn btn-secondary btn-sm" th:href="@{/register}">Đăng ký</a>
-        </div>
-    </section>
+                <p class="forum-post-excerpt" th:text="${post.excerpt}">Tóm tắt nội dung...</p>
 
-    <section class="forum-list" aria-label="Danh sách bài viết">
-        <div class="card empty-state" th:if="${#lists.isEmpty(posts)}">
-            <p class="muted">Chưa có bài viết nào phù hợp với bộ lọc hiện tại.</p>
-        </div>
+                <div class="forum-post-meta">
+                    <span class="forum-post-author">
+                        Đăng bởi <strong th:text="${post.authorDisplayName}">Tác giả</strong>
+                        <span class="badge badge-admin" th:if="${post.authorAdmin}">Quản trị viên</span>
+                        <span class="badge" th:unless="${post.authorAdmin}">Thành viên</span>
+                        <span class="muted" th:text="'@' + ${post.authorUsername}">@user</span>
+                    </span>
+                    <span class="forum-post-right">
+                        <span class="muted" th:text="${post.createdAtDisplay}">01/01/2026</span>
+                        <a class="badge" th:href="@{/forum/{id}#comments(id=${post.id})}"
+                           th:text="${post.commentCount} + ' bình luận'">0 bình luận</a>
+                    </span>
+                </div>
+            </article>
+        </section>
 
-        <article class="card forum-post-card" th:each="post : ${posts}">
-            <div class="forum-post-badges">
-                <span class="badge badge-ok" th:if="${post.pinned}">Ghim</span>
-                <span class="badge badge-info" th:text="${post.categoryLabel}">Thảo luận chung</span>
-            </div>
-
-            <h2 class="forum-post-title">
-                <a th:href="@{/forum/{id}(id=${post.id})}" th:text="${post.title}">Tiêu đề bài viết</a>
-            </h2>
-
-            <p class="forum-post-excerpt" th:text="${post.excerpt}">Tóm tắt nội dung...</p>
-
-            <div class="forum-post-meta">
-                <span>
-                    Đăng bởi <strong th:text="${post.authorDisplayName}">Tác giả</strong>
-                    <span class="muted" th:text="'@' + ${post.authorUsername}">@user</span>
+        <nav class="card forum-pagination" th:if="${totalPosts > 0}" aria-label="Phân trang bài viết">
+            <span class="forum-pagination-info muted">
+                Trang <strong th:text="${currentPage}">1</strong> / <strong th:text="${totalPages}">1</strong>
+                (<span th:text="${pageSize}">10</span> bài/trang)
+            </span>
+            <div class="forum-pagination-links" th:if="${totalPages > 1}">
+                <a class="filter-chip"
+                   th:if="${postsPage.hasPrevious()}"
+                   th:href="@{/forum(category=${#strings.isEmpty(selectedCategory) ? null : selectedCategory}, q=${#strings.isEmpty(query) ? null : query}, page=${currentPage - 1})}">
+                    ← Trước
+                </a>
+                <span class="filter-chip is-disabled" th:unless="${postsPage.hasPrevious()}" aria-disabled="true">
+                    ← Trước
                 </span>
-                <span class="forum-post-right">
-                    <span class="muted" th:text="${post.createdAtDisplay}">01/01/2026</span>
-                    <a class="badge" th:href="@{/forum/{id}#comments(id=${post.id})}"
-                       th:text="${post.commentCount} + ' bình luận'">0 bình luận</a>
+
+                <a class="filter-chip"
+                   th:each="p : ${#numbers.sequence(1, totalPages)}"
+                   th:href="@{/forum(category=${#strings.isEmpty(selectedCategory) ? null : selectedCategory}, q=${#strings.isEmpty(query) ? null : query}, page=${p})}"
+                   th:text="${p}"
+                   th:classappend="${p == currentPage} ? ' is-active'"
+                   th:attr="aria-current=${p == currentPage} ? 'page'">
+                    1
+                </a>
+
+                <a class="filter-chip"
+                   th:if="${postsPage.hasNext()}"
+                   th:href="@{/forum(category=${#strings.isEmpty(selectedCategory) ? null : selectedCategory}, q=${#strings.isEmpty(query) ? null : query}, page=${currentPage + 1})}">
+                    Sau →
+                </a>
+                <span class="filter-chip is-disabled" th:unless="${postsPage.hasNext()}" aria-disabled="true">
+                    Sau →
                 </span>
             </div>
-        </article>
-    </section>
+        </nav>
+    </div>
 </main>
 
 <div th:replace="~{fragments/layout :: footer}"></div>
